@@ -20,6 +20,10 @@ import umkmRoute from "./routes/umkmRoutes.js";
 import dokumenSotkRoutes from "./routes/dokumenSotk.js";
 import hirarkiRoutes from "./routes/hirarkiRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
+import rkaRouter from './routes/rkaRoutes.js';
+import pegawaiRouter from './routes/pegawaiRoutes.js';
+import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
+
 
 dotenv.config();
 
@@ -171,6 +175,11 @@ app.use("/api/dokumen/sotk", dokumenSotkRoutes);
 app.use("/api/hirarki", hirarkiRoutes);
 app.use("/hirarki", hirarkiRoutes);
 app.use("/api/programs", programRoutes);
+app.use("/api/renstra/programs", programRoutes);
+app.use("/api/pegawai", pegawaiRouter);
+app.use("/api/rka", rkaRouter);
+app.use("/api/renstra/satuans", renstraSatuansRouter);
+
 // ================================
 // 🔹 Handler 404 (after routes)
 // ================================
