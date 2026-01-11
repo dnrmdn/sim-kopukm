@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import UMKMSummary from "../../components/UMKMSummary";
-import BantuanSummary from "../../components/umkm/UMKMBantuan";
-import UMKMDuplikatSummary from "../../components/UMKMDuplikat";
-import UMKMBantuanTidakTerdaftarSummary from "../../components/umkm/UMKMBantuanTidakTerdaftarSummary";
+import UMKMSummary from "@/components/umkm/UMKMSummary";
+import BantuanSummary from "@/components/umkm/UMKMBantuan";
+import UMKMDuplikatSummary from "@/components/umkm/UMKMDuplikat";
+import UMKMBantuanTidakTerdaftarSummary from "@/components/umkm/UMKMBantuanTidakTerdaftarSummary";
 import { Home, FileText, Store, Banknote } from "lucide-react";
 
 export default function DashboardPage() {

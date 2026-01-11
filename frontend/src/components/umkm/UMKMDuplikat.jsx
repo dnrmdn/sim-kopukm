@@ -1,6 +1,6 @@
 // import React, { useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
-// import axiosInstance from "../utils/axiosInstance";
+// import axiosInstance from "../../utils/axiosInstance";
 // import { AlertCircle, Users, FileText, Building2, TrendingUp, Activity } from "lucide-react";
 
 // export default function UMKMDuplikatSummary() {
@@ -186,7 +186,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 import { AlertCircle, Users, FileText, Building2, TrendingUp, Activity } from "lucide-react";
 
 export default function UMKMDuplikatSummary() {

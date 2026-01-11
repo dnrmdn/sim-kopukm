@@ -1,10 +1,10 @@
 // src/pages/RkaPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import axiosInstance from "../../../utils/axiosInstance";
+import axiosInstance from "@/utils/axiosInstance";
 
-import InputRKA from "../../../components/kesekretariatan/InputRKA";
-import BelanjaSection from "../../../components/umkm/BelanjaSection";
-import RkaTable from "../../../components/kesekretariatan/RkaTable";
+import InputRKA from "@/components/kesekretariatan/InputRKA";
+import BelanjaSection from "@/components/umkm/BelanjaSection";
+import RkaTable from "@/components/kesekretariatan/RkaTable";
 
 function formatIdr(x) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(x || 0));

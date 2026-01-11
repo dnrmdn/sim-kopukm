@@ -1,20 +1,27 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path"; // ⬅️ TAMBAHKAN INI
 
 // ✅ Konfigurasi lengkap & aman untuk VPS + domain publik
 export default defineConfig({
   plugins: [
-    react(),        // ⬅️ Supaya JSX bisa jalan
-    tailwindcss(),  // ⬅️ Aktifkan Tailwind
+    react(),        
+    tailwindcss(),  
   ],
 
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"), // ⬅️ ALIAS PENTING
+    },
+  },
+
   server: {
-    host: '0.0.0.0',       // 🌍 Terima koneksi dari mana pun
-    port: 3001,            // 🚀 Jalankan di port 3001 (sesuai setup kamu)
-    open: false,           // ❌ Jangan auto buka browser
-    allowedHosts: [        // ✅ Izinkan akses dari domain publik kamu
-      '72.61.208.1',
+    host: "0.0.0.0",
+    port: 3001,
+    open: false,
+    allowedHosts: [
+      "72.61.208.1",
     ],
   },
-})
+});

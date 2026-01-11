@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "@/utils/axiosInstance";
 import { Home, FileText, Store, Banknote, FileCheck, BarChart3, Users, Layers, Building2 } from "lucide-react";
-import logoDinkop from "../assets/logo_dinkopukm.png";
-import logoKrw from "../assets/logo_karawang.png";
-import logoKoperasi from "../assets/logo_koperasi.png";
+import logoDinkop from "../../assets/logo_dinkopukm.png";
+import logoKrw from "../../assets/logo_karawang.png";
+import logoKoperasi from "../../assets/logo_koperasi.png";
 
 export default function OverviewDashboard() {
   const navigate = useNavigate();

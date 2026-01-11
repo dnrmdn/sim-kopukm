@@ -1,7 +1,7 @@
 // src/pages/DuplikatKoperasiDetails.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosInstance";
+import axiosInstance from "@/utils/axiosInstance";
 
 export default function DuplikatKoperasiDetails() {
   const [params] = useSearchParams();

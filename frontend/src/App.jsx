@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./pages/login/LoginPage";
 import MainLayout from "./layouts/MainLayout";
-import OverviewDashboard from "./pages/OverviewDashboard";
+import OverviewDashboard from "./pages/dashboard/OverviewDashboard";
 import DashboardPage from "./pages/umkm/DashboardPage";
 import UmkmPage from "./pages/umkm/UMKMPage";
 import BantuanPage from "./pages/umkm/BantuanPage";
@@ -11,7 +11,7 @@ import DuplikatPage from "./pages/umkm/DuplikatPage";
 import BantuanTidakTerdaftarPage from "./pages/umkm/BantuanTidakTerdaftarPage";
 import KoperasiPage from "./pages/koperasi/KoperasiPage";
 import KoperasiDataPage from "./pages/koperasi/KoperasiDataPage";
-import DuplikatKoperasi from "./pages/DuplikatKoperasi";
+import DuplikatKoperasi from "./pages/koperasi/DuplikatKoperasi";
 import DuplikatKoperasiDetails from "./pages/koperasi/DuplikatKoperasiDetails";
 import DokumenKesekretariatan from "./pages/kesekretariatan/DokumenKesekretariatan";
 import SOTKPage from "./pages/kesekretariatan/PPAKP/SOTKPage";

@@ -1,8 +1,8 @@
 // src/pages/DuplikatKoperasi.jsx
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
-import DuplikatTableKoperasi from "../components/DuplikatTableKoperasi";
+import axiosInstance from "@/utils/axiosInstance";
+import DuplikatTableKoperasi from "@/components/koperasi/DuplikatTableKoperasi";
 
 export default function DuplikatKoperasi() {
   const navigate = useNavigate();

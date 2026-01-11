@@ -1,6 +1,6 @@
 // src/components/UMKMEditModal.jsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "@/utils/axiosInstance";
 import { Loader2, X, MapPin } from "lucide-react";
 import Swal from "sweetalert2";
 import {
