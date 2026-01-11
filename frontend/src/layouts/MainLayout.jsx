@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import FooterNav from "../components/FooterNav";
+import FooterNav from "../components/dashboard/FooterNav";
 
 export default function MainLayout() {
   return (

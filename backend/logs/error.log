@@ -1438,3 +1438,8 @@
 [2025-12-05T07:45:03.765Z] 404 GET /api/renstra/satuans - Endpoint tidak ditemukan: /api/renstra/satuans
 [2025-12-05T07:48:00.882Z] 404 GET /api/renstra/satuans - Endpoint tidak ditemukan: /api/renstra/satuans
 [2025-12-05T07:48:00.889Z] 404 GET /api/renstra/satuans - Endpoint tidak ditemukan: /api/renstra/satuans
+[2026-01-11T06:58:30.947Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
+[2026-01-11T06:58:39.454Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
+[2026-01-11T06:58:44.749Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
+[2026-01-11T06:58:45.654Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
+[2026-01-11T10:14:12.193Z] 500 OPTIONS /api/auth/login - Not allowed by CORS

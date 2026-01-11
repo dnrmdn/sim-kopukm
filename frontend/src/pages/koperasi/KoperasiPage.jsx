@@ -1,5 +1,5 @@
 import React from "react";
-import KoperasiSummary from "../components/KoperasiSummary";
+import KoperasiSummary from "../../components/koperasi/KoperasiSummary";
 
 export default function KoperasiPage() {
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AlertTriangle, Search } from "lucide-react";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 
 export default function BantuanTidakTerdaftarTable() {
   const [data, setData] = useState([]);

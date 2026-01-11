@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
+import axiosInstance from "../../utils/axiosInstance";
 import { AlertTriangle, Search, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LogoKarawang from "../assets/logo_karawang.png";

@@ -1,9 +1,9 @@
 // src/pages/RenstraPage.jsx
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../utils/axiosInstance";
-import HirarkiComponents from "../components/HirarkiComponents";
-import EditableHirarkiCRUD from "../components/EditableHirarkiCRUD";
-import RenstraProgramsComponent from "../components/RenstraProgramsComponent";
+import axiosInstance from "../../../utils/axiosInstance";
+import HirarkiComponents from "../../../components/kesekretariatan/HirarkiComponents";
+import EditableHirarkiCRUD from "../../../components/EditableHirarkiCRUD";
+import RenstraProgramsComponent from "../../../components/kesekretariatan/RenstraProgramsComponent";
 
 export default function RenstraPage() {
   const [list, setList] = useState([]);

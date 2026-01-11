@@ -10,8 +10,8 @@ import {
   XCircle
 } from "lucide-react";
 import axios from "axios";
-import axiosInstance from "../utils/axiosInstance"; // gunakan instance jika ada
-import FilePreviewModal from "../components/FilePreviewModal";
+import axiosInstance from "../../../utils/axiosInstance"; // gunakan instance jika ada
+import FilePreviewModal from "../../../components/kesekretariatan/FilePreviewModal";
 
 // fallback jika axiosInstance belum ada
 const api = axiosInstance || axios.create({ baseURL: process.env.REACT_APP_API_URL || "http://localhost:4849" });
