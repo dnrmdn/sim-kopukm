@@ -1443,3 +1443,8 @@
 [2026-01-11T06:58:44.749Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
 [2026-01-11T06:58:45.654Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
 [2026-01-11T10:14:12.193Z] 500 OPTIONS /api/auth/login - Not allowed by CORS
+[2026-01-21T14:16:27.994Z] 404 GET /api/dokumen/renja - Endpoint tidak ditemukan: /api/dokumen/renja
+[2026-01-21T14:16:27.997Z] 404 GET /api/dokumen/renja - Endpoint tidak ditemukan: /api/dokumen/renja
+[2026-01-21T14:18:03.559Z] 404 POST /api/dokumen/renja/upload - Endpoint tidak ditemukan: /api/dokumen/renja/upload
+[2026-01-21T14:37:42.774Z] 404 GET /api/dokumen/renja - Endpoint tidak ditemukan: /api/dokumen/renja
+[2026-01-21T14:37:42.777Z] 404 GET /api/dokumen/renja - Endpoint tidak ditemukan: /api/dokumen/renja

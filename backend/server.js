@@ -23,6 +23,8 @@ import programRoutes from "./routes/programRoutes.js";
 import rkaRouter from './routes/rkaRoutes.js';
 import pegawaiRouter from './routes/pegawaiRoutes.js';
 import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
+import dokumenRenjaRoutes from './routes/dokumenRenja.js';
+
 
 
 dotenv.config();
@@ -179,6 +181,8 @@ app.use("/api/renstra/programs", programRoutes);
 app.use("/api/pegawai", pegawaiRouter);
 app.use("/api/rka", rkaRouter);
 app.use("/api/renstra/satuans", renstraSatuansRouter);
+app.use("/api/dokumen/renja", dokumenRenjaRoutes);
+
 
 // ================================
 // 🔹 Handler 404 (after routes)
