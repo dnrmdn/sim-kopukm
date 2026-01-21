@@ -1,40 +1,55 @@
-// src/components/HirarkiComponents.jsx
 import React from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-function Expandable({ title, open = false, onToggle, children }) {
+/* ================= UTIL BLOCK ================= */
+function Block({ children }) {
   return (
-    <div className="border rounded-lg mb-3 overflow-hidden">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100"
-      >
-        <span className="font-medium">{title}</span>
-        {open ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-      </button>
-      {open && <div className="p-4 bg-white">{children}</div>}
+    <div className="pl-6 border-l border-slate-300 space-y-3">
+      {children}
     </div>
   );
 }
 
-function ListBlock({ title, items = [] }) {
-  if (!items || items.length === 0) return null;
+/* ================= HEADER ================= */
+function Header({ title, level, activeLevel, setActiveLevel }) {
+  const isOpen = activeLevel >= level;
+
+  const onClick = () => {
+    setActiveLevel((prev) => (prev >= level ? level - 1 : level));
+  };
+
   return (
-    <div className="mb-3">
-      <div className="font-semibold mb-1">{title}</div>
-      <ul className="list-disc ml-5 text-sm text-gray-700">
-        {items.map((it, i) => (
-          <li key={i}>{it}</li>
-        ))}
-      </ul>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-2 text-sm font-bold text-blue-700 hover:underline"
+    >
+      {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+      {title}
+    </button>
   );
 }
 
+/* ================= LIST ================= */
+function BulletList({ items = [] }) {
+  if (!items.length) return null;
+  return (
+    <ul className="space-y-2 text-sm text-slate-800">
+      {items.map((it, i) => (
+        <li key={i} className="relative pl-4">
+          <span className="absolute left-0 top-2 w-2 h-px bg-slate-400" />
+          {it}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ================= MAIN ================= */
 export default function HirarkiComponents({ data = {} }) {
-  // Normalize payload
-  const payload = data.data && typeof data.data === "object" ? data.data : data;
+  /* ===== PAYLOAD (ASLI) ===== */
+  const payload =
+    data.data && typeof data.data === "object" ? data.data : data;
 
   const visi = payload.visi || [];
   const misi = payload.misi || [];
@@ -45,107 +60,113 @@ export default function HirarkiComponents({ data = {} }) {
     payload.tujuan_perangkat_daerah ||
     payload.tujuanPerangkat ||
     [];
-
-  // 🔥 NEW — Sasaran Perangkat Daerah
   const sasaran_pd =
-    payload.sasaran_pd ||
-    payload.sasaranPerangkatDaerah ||
-    [];
+    payload.sasaran_pd || payload.sasaranPerangkatDaerah || [];
 
-  const [open, setOpen] = React.useState({
-    visi: true,
-    misi: false,
-    tujuan: false,
-    sasaran: false,
-    tujuan_pd: false,
-    sasaran_pd: false, // NEW
-  });
-
-  const toggle = (k) => setOpen((s) => ({ ...s, [k]: !s[k] }));
+  /* ===== STATE LEVEL ===== */
+  const [activeLevel, setActiveLevel] = React.useState(1);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-sm leading-relaxed">
 
-      <Expandable title="Visi RPJMD" open={open.visi} onToggle={() => toggle("visi")}>
-        <ListBlock title="Visi" items={visi} />
-      </Expandable>
+      {/* ================= VISI ================= */}
+      <Header
+        title="Visi RPJMD"
+        level={1}
+        activeLevel={activeLevel}
+        setActiveLevel={setActiveLevel}
+      />
+      {activeLevel >= 1 && (
+        <Block>
+          <BulletList items={visi} />
 
-      <Expandable title="Misi RPJMD" open={open.misi} onToggle={() => toggle("misi")}>
-        <ListBlock title="Misi" items={misi} />
-      </Expandable>
+          {/* ================= MISI ================= */}
+          <Header
+            title="Misi RPJMD"
+            level={2}
+            activeLevel={activeLevel}
+            setActiveLevel={setActiveLevel}
+          />
+          {activeLevel >= 2 && (
+            <Block>
+              <BulletList items={misi} />
 
-      <Expandable title="Tujuan RPJMD" open={open.tujuan} onToggle={() => toggle("tujuan")}>
-        <ListBlock title="Tujuan" items={tujuan_rpjmd} />
-      </Expandable>
+              {/* ================= TUJUAN RPJMD ================= */}
+              <Header
+                title="Tujuan RPJMD"
+                level={3}
+                activeLevel={activeLevel}
+                setActiveLevel={setActiveLevel}
+              />
+              {activeLevel >= 3 && (
+                <Block>
+                  <BulletList items={tujuan_rpjmd} />
 
-      <Expandable title="Sasaran Strategis RPJMD" open={open.sasaran} onToggle={() => toggle("sasaran")}>
-        {sasaran.length === 0 ? (
-          <div className="text-sm text-gray-500">Belum ada sasaran strategis.</div>
-        ) : (
-          <div className="space-y-3">
-            {sasaran.map((s, idx) => (
-              <div key={idx} className="border rounded p-3">
-                <div className="font-medium">{s.nama || s.title || `Sasaran #${idx + 1}`}</div>
-                {s.indikator?.length > 0 ? (
-                  <ul className="list-disc ml-5 mt-2 text-sm text-gray-700">
-                    {s.indikator.map((ind, i) => <li key={i}>{ind}</li>)}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-gray-500 mt-1">Belum ada indikator.</div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </Expandable>
+                  {/* ================= SASARAN STRATEGIS ================= */}
+                  <Header
+                    title="Sasaran Strategis RPJMD"
+                    level={4}
+                    activeLevel={activeLevel}
+                    setActiveLevel={setActiveLevel}
+                  />
+                  {activeLevel >= 4 && (
+                    <Block>
+                      {sasaran.map((s, i) => (
+                        <div key={i} className="space-y-2">
+                          <div className="font-semibold text-slate-800">
+                            {s.nama}
+                          </div>
+                          <BulletList items={s.indikator || []} />
+                        </div>
+                      ))}
 
-      <Expandable title="Tujuan Perangkat Daerah" open={open.tujuan_pd} onToggle={() => toggle("tujuan_pd")}>
-        {tujuan_pd.length === 0 ? (
-          <div className="text-sm text-gray-500">Belum ada tujuan perangkat daerah.</div>
-        ) : (
-          <div className="space-y-3">
-            {tujuan_pd.map((t, idx) => (
-              <div key={idx} className="border rounded p-3">
-                <div className="font-medium">{t.nama || t.title || `Tujuan #${idx + 1}`}</div>
-                {t.indikator?.length > 0 ? (
-                  <ul className="list-disc ml-5 mt-2 text-sm text-gray-700">
-                    {t.indikator.map((ind, i) => <li key={i}>{ind}</li>)}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-gray-500 mt-1">Belum ada indikator.</div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </Expandable>
+                      {/* ================= TUJUAN PD ================= */}
+                      <Header
+                        title="Tujuan Perangkat Daerah"
+                        level={5}
+                        activeLevel={activeLevel}
+                        setActiveLevel={setActiveLevel}
+                      />
+                      {activeLevel >= 5 && (
+                        <Block>
+                          {tujuan_pd.map((t, i) => (
+                            <div key={i} className="space-y-2">
+                              <div className="font-semibold text-slate-800">
+                                {t.nama}
+                              </div>
+                              <BulletList items={t.indikator || []} />
+                            </div>
+                          ))}
 
-      {/* 🔥 NEW SECTION — Sasaran Perangkat Daerah */}
-      <Expandable
-        title="Sasaran Perangkat Daerah"
-        open={open.sasaran_pd}
-        onToggle={() => toggle("sasaran_pd")}
-      >
-        {sasaran_pd.length === 0 ? (
-          <div className="text-sm text-gray-500">Belum ada sasaran perangkat daerah.</div>
-        ) : (
-          <div className="space-y-3">
-            {sasaran_pd.map((s, idx) => (
-              <div key={idx} className="border rounded p-3">
-                <div className="font-medium">{s.nama || `Sasaran PD #${idx + 1}`}</div>
-                {s.indikator?.length > 0 ? (
-                  <ul className="list-disc ml-5 mt-2 text-sm text-gray-700">
-                    {s.indikator.map((ind, i) => <li key={i}>{ind}</li>)}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-gray-500 mt-1">Belum ada indikator.</div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </Expandable>
-
+                          {/* ================= SASARAN PD ================= */}
+                          <Header
+                            title="Sasaran Perangkat Daerah"
+                            level={6}
+                            activeLevel={activeLevel}
+                            setActiveLevel={setActiveLevel}
+                          />
+                          {activeLevel >= 6 && (
+                            <Block>
+                              {sasaran_pd.map((s, i) => (
+                                <div key={i} className="space-y-2">
+                                  <div className="font-semibold text-slate-800">
+                                    {s.nama}
+                                  </div>
+                                  <BulletList items={s.indikator || []} />
+                                </div>
+                              ))}
+                            </Block>
+                          )}
+                        </Block>
+                      )}
+                    </Block>
+                  )}
+                </Block>
+              )}
+            </Block>
+          )}
+        </Block>
+      )}
     </div>
   );
 }
