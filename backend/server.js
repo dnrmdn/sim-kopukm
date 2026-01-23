@@ -24,7 +24,8 @@ import rkaRouter from './routes/rkaRoutes.js';
 import pegawaiRouter from './routes/pegawaiRoutes.js';
 import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
 import dokumenRenjaRoutes from './routes/dokumenRenja.js';
-
+import dokumenSopRoute from "./routes/dokumenSop.js";
+import dokumenSpipRoute from "./routes/dokumenSpip.js";
 
 
 dotenv.config();
@@ -182,7 +183,8 @@ app.use("/api/pegawai", pegawaiRouter);
 app.use("/api/rka", rkaRouter);
 app.use("/api/renstra/satuans", renstraSatuansRouter);
 app.use("/api/dokumen/renja", dokumenRenjaRoutes);
-
+app.use("/api/dokumen/sop", dokumenSopRoute);
+app.use("/api/dokumen/spip", dokumenSpipRoute);
 
 // ================================
 // 🔹 Handler 404 (after routes)
