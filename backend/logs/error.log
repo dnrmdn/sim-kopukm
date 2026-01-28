@@ -1495,3 +1495,9 @@
 [2026-01-23T11:02:24.679Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
 [2026-01-23T11:02:28.949Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
 [2026-01-23T15:37:00.974Z] 404 GET /dokumen/sop/1 - Endpoint tidak ditemukan: /dokumen/sop/1
+[2026-01-28T05:51:12.148Z] 404 DELETE /api/rka/27 - Endpoint tidak ditemukan: /api/rka/27
+[2026-01-28T05:51:19.166Z] 404 DELETE /api/rka/27 - Endpoint tidak ditemukan: /api/rka/27
+[2026-01-28T05:51:33.200Z] 404 DELETE /api/rka/27 - Endpoint tidak ditemukan: /api/rka/27
+[2026-01-28T05:53:26.856Z] 404 DELETE /api/rka/28 - Endpoint tidak ditemukan: /api/rka/28
+[2026-01-28T05:54:52.252Z] 404 DELETE /api/rka/27 - Endpoint tidak ditemukan: /api/rka/27
+[2026-01-28T05:57:01.362Z] 404 DELETE /api/rka/28 - Endpoint tidak ditemukan: /api/rka/28
