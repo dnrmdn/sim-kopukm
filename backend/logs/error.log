@@ -1494,3 +1494,4 @@
 [2026-01-23T10:58:58.191Z] 404 GET /api/dokumen/spip - Endpoint tidak ditemukan: /api/dokumen/spip
 [2026-01-23T11:02:24.679Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
 [2026-01-23T11:02:28.949Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
+[2026-01-23T15:37:00.974Z] 404 GET /dokumen/sop/1 - Endpoint tidak ditemukan: /dokumen/sop/1

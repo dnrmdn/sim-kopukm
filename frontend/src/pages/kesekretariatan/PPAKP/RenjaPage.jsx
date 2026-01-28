@@ -76,11 +76,21 @@ export default function RenjaPage() {
     return filePath.startsWith("/") ? `${base}${filePath}` : `${base}/${filePath}`;
   };
 
+  const detectMime = (file) => {
+    if (file.mime) return file.mime;
+    const name = file.name?.toLowerCase() || "";
+    if (name.endsWith(".pdf")) return "application/pdf";
+    if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+    if (name.endsWith(".png")) return "image/png";
+    if (name.endsWith(".doc")) return "application/msword";
+    if (name.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    return "application/octet-stream";
+  };
   const handlePreview = (file) => {
     setPreviewFile({
       name: file.name,
-      mime: file.mime,
-      url: buildFileUrl(file.path),
+      mime: detectMime(file),
+      url: `${api.defaults.baseURL}/api/dokumen/renja/${file.id}`,
     });
     setPreviewOpen(true);
   };
@@ -137,7 +147,7 @@ export default function RenjaPage() {
           <h1 className="text-3xl font-black text-slate-800">
             📂 Dokumen Rencana Kerja (Renja)
           </h1>
-          <p className="text-slate-500 mt-2">Kelola dokumen Renja Dinas</p>
+          <p className="text-slate-500 mt-2">Dinas Koperasi dan Usaha Kecil Menengah</p>
         </header>
 
         {/* UPLOAD */}

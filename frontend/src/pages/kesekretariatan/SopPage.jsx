@@ -76,7 +76,7 @@ export default function SopPage() {
     setPreviewFile({
       name: file.name,
       mime: detectMime(file),
-      url: `${api.defaults.baseURL}/dokumen/sop/${file.id}`,
+      url: `${api.defaults.baseURL}/api/dokumen/sop/${file.id}`,
     });
     setPreviewOpen(true);
   };
@@ -131,7 +131,7 @@ export default function SopPage() {
           <h1 className="text-3xl font-black text-slate-800">
             📘 Manajemen Dokumen SOP
           </h1>
-          <p className="text-slate-500 mt-2">Kelola dan arsipkan dokumen SOP</p>
+          <p className="text-slate-500 mt-2">Dinas Koperasi dan Usaha Kecil Menengah</p>
         </header>
 
         <section className="bg-white p-6 rounded-2xl shadow border">
