@@ -21,28 +21,29 @@ export async function listRka(req, res, next) {
   try {
     const year = req.query.year ? Number(req.query.year) : null;
 
-    // base query: join programs/kegiatans/subkegiatans to get names
     let sql = `
       SELECT
         r.id,
         r.year,
         r.program_id,
-        p.name AS program_name,
+        pr.kodering AS program_kodering,
+        pr.name AS program_name,
         r.kegiatan_id,
         k.name AS kegiatan_name,
+        k.kodering AS kegiatan_kodering,
         r.subkegiatan_id,
         s.name AS subkegiatan_name,
+        s.kodering AS subkegiatan_kodering,
         r.keterangan,
         r.tanggal_mulai,
         r.tanggal_selesai,
-        -- aggregate sums from rka_belanja
         COALESCE(SUM(rb.murni), 0) AS murni,
         COALESCE(SUM(rb.pergeseran_i), 0) AS pergeseran_i,
         COALESCE(SUM(rb.pergeseran_ii), 0) AS pergeseran_ii,
         COALESCE(SUM(rb.efisiensi), 0) AS efisiensi,
         COALESCE(SUM(rb.perubahan), 0) AS perubahan
       FROM rkas r
-      LEFT JOIN programs p ON p.id = r.program_id
+      LEFT JOIN programs pr ON pr.id = r.program_id
       LEFT JOIN kegiatans k ON k.id = r.kegiatan_id
       LEFT JOIN subkegiatans s ON s.id = r.subkegiatan_id
       LEFT JOIN rka_belanja rb ON rb.rka_id = r.id
@@ -53,13 +54,14 @@ export async function listRka(req, res, next) {
 
     const params = year ? [year] : [];
     const [rows] = await pool.query(sql, params);
-    const normalized = (rows || []).map(fmtRow);
-    return res.json(normalized);
+
+    return res.json(rows);
   } catch (err) {
     console.error("rka:list", err);
     return next(err);
   }
 }
+
 
 /**
  * POST /api/rka

@@ -1494,3 +1494,7 @@
 [2026-01-23T10:58:58.191Z] 404 GET /api/dokumen/spip - Endpoint tidak ditemukan: /api/dokumen/spip
 [2026-01-23T11:02:24.679Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
 [2026-01-23T11:02:28.949Z] 404 POST /api/dokumen/spip/upload - Endpoint tidak ditemukan: /api/dokumen/spip/upload
+[2026-01-28T14:11:08.994Z] 404 GET /rka - Endpoint tidak ditemukan: /rka
+[2026-01-28T14:15:41.342Z] 500 GET /api/rka - Unknown column 'r.kodering' in 'field list'
+[2026-01-28T14:20:20.645Z] 500 GET /api/rka - Not unique table/alias: 'p'
+[2026-01-28T14:20:50.453Z] 500 GET /api/rka - Not unique table/alias: 'p'

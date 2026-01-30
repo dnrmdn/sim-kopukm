@@ -15,8 +15,10 @@ import DuplikatKoperasi from "./pages/koperasi/DuplikatKoperasi";
 import DuplikatKoperasiDetails from "./pages/koperasi/DuplikatKoperasiDetails";
 import DokumenKesekretariatan from "./pages/kesekretariatan/DokumenKesekretariatan";
 import SOTKPage from "./pages/kesekretariatan/PPAKP/SOTKPage";
-import RkaPage from "./pages/kesekretariatan/PPAKP/RkaPage";
-import RenstraPage from "./pages/kesekretariatan/PPAKP/RenstraPage";
+
+import RkaPage from "./pages/kesekretariatan/PPAKP/RKA/RkaPage";
+import RenstraPage from "./pages/kesekretariatan/PPAKP/RENSTRA/RenstraPage";
+
 import RenjaPage from "./pages/kesekretariatan/PPAKP/RenjaPage";
 import SopPage from "./pages/kesekretariatan/SopPage";
 import LkpjPage from "./pages/kesekretariatan/PPAKP/LkpjPage";
