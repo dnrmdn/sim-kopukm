@@ -1501,3 +1501,13 @@
 [2026-01-28T05:53:26.856Z] 404 DELETE /api/rka/28 - Endpoint tidak ditemukan: /api/rka/28
 [2026-01-28T05:54:52.252Z] 404 DELETE /api/rka/27 - Endpoint tidak ditemukan: /api/rka/27
 [2026-01-28T05:57:01.362Z] 404 DELETE /api/rka/28 - Endpoint tidak ditemukan: /api/rka/28
+[2026-02-03T03:50:23.321Z] 404 GET /api/dokumen/lkpj - Endpoint tidak ditemukan: /api/dokumen/lkpj
+[2026-02-03T03:50:23.324Z] 404 GET /api/dokumen/lkpj - Endpoint tidak ditemukan: /api/dokumen/lkpj
+[2026-02-03T03:52:28.169Z] 404 POST /api/dokumen/lkpj/upload - Endpoint tidak ditemukan: /api/dokumen/lkpj/upload
+[2026-02-03T05:31:34.669Z] 404 GET /api/lppd - Endpoint tidak ditemukan: /api/lppd
+[2026-02-03T05:31:34.671Z] 404 GET /api/lppd - Endpoint tidak ditemukan: /api/lppd
+[2026-02-03T05:31:45.693Z] 404 POST /api/lppd/upload - Endpoint tidak ditemukan: /api/lppd/upload
+[2026-02-03T05:32:38.574Z] 404 POST /api/lppd/upload - Endpoint tidak ditemukan: /api/lppd/upload
+[2026-02-03T05:34:28.317Z] 404 GET /api/lppd - Endpoint tidak ditemukan: /api/lppd
+[2026-02-03T05:34:28.323Z] 404 GET /api/lppd - Endpoint tidak ditemukan: /api/lppd
+[2026-02-03T05:34:33.251Z] 404 POST /api/lppd/upload - Endpoint tidak ditemukan: /api/lppd/upload
