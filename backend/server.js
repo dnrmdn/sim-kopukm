@@ -26,6 +26,9 @@ import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
 import dokumenRenjaRoutes from './routes/dokumenRenja.js';
 import dokumenSopRoute from "./routes/dokumenSop.js";
 import dokumenSpipRoute from "./routes/dokumenSpip.js";
+import dokumenLakipRoutes from "./routes/dokumenLakip.js"
+import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
+import dokumenLppdRoutes from "./routes/dokumenLppd.js";
 
 
 dotenv.config();
@@ -185,6 +188,11 @@ app.use("/api/renstra/satuans", renstraSatuansRouter);
 app.use("/api/dokumen/renja", dokumenRenjaRoutes);
 app.use("/api/dokumen/sop", dokumenSopRoute);
 app.use("/api/dokumen/spip", dokumenSpipRoute);
+app.use("/api/dokumen/lkpj", dokumenLkpjRoutes);
+app.use("/api/dokumen/lakip", dokumenLakipRoutes);
+app.use("/api/lppd", dokumenLppdRoutes);
+
+
 
 // ================================
 // 🔹 Handler 404 (after routes)

@@ -150,7 +150,7 @@ export default function SpipPage() {
             🛡️ Manajemen Dokumen SPIP
           </h1>
           <p className="text-slate-500 mt-2">
-            Kelola dokumen Sistem Pengendalian Intern Pemerintah
+            Dinas Koperasi dan Usaha Kecil Menengah
           </p>
         </header>
 
