@@ -29,6 +29,7 @@ import dokumenSpipRoute from "./routes/dokumenSpip.js";
 import dokumenLakipRoutes from "./routes/dokumenLakip.js"
 import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
 import dokumenLppdRoutes from "./routes/dokumenLppd.js";
+import paguRoutes from "./routes/paguRoutes.js";
 
 
 dotenv.config();
@@ -191,8 +192,7 @@ app.use("/api/dokumen/spip", dokumenSpipRoute);
 app.use("/api/dokumen/lkpj", dokumenLkpjRoutes);
 app.use("/api/dokumen/lakip", dokumenLakipRoutes);
 app.use("/api/lppd", dokumenLppdRoutes);
-
-
+app.use("/api/pagu", paguRoutes);
 
 // ================================
 // 🔹 Handler 404 (after routes)
