@@ -10,6 +10,7 @@ export default function InputRKA({
   onChangeForm,
   onClose,
   onSubmit,
+  paguOptions = [],
 }) {
   const labelStyle =
     "block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5";
@@ -54,6 +55,25 @@ export default function InputRKA({
                   Struktur Anggaran
                 </h4>
               </div>
+
+              {/* ✅ JENIS PAGU (Dinamis dari API) */}
+  <div>
+    <label className={labelStyle}>Jenis Pagu</label>
+    <select
+      value={rkaForm.jenis_pagu ?? ""}
+      onChange={(e) =>
+        onChangeForm("jenis_pagu", e.target.value)
+      }
+      className={inputStyle}
+    >
+      <option value="">-- pilih jenis pagu --</option>
+      {paguOptions.map((p) => (
+        <option key={p.id} value={p.jenis}>
+          {p.jenis}
+        </option>
+      ))}
+    </select>
+  </div>
 
               <div>
                 <label className={labelStyle}>Program Utama</label>
