@@ -1518,3 +1518,7 @@
 [2026-02-03T05:34:28.323Z] 404 GET /api/lppd - Endpoint tidak ditemukan: /api/lppd
 [2026-02-03T05:34:33.251Z] 404 POST /api/lppd/upload - Endpoint tidak ditemukan: /api/lppd/upload
 >>>>>>> supri
+[2026-02-27T14:25:47.396Z] 404 GET /api/users/me - Endpoint tidak ditemukan: /api/users/me
+[2026-02-27T14:25:47.422Z] 404 GET /api/users/me - Endpoint tidak ditemukan: /api/users/me
+[2026-02-27T14:26:25.033Z] 404 GET /api/users/me - Endpoint tidak ditemukan: /api/users/me
+[2026-02-27T14:26:25.042Z] 404 GET /api/users/me - Endpoint tidak ditemukan: /api/users/me
