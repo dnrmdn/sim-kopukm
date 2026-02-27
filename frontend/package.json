@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroui/navbar": "^2.2.29",
+    "@heroui/react": "^2.8.9",
     "@react-google-maps/api": "^2.20.7",
     "@tailwindcss/vite": "^4.1.16",
     "axios": "^1.13.1",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
-    "framer-motion": "^12.28.1",
+    "framer-motion": "^12.33.0",
     "lucide-react": "^0.552.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

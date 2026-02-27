@@ -6,6 +6,7 @@ import {
   updateUserRole,
   deleteUser,
   updateUser,
+  getCurrentUser,
 } from "../controllers/authController.js";
 
 import {
@@ -25,6 +26,7 @@ router.post("/login", loginUser);
 /**
  * 👥 User Management (Protected)
  */
+router.get("/me", verifyToken, getCurrentUser);
 router.get("/users", verifyToken, isAdmin, getAllUsers); // hanya admin/super_admin
 router.put("/users/:id/role", verifyToken, isSuperAdmin, updateUserRole); // hanya super_admin
 router.put("/users/:id", verifyToken, updateUser); // user update profil sendiri

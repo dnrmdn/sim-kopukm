@@ -99,6 +99,38 @@ export const loginUser = async (req, res) => {
 };
 
 /**
+ * 👤 GET CURRENT USER (BY TOKEN)
+ */
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.id; // dari verifyToken middleware
+
+    const [rows] = await pool.query(
+      "SELECT id, username, email, no_hp, role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (error) {
+    console.error("Get Current User Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+/**
  * 👥 GET ALL USERS
  */
 export const getAllUsers = async (req, res) => {
