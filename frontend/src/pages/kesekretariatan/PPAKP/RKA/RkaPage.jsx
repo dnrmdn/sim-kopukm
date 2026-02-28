@@ -2,9 +2,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 
-import InputRKA from "@/components/kesekretariatan/InputRKA";
+import InputRKA from "../RKA/components/InputRKA";
 import BelanjaSection from "@/components/umkm/BelanjaSection";
-import RkaTable from "@/components/kesekretariatan/RkaTable";
+import RkaTable from "../RKA/components/RkaTable";
 
 function formatIdr(x) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(x || 0));
@@ -25,6 +25,7 @@ export default function RkaPage() {
   const [loadingMasters, setLoadingMasters] = useState(true);
   const [showInputModal, setShowInputModal] = useState(false);
   const [showBelanjaStep, setShowBelanjaStep] = useState(false);
+  const [paguOptions, setPaguOptions] = useState([]);
 
   const [rkaForm, setRkaForm] = useState({
     program_id: null,
@@ -45,16 +46,21 @@ export default function RkaPage() {
     fetchRkaTable();
   }, []);
 
-  async function loadAllMasters() {
-    setLoadingMasters(true);
-    try {
-      await Promise.all([fetchRenstra(), fetchPegawai(), fetchSatuan()]);
-    } catch (err) {
-      console.error("loadAllMasters error", err);
-    } finally {
-      setLoadingMasters(false);
-    }
+async function loadAllMasters() {
+  setLoadingMasters(true);
+  try {
+    await Promise.all([
+      fetchRenstra(), 
+      fetchPegawai(), 
+      fetchSatuan(),
+      fetchPagu() // Tambahkan ini
+    ]);
+  } catch (err) {
+    console.error("loadAllMasters error", err);
+  } finally {
+    setLoadingMasters(false);
   }
+}
 
   async function fetchRenstra() {
     try {
@@ -95,6 +101,24 @@ export default function RkaPage() {
       setRkaTableData([]);
     }
   }
+
+async function fetchPagu() {
+  try {
+    const res = await axiosInstance.get("/pagu");
+    // Karena bentuknya [{}, {}], maka res.data adalah array-nya
+    const data = res.data; 
+    
+    if (Array.isArray(data)) {
+      setPaguOptions(data);
+    } else if (data && Array.isArray(data.data)) {
+      // Jaga-jaga jika interceptor axios kamu mengembalikan seluruh object res
+      setPaguOptions(data.data);
+    }
+  } catch (err) {
+    console.error("Gagal ambil data pagu", err);
+    setPaguOptions([]);
+  }
+}
 
   function onChangeForm(key, value) {
     setRkaForm((prev) => ({ ...prev, [key]: value }));
@@ -280,6 +304,7 @@ export default function RkaPage() {
             onChangeForm={onChangeForm}
             onClose={() => setShowInputModal(false)}
             onSubmit={handleSubmitRka}
+            paguOptions={paguOptions}
           />
         )}
       </div>
