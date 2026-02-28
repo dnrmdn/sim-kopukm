@@ -38,6 +38,7 @@ import PohonKinerjaPage from "./pages/kesekretariatan/PPAKP/PohonKinerjaPage";
 import SkmPage from "./pages/kesekretariatan/PPAKP/SkmPage";
 import PegawaiPage from "./pages/kesekretariatan/UMPEG/PegawaiPage";
 import JabatanPage from "./pages/kesekretariatan/UMPEG/JabatanPage";
+import CreateJabatanPage from "./pages/kesekretariatan/UMPEG/createJabatanPage";
 
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
           <Route path="/dokumen/skm" element={<SkmPage />} />
           <Route path="/dokumen/pegawai" element={<PegawaiPage />} />
           <Route path="/dokumen/jabatan" element={<JabatanPage />} />
+          <Route path="/dokumen/create-jabatan-page" element={<CreateJabatanPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
