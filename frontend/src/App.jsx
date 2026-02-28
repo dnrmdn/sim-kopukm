@@ -24,7 +24,7 @@ import SopPage from "./pages/kesekretariatan/SopPage";
 import LkpjPage from "./pages/kesekretariatan/PPAKP/LkpjPage";
 import DpaPage from "./pages/kesekretariatan/PPAKP/DpaPage";
 import KakPage from "./pages/kesekretariatan/PPAKP/KakPage";
-import PerjanjianKinerjaPage from "./pages/kesekretariatan/PPAKP/PerjanjianKinerjaPage";
+import PerjanjianKinerjaPage from "./pages/kesekretariatan/PPAKP/PK/PerjanjianKinerjaPage";
 import RencanaAksiPage from "./pages/kesekretariatan/PPAKP/RencanaAksiPage";
 import SpipPage from "./pages/kesekretariatan/PPAKP/SpipPage";
 import RiskRegisterPage from "./pages/kesekretariatan/PPAKP/RiskRegisterPage";

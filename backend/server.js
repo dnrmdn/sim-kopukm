@@ -32,6 +32,14 @@ import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
 import dokumenLppdRoutes from "./routes/dokumenLppd.js";
 import paguRoutes from "./routes/paguRoutes.js";
 
+//RENSTRA
+import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
+import ProgramAnggaranRoutes from "./routes/Renstra/ProgramAnggaranRoutes.js";
+import KegiatanRoutes from "./routes/Renstra/KegiatanRoutes.js";
+import KegiatanAnggaranRoutes from "./routes/Renstra/KegiatanAnggaranRoutes.js";
+import TahunRoutes from "./routes/Renstra/TahunRoutes.js";
+import SubKegiatanRoutes from "./routes/Renstra/SubKegiatanRoutes.js";
+import SubKegiatanAnggaranRoutes from "./routes/Renstra/SubKegiatanAnggaranRoutes.js";
 
 dotenv.config();
 
@@ -195,6 +203,16 @@ app.use("/api/dokumen/lkpj", dokumenLkpjRoutes);
 app.use("/api/dokumen/lakip", dokumenLakipRoutes);
 app.use("/api/lppd", dokumenLppdRoutes);
 app.use("/api/pagu", paguRoutes);
+
+//RENSTRA
+app.use("/api/renstra/program", ProgramRoutes);
+app.use("/api/renstra/program-anggaran", ProgramAnggaranRoutes);
+app.use("/api/renstra/kegiatan", KegiatanRoutes);
+app.use("/api/renstra/kegiatan-anggaran", KegiatanAnggaranRoutes);
+app.use("/api/renstra/tahun", TahunRoutes);
+app.use("/api/renstra/sub-kegiatan", SubKegiatanRoutes);
+app.use("/api/renstra/sub-kegiatan-anggaran", SubKegiatanAnggaranRoutes);
+
 
 // ================================
 // 🔹 Handler 404 (after routes)
