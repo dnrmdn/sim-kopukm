@@ -24,7 +24,7 @@ import SopPage from "./pages/kesekretariatan/SopPage";
 import LkpjPage from "./pages/kesekretariatan/PPAKP/LkpjPage";
 import DpaPage from "./pages/kesekretariatan/PPAKP/DpaPage";
 import KakPage from "./pages/kesekretariatan/PPAKP/KakPage";
-import PerjanjianKinerjaPage from "./pages/kesekretariatan/PPAKP/PerjanjianKinerjaPage";
+import PerjanjianKinerjaPage from "./pages/kesekretariatan/PPAKP/Perjanjian Kinerja/PerjanjianKinerjaPage";
 import RencanaAksiPage from "./pages/kesekretariatan/PPAKP/RencanaAksiPage";
 import SpipPage from "./pages/kesekretariatan/PPAKP/SpipPage";
 import RiskRegisterPage from "./pages/kesekretariatan/PPAKP/RiskRegisterPage";
@@ -38,6 +38,7 @@ import PohonKinerjaPage from "./pages/kesekretariatan/PPAKP/PohonKinerjaPage";
 import SkmPage from "./pages/kesekretariatan/PPAKP/SkmPage";
 import PegawaiPage from "./pages/kesekretariatan/UMPEG/PegawaiPage";
 import JabatanPage from "./pages/kesekretariatan/UMPEG/JabatanPage";
+import CetakCover from "./pages/kesekretariatan/PPAKP/Perjanjian Kinerja/Component/ModulCetakCover";
 
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
           <Route path="/dokumen/skm" element={<SkmPage />} />
           <Route path="/dokumen/pegawai" element={<PegawaiPage />} />
           <Route path="/dokumen/jabatan" element={<JabatanPage />} />
+          <Route path="/dokumen/cetak-cover" element={<CetakCover />} />
         </Route>
       </Routes>
     </BrowserRouter>

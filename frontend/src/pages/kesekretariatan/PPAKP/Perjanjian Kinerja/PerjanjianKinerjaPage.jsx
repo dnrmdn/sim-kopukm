@@ -11,7 +11,7 @@ export default function PerjanjianKinerjaPage() {
       desc: "Halaman sampul dokumen PK",
       icon: <FileText size={28} />,
       color: "bg-blue-100 text-blue-600",
-      path: "/pk/cover",
+      path: "/dokumen/cetak-cover",
     },
     {
       title: "Cetak Perjanjian Kinerja Eselon II",
