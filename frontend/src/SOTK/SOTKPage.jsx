@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import axiosInstance from "@/utils/axiosInstance";
-import FilePreviewModal from "@/components/kesekretariatan/FilePreviewModal";
+import FilePreviewModal from "@/LAYOUTS/FilePreviewModal";
 
 /* ===== FALLBACK API (TIDAK DIUBAH) ===== */
 const api =

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import HirarkiComponents from "../RENSTRA/components/HirarkiComponents";
-import EditableHirarkiCRUD from "@/components/kesekretariatan/EditableHirarkiCRUD";
+import EditableHirarkiCRUD from "@/RENSTRA/components/EditRPJMD";
 // IMPORT KOMPONEN BARU
 import AddProgramModal from "../RENSTRA/components/AddProgramModal"; 
 import TabelProgram from "./components/TabelProgram";

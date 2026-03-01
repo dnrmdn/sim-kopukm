@@ -1,5 +1,5 @@
 import React from "react";
-import DaftarJabatan from "../../../components/kesekretariatan/Umpeg/Jabatan";
+import DaftarJabatan from "@/JABATAN/components/Jabatan";
 
 export default function JabatanPage() {
   return (

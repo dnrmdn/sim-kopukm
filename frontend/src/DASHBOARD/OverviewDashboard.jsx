@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
 import { Home, FileText, Store, Banknote, FileCheck, BarChart3, Users, Layers, Building2 } from "lucide-react";
 import { Navbar } from "@heroui/navbar";
-import NavbarApp from "../../components/navbar/navbar";
+import NavbarApp from "@/LAYOUTS/NAVBAR/navbar";
 
 export default function OverviewDashboard() {
   const navigate = useNavigate();

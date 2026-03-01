@@ -8,7 +8,7 @@ import {
   Eye,
 } from "lucide-react";
 import axios from "axios";
-import FilePreviewModal from "@/components/kesekretariatan/FilePreviewModal";
+import FilePreviewModal from "@/LAYOUTS/FilePreviewModal";
 
 const api = axios.create({
   baseURL: "http://localhost:4849",

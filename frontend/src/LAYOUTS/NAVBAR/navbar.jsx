@@ -1,6 +1,6 @@
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/react";
-import logo_dinkop from "../../assets/logo_dinkopukm.png";
-import logo_kabkar from "../../assets/logo_karawang.png";
+import logo_dinkop from "../assets/logo_dinkopukm.png";
+import logo_kabkar from "../assets/logo_karawang.png";
 import NavUser from "./nav-user";
 import { Link } from "react-router-dom";
 

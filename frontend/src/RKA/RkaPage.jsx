@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 
 import InputRKA from "../RKA/components/InputRKA";
-import BelanjaSection from "@/components/umkm/BelanjaSection";
+import BelanjaSection from "../RKA/components/BelanjaSection";
 import RkaTable from "../RKA/components/RkaTable";
 
 function formatIdr(x) {

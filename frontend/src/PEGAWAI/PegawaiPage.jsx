@@ -1,5 +1,5 @@
 import React from "react";
-import DaftarPegawai from "../../../components/kesekretariatan/Umpeg/pegawai";
+import DaftarPegawai from "@/PEGAWAI/components/pegawai";
 
 export default function PegawaiPage() {
   return (

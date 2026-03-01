@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "@/utils/axiosInstance";
-import TableKoperasi from "@/components/koperasi/TableKoperasi";
+import TableKoperasi from "@/KOPERASI/components/TableKoperasi";
 import { Download, Search } from "lucide-react";
 
 function toCSV(rows, columns) {

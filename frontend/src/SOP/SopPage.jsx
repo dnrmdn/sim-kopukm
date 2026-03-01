@@ -9,7 +9,7 @@ import {
   Eye,
 } from "lucide-react";
 import axios from "axios";
-import FilePreviewModal from "@/components/kesekretariatan/FilePreviewModal";
+import FilePreviewModal from "@/LAYOUTS/FilePreviewModal";
 
 // Axios instance
 const api = axios.create({

@@ -1,5 +1,5 @@
 
-import TambahJabatan from "../../../components/kesekretariatan/Umpeg/createJabatan";
+import TambahJabatan from "@/JABATAN/components/createJabatan";
 
 export default function JabatanPage() {
   return (
