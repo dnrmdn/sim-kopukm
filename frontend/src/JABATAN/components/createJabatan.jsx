@@ -3,7 +3,7 @@ import { Card, CardBody, Input, Button } from "@heroui/react";
 import { PlusCircle, CheckCircle, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 // Ensure this path matches your folder structure correctly
-import { createJabatan } from "../../../services/jabatanService";
+import { createJabatan } from "@/services/jabatanService";
 
 export default function TambahJabatan() {
   const [namaJabatan, setNamaJabatan] = useState("");

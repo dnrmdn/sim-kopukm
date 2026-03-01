@@ -5,7 +5,7 @@ import TableUMKM from "@/UMKM/components/SummaryTable";
 import UMKMInput from "@//UMKM/components/UMKMInput";
 import UMKMEditModal from "@/UMKM/components/UMKMEditModal";
 import { Search, Filter, RefreshCw, MapPin, Building2, Loader2, Plus, Trash2 } from "lucide-react";
-import LogoKarawang from "../../assets/logo_karawang.png";
+import LogoKarawang from "@/assets/logo_karawang.png";
 import Swal from "sweetalert2";
 
 export default function UMKMPage() {

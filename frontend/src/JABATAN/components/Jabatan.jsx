@@ -4,7 +4,7 @@ import {
   Button, Tooltip, Spinner
 } from "@heroui/react";
 import { PlusCircle, ArrowLeft, PencilLine, Trash2 } from "lucide-react";
-import { deleteJabatan, getAllJabatan } from "../../../services/jabatanService";
+import { deleteJabatan, getAllJabatan } from "@/services/jabatanService";
 // 1. Correct import for functional navigation
 import { useNavigate } from "react-router-dom"; 
 

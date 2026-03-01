@@ -5,7 +5,7 @@ import {
   ChevronUp, ChevronDown, User, CreditCard, Briefcase 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getAllPegawai } from "../../../services/pegawaiService";
+import { getAllPegawai } from "@/services/pegawaiService";
 
 export default function DaftarPegawai() {
   const [pegawai, setPegawai] = useState([]);

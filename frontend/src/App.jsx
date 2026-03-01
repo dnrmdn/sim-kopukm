@@ -25,7 +25,6 @@ import LkpjPage from "./LKPJ/LkpjPage";
 import DpaPage from "./DPA/DpaPage";
 import KakPage from "./KAK/KakPage";
 import PerjanjianKinerjaPage from "./PK/PerjanjianKinerjaPage";
-import RencanaAksiPage from "./RENCANAAKSI/RencanaAksiPage";
 import SpipPage from "./SPIP/SpipPage";
 import RiskRegisterPage from "./RESIKO/RiskRegisterPage";
 import ManajemenRisikoPage from "./RESIKO/ManajemenRisikoPage";
@@ -75,7 +74,6 @@ function App() {
           <Route path="/dokumen/dpa" element={<DpaPage />} />
           <Route path="/dokumen/kak" element={<KakPage />} />
           <Route path="/dokumen/perjanjian-kinerja" element={<PerjanjianKinerjaPage />} />
-          <Route path="/dokumen/rencana-aksi" element={<RencanaAksiPage />} />
           <Route path="/dokumen/spip" element={<SpipPage />} />
           <Route path="/dokumen/risk-register" element={<RiskRegisterPage />} />
           <Route path="/dokumen/manajemen-risiko" element={<ManajemenRisikoPage />} />
