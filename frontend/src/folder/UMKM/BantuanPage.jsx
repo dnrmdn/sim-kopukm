@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
-import TableBantuan from "@/UMKM/components/BantuanTable";
+import TableBantuan from "@/folder/UMKM/components/BantuanTable";
 import { Search, Filter, RefreshCw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LogoKarawang from "@/assets/logo_karawang.png";

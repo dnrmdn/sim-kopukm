@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
-import TableUMKM from "@/UMKM/components/SummaryTable";
-import UMKMInput from "@//UMKM/components/UMKMInput";
-import UMKMEditModal from "@/UMKM/components/UMKMEditModal";
+import TableUMKM from "@/folder/UMKM/components/SummaryTable";
+import UMKMInput from "@/folder/UMKM/components/UMKMInput";
+import UMKMEditModal from "@/folder/UMKM/components/UMKMEditModal";
 import { Search, Filter, RefreshCw, MapPin, Building2, Loader2, Plus, Trash2 } from "lucide-react";
 import LogoKarawang from "@/assets/logo_karawang.png";
 import Swal from "sweetalert2";

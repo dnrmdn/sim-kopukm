@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
-import DuplikatTable from "@/UMKM/components/DuplikatTable";
+import DuplikatTable from "@/folder/UMKM/components/DuplikatTable";
 import { Loader2, Undo, Search, RefreshCw } from "lucide-react";
 
 export default function DuplikatPage() {

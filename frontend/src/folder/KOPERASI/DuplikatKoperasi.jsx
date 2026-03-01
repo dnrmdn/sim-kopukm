@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
-import DuplikatTableKoperasi from "@/KOPERASI/components/DuplikatTableKoperasi";
+import DuplikatTableKoperasi from "@/folder/KOPERASI/components/DuplikatTableKoperasi";
 
 export default function DuplikatKoperasi() {
   const navigate = useNavigate();

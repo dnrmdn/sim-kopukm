@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "@/utils/axiosInstance";
-import HirarkiComponents from "../RENSTRA/components/HirarkiComponents";
-import EditableHirarkiCRUD from "@/RENSTRA/components/EditRPJMD";
+import HirarkiComponents from "@/folder/RENSTRA/components/HirarkiComponents";
+import EditableHirarkiCRUD from "@/folder/RENSTRA/components/EditRPJMD";
 // IMPORT KOMPONEN BARU
-import AddProgramModal from "../RENSTRA/components/AddProgramModal"; 
-import TabelProgram from "./components/TabelProgram";
+import AddProgramModal from "@/folder/RENSTRA/components/AddProgramModal"; 
+import TabelProgram from "@/folder/RENSTRA/components/TabelProgram";
 import { RefreshCw, Layout, Edit3, X, ChevronRight, Layers, Plus } from "lucide-react";
 
 export default function RenstraPage() {

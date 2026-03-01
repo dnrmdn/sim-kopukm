@@ -1,5 +1,5 @@
 
-import TambahJabatan from "@/JABATAN/components/createJabatan";
+import TambahJabatan from "@/folder/JABATAN/components/createJabatan";
 
 export default function JabatanPage() {
   return (

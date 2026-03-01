@@ -1,5 +1,5 @@
 import React from "react";
-import DaftarPegawai from "@/PEGAWAI/components/pegawai";
+import DaftarPegawai from "@/folder/PEGAWAI/components/pegawai";
 
 export default function PegawaiPage() {
   return (
