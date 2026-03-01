@@ -18,21 +18,21 @@ export default function PerjanjianKinerjaPage() {
       desc: "Dokumen PK tingkat eselon II",
       icon: <Award size={28} />,
       color: "bg-red-100 text-red-600",
-      path: "/pk/eselon-ii",
+      path: "/dokumen/perjanjian-kinerja-print",
     },
     {
       title: "Cetak Perjanjian Kinerja Eselon III",
       desc: "Dokumen PK tingkat eselon III",
       icon: <ClipboardCheck size={28} />,
       color: "bg-indigo-100 text-indigo-600",
-      path: "/pk/eselon-iii",
+      path: "/dokumen/perjanjian-kinerja-print-2",
     },
     {
       title: "Cetak Perjanjian Kinerja Eselon IV",
       desc: "Dokumen PK tingkat eselon IV",
       icon: <Layers size={28} />,
       color: "bg-emerald-100 text-emerald-600",
-      path: "/pk/eselon-iv",
+      path: "/dokumen/perjanjian-kinerja-print-3",
     },
   ];
 
