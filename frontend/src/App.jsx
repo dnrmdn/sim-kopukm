@@ -39,6 +39,11 @@ import SkmPage from "./pages/kesekretariatan/PPAKP/SkmPage";
 import PegawaiPage from "./pages/kesekretariatan/UMPEG/PegawaiPage";
 import JabatanPage from "./pages/kesekretariatan/UMPEG/JabatanPage";
 import CreateJabatanPage from "./pages/kesekretariatan/UMPEG/createJabatanPage";
+import ModulCetakPK from "./pages/kesekretariatan/PPAKP/PK/Component/ModulCetakCover";
+import PKEselonII from "./pages/kesekretariatan/PPAKP/PK/Component/PKEselonII";
+import PKEselonIII from "./pages/kesekretariatan/PPAKP/PK/Component/PKEselonIII";
+import PKEselonIV from "./pages/kesekretariatan/PPAKP/PK/Component/PKEselonIV";
+
 
 
 function App() {
@@ -84,6 +89,11 @@ function App() {
           <Route path="/dokumen/pegawai" element={<PegawaiPage />} />
           <Route path="/dokumen/jabatan" element={<JabatanPage />} />
           <Route path="/dokumen/create-jabatan-page" element={<CreateJabatanPage />} />
+          <Route path="/dokumen/cetak-cover" element={<ModulCetakPK />} />
+          <Route path="/dokumen/PKEselonII" element={<PKEselonII />} />
+          <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
+          <Route path="/dokumen/PKEselonIV" element={<PKEselonIV />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

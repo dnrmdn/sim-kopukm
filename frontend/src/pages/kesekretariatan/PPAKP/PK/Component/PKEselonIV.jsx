@@ -9,16 +9,16 @@ export default function PerjanjianKinerjaEselon4Perfect() {
 
   const pejabatList = [
     {
-      nama: "ABDURROHMAN, SH",
-      nip: "197309012010011005",
+      nama: "Nama Pejabat Eselon IV",
+      nip: "1321134321432",
       jabatan:
-        "KETUA KERJA KELOMPOK SUB-SUBSTANSI KETAHANAN SOSIAL, EKONOMI, BUDAYA DAN AGAMA",
-      atasan: "SYARIFAH LENNY M, AKS",
-      atasanNip: "197302031999032004",
+        "KETUA KERJA KELOMPOK SUB BIDANG Pemberdayaan dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
+      atasan: "Nama Pejabat Eselon III",
+      atasanNip: "134321432542455",
       kegiatan: [
         {
           nama:
-            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Ketahanan Ekonomi, Sosial dan Budaya",
+            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Pemberdayaan dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           indikator:
             "Persentase Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan",
           target: "60 Orang",
@@ -89,7 +89,7 @@ export default function PerjanjianKinerjaEselon4Perfect() {
 
                 <div className="text-center font-bold mb-6">
                   <p>PERJANJIAN KINERJA (PAGU AKTIF TERAKHIR)</p>
-                  <p>BADAN KESATUAN BANGSA DAN POLITIK KABUPATEN KARAWANG</p>
+                  <p>DINAS KOPERASI DAN USAHA KECIL MENENGAH</p>
                   <p>TAHUN 2026</p>
                 </div>
 

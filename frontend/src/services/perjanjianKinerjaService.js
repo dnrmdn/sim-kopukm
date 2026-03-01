@@ -1,8 +1,8 @@
 import axiosInstance from "@/utils/axiosInstance";
 
-export const getPerjanjianKinerjaEselon2 = async (tahun, perangkatId) => {
+export const getPerjanjian = async (tahun, eselon) => {
   const res = await axiosInstance.get(
-    `/perjanjian-kinerja/eselon-2?tahun=${tahun}&perangkat_id=${perangkatId}`
+    `/perjanjian?tahun=${tahun}&eselon=${eselon}`
   );
   return res.data;
 };
