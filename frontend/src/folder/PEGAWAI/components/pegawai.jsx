@@ -51,7 +51,7 @@ export default function DaftarPegawai() {
                 <h3 className="font-bold text-gray-800 text-lg uppercase">{item.nama_lengkap}</h3>
 
                 <Chip size="sm" radius="sm" className="bg-sky-100 text-sky-700 font-bold px-2">
-                  {item.nama_jabatan || "Belum Ditentukan"}
+                  Level. {item.level || "Belum Ditentukan"}
                 </Chip>
 
                 <div className="flex flex-col gap-1 mt-3">
