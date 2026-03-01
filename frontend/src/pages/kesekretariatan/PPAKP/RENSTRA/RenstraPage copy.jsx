@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import HirarkiComponents from "../RENSTRA/components/HirarkiComponents";
 import EditableHirarkiCRUD from "@/components/kesekretariatan/EditableHirarkiCRUD";
-// IMPORT KOMPONEN BARU
-import AddProgramModal from "../RENSTRA/components/AddProgramModal"; 
-import TabelProgram from "./components/TabelProgram";
-import { RefreshCw, Layout, Edit3, X, ChevronRight, Layers, Plus } from "lucide-react";
+import RenstraProgramsComponent from "../RENSTRA/components/RenstraProgramsComponent";
+import { RefreshCw, Layout, Edit3, X, ChevronRight, Layers } from "lucide-react";
 
 export default function RenstraPage() {
   const [list, setList] = useState([]);
@@ -15,12 +13,6 @@ export default function RenstraPage() {
   const [loadingSelected, setLoadingSelected] = useState(false);
   const [error, setError] = useState(null);
   const [showEditable, setShowEditable] = useState(false);
-
-  // REF UNTUK MENGAKSES FUNGSI REFRESH DI DALAM TABELPROGRAM
-  const tabelRef = useRef();
-
-  // STATE MODAL PROGRAM
-  const [openAddProgram, setOpenAddProgram] = useState(false);
 
   useEffect(() => {
     fetchList();
@@ -32,6 +24,7 @@ export default function RenstraPage() {
     try {
       const res = await axiosInstance.get("/hirarki");
       const raw = res.data || [];
+
       const unified = raw.map((r) => {
         let payload = {};
         if (r.data && typeof r.data === "object") {
@@ -42,6 +35,7 @@ export default function RenstraPage() {
           payload = { ...r };
           ["id", "title", "created_at", "updated_at", "created_by"].forEach(k => delete payload[k]);
         }
+
         return {
           id: r.id,
           title: r.title ?? payload.title ?? `Hirarki #${r.id}`,
@@ -62,12 +56,6 @@ export default function RenstraPage() {
       setLoading(false);
     }
   }
-
-  // REFRESH DATA TABEL SETELAH ADD PROGRAM
-  const handleRefreshRenstra = () => {
-    // Jika TabelProgram punya fungsi fetchData, kita panggil via ref atau re-mount
-    window.location.reload(); // Cara simpel, atau panggil fungsi fetch di TabelProgram jika sudah di-export
-  };
 
   async function onSelectChange(id) {
     if (!id) {
@@ -142,8 +130,10 @@ export default function RenstraPage() {
           </div>
         </header>
 
+        {/* MAIN CONTENT AREA */}
         <main className="grid grid-cols-1 gap-8">
-          {/* 1. VISUALISASI HIRARKI */}
+          
+          {/* 1. VISUALISASI HIRARKI (Visi, Misi, dkk) */}
           <section className="space-y-4">
             <div className="flex items-center gap-3 px-2">
               <Layers className="text-blue-600" size={24} />
@@ -167,7 +157,7 @@ export default function RenstraPage() {
             </div>
           </section>
 
-          {/* 2. MATRIKS PROGRAM & KEGIATAN (MENGGUNAKAN TABELPROGRAM BARU) */}
+          {/* 2. MATRIKS PROGRAM & KEGIATAN (The Big Table) */}
           <section className="space-y-4">
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
@@ -176,35 +166,21 @@ export default function RenstraPage() {
                 </div>
                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Matriks Program, Kegiatan & Sub-Kegiatan</h2>
               </div>
-              
-              <button 
-                onClick={() => setOpenAddProgram(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-              >
-                <Plus size={20} /> TAMBAH PROGRAM
-              </button>
             </div>
-            
             <div className="bg-white rounded-[2rem] border border-slate-200 shadow-2xl overflow-hidden shadow-blue-900/5">
-                <TabelProgram apiBase="/renstra/program" />
+              <RenstraProgramsComponent apiBase="/programs" />
             </div>
           </section>
         </main>
 
+        {/* FOOTER */}
         <footer className="pt-10 pb-20 text-center">
           <p className="text-[10px] font-black text-slate-400 tracking-[0.4em] uppercase">
             © 2026 E-Planning Dinkopukm Karawang • Ver 2.1
           </p>
         </footer>
 
-        {/* MODAL TAMBAH PROGRAM */}
-        <AddProgramModal 
-          open={openAddProgram} 
-          onClose={() => setOpenAddProgram(false)} 
-          onSuccess={handleRefreshRenstra}
-        />
-
-        {/* EDITOR HIRARKI */}
+        {/* FLOATING EDITOR OVERLAY (MODAL-STYLE) */}
         {showEditable && (
           <div className="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-md flex justify-end transition-all duration-500">
             <div className="w-full max-w-5xl bg-slate-50 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">

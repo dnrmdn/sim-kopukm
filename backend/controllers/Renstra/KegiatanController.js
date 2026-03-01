@@ -3,13 +3,24 @@ import pool from "../../config/db.js";
 // GET ALL
 export async function getAll(req, res, next) {
   try {
-    // Kita gunakan JOIN jika ingin menarik nama_program sekaligus
-    const [rows] = await pool.query(
-      `SELECT k.*, p.nama_program 
-       FROM renstra_kegiatan k
-       LEFT JOIN renstra_program p ON k.program_id = p.id
-       ORDER BY k.id DESC`
-    );
+    const { program_id } = req.query; // Ambil filter dari URL jika ada (?program_id=6)
+    
+    let query = `
+      SELECT k.*, p.nama_program 
+      FROM renstra_kegiatan k
+      LEFT JOIN renstra_program p ON k.program_id = p.id
+    `;
+    let params = [];
+
+    // Jika ada program_id di query string, tambahkan WHERE
+    if (program_id) {
+      query += " WHERE k.program_id = ?";
+      params.push(program_id);
+    }
+
+    query += " ORDER BY k.id DESC";
+
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) {
     next(err);
@@ -42,15 +53,16 @@ export async function create(req, res, next) {
       program_id, 
       kodering, 
       nama_kegiatan, 
-      indikator, 
-      satuan 
+      output_kegiatan,
+      indikator_kegiatan, 
+      keterangan
     } = req.body;
 
     const [result] = await pool.query(
       `INSERT INTO renstra_kegiatan 
-      (program_id, kodering, nama_kegiatan, indikator, satuan) 
-      VALUES (?, ?, ?, ?, ?)`,
-      [program_id, kodering, nama_kegiatan, indikator, satuan]
+      (program_id, kodering, nama_kegiatan, output_kegiatan ,indikator_kegiatan, keterangan) 
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [program_id, kodering, nama_kegiatan, output_kegiatan, indikator_kegiatan, keterangan]
     );
 
     res.status(201).json({ 

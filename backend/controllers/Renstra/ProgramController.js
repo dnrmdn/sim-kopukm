@@ -37,23 +37,33 @@ export async function create(req, res, next) {
     const { 
       kodering, 
       nama_program, 
-      output_program, 
-      indikator_program, 
-      satuan 
+      indikator_program,
+      output_program
     } = req.body;
 
+    // 1. Validasi sederhana
+    if (!nama_program) {
+      return res.status(400).json({ message: "Nama program wajib diisi" });
+    }
+
+    // 2. Query (Koma terakhir dihilangkan)
     const [result] = await pool.query(
       `INSERT INTO renstra_program 
-      (kodering, nama_program, output_program, indikator_program, satuan) 
-      VALUES (?, ?, ?, ?, ?)`,
-      [kodering, nama_program, output_program, indikator_program, satuan]
+      (kodering, nama_program, indikator_program,output_program) 
+      VALUES (?, ?, ?, ?)`,
+      [kodering || null, nama_program, indikator_program, output_program || null]
     );
 
     res.status(201).json({ 
+      success: true,
       message: "Berhasil tambah data program", 
       id: result.insertId 
     });
   } catch (err) {
+    // 3. Tangani error database (misal: kodering duplikat)
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: "Kodering sudah terdaftar" });
+    }
     next(err);
   }
 }

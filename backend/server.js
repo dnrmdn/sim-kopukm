@@ -209,9 +209,9 @@ app.use("/api/renstra/program", ProgramRoutes);
 app.use("/api/renstra/program-anggaran", ProgramAnggaranRoutes);
 app.use("/api/renstra/kegiatan", KegiatanRoutes);
 app.use("/api/renstra/kegiatan-anggaran", KegiatanAnggaranRoutes);
-app.use("/api/renstra/tahun", TahunRoutes);
 app.use("/api/renstra/sub-kegiatan", SubKegiatanRoutes);
 app.use("/api/renstra/sub-kegiatan-anggaran", SubKegiatanAnggaranRoutes);
+app.use("/api/renstra/tahun", TahunRoutes);
 
 
 // ================================
