@@ -11,9 +11,9 @@ export default function PerjanjianKinerjaEselon3Page() {
   const pejabatList = [
     {
       jabatan:
-        "SEKRETARIS BADAN KESATUAN BANGSA DAN POLITIK",
-      nama: "M. CHOIRUL AGUS TJANDRA, S.T., M.T.",
-      atasan: "DRS. MAHPUDIN, M.SI",
+        "SEKRETARIS Dinas Koperasi dan Usaha Kecil Menengah Kabupaten Karawang",
+      nama: "Nama Pejabat Eselon III",
+      atasan: "Nama Pejabat Eselon II",
       sasaran: [
         {
           program:
@@ -37,22 +37,22 @@ export default function PerjanjianKinerjaEselon3Page() {
     },
     {
       jabatan:
-        "KEPALA BIDANG IDEOLOGI, WAWASAN KEBANGSAAN DAN EKONOMI, SOSIAL, BUDAYA DAN AGAMA",
-      nama: "SYARIFAH LENNY M, AKS",
-      atasan: "DRS. MAHPUDIN, M.SI",
+        "KEPALA BIDANG Pemberdayaan dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
+      nama: "Nama Jabatan Eselon III",
+      atasan: "Nama Pejabat Eselon II",
       sasaran: [
         {
           program:
-            "Program Pembinaan dan Pengembangan Ketahanan Ekonomi, Sosial, dan Budaya",
+            "Program Pembinaan dan Pengembangan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           indikator:
-            "Persentase Pembinaan Dan Pengembangan Ketahanan Ekonomi, Sosial, Dan Budaya",
+            "Persentase Pembinaan Dan Pengembangan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           target: "100%",
         },
       ],
       kegiatan: [
         {
           nama:
-            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Ketahanan Ekonomi, Sosial dan Budaya",
+            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Pembinaan dan Pengembangan Usaha Koperasi dan Usaha",
           indikator: "Persentase Perumusan Kebijakan",
           anggaran: 936374300,
         },
@@ -60,22 +60,22 @@ export default function PerjanjianKinerjaEselon3Page() {
     },
     {
       jabatan:
-        "KEPALA BIDANG POLITIK DALAM NEGERI, KEWASPADAAN NASIONAL, KERJASAMA INTELIGEN DAN PENANGANAN KONFLIK",
-      nama: "TIKA SARTIKA, SE, MM",
-      atasan: "DRS. MAHPUDIN, M.SI",
+        "KEPALA BIDANG KOPERASI DAN USAHA KECIL MENENGAH",
+      nama: "nama Pejabat Eselon III",
+      atasan: "Nama Pejabat Eselon II",
       sasaran: [
         {
           program:
-            "Program Pemberdayaan dan Pengawasan Organisasi Kemasyarakatan",
+            "Program Pemberdayaan dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           indikator:
-            "Persentase Pemberdayaan Dan Pengawasan Organisasi Kemasyarakatan",
+            "Persentase Pemberdayaan Dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           target: "100%",
         },
       ],
       kegiatan: [
         {
           nama:
-            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Pemberdayaan dan Pengawasan Organisasi Kemasyarakatan",
+            "Perumusan Kebijakan Teknis dan Pemantapan Pelaksanaan Bidang Pemberdayaan dan Pengawasan Usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
           indikator: "Persentase Kebijakan Teknis",
           anggaran: 120699000,
         },
@@ -117,7 +117,7 @@ export default function PerjanjianKinerjaEselon3Page() {
 
                 <div className="text-center font-bold mb-6">
                   <p>PERJANJIAN KINERJA (PAGU AKTIF)</p>
-                  <p>BADAN KESATUAN BANGSA DAN POLITIK</p>
+                  <p>Dinas Koperasi dan Usaha Kecil Menengah</p>
                   <p>TAHUN 2026</p>
                 </div>
 

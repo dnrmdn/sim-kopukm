@@ -10,52 +10,52 @@ export default function PerjanjianKinerjaFullPage() {
   const data = {
     tahun: 2026,
     perangkat:
-      "BADAN KESATUAN BANGSA DAN POLITIK KABUPATEN KARAWANG",
-    kepala: "Drs. MAHPUDIN, M.Si",
+      "DINAS KOPERASI DAN USAHA KECIL MENENGAH KABUPATEN KARAWANG",
+    kepala: "KADIN KOPERASI DAN UMKM",
     bupati: "H. AEP SYAEPULOH, SE",
     tanggal: "Karawang, 28 Februari 2026",
     sasaran: [
       {
         sasaran:
-          "Meningkatnya Kewaspadaan Terhadap Potensi Gangguan Stabilitas Politik dan Kolaborasi Lintas Sektor Dalam Pencegahan Serta Penanganan Konflik Sosial Di Kabupaten Karawang",
+          "Meningkatnya umkm yang naik kelas menjadi industri",
         indikator:
-          "Indeks Stabilitas Politik Dan Keamanan Daerah",
+          "Indeks Kinerja Utama Pemberdayaan Dan Pengawasan Usaha Koperasi Dan Usaha Mikro, Kecil, Dan Menengah",
         target: 80,
       },
     ],
     program: [
       {
-        nama: "Program Pemberdayaan dan Pengawasan Organisasi Kemasyarakatan",
+        nama: "Program Pemberdayaan dan Pengawasan usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
         indikator:
-          "Persentase Pemberdayaan Dan Pengawasan Organisasi Kemasyarakatan",
+          "Persentase Pemberdayaan Dan Pengawasan usaha Koperasi dan Usaha Mikro, Kecil, dan Menengah",
         anggaran: 120699000,
       },
       {
         nama:
-          "Program Pembinaan Dan Pengembangan Ketahanan Ekonomi, Sosial, Dan Budaya",
+          "Program Pembinaan Dan Pengembangan Usaha Koperasi Dan Usaha Mikro, Kecil, Dan Menengah",
         indikator:
-          "Persentase Pembinaan Dan Pengembangan Ketahanan Ekonomi, Sosial, Dan Budaya",
+          "Persentase Pembinaan Dan Pengembangan Usaha Koperasi Dan Usaha Mikro, Kecil, Dan Menengah",
         anggaran: 936374300,
       },
       {
         nama:
-          "Program Penguatan Ideologi Pancasila Dan Karakter Kebangsaan",
+          "Program Penguatan Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Akses Permodalan Dan Peningkatan Kap",
         indikator:
-          "Persentase Pengembangan Ideologi Pancasila Dan Karakter Kebangsaan",
+          "Persentase Penguatan Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Akses Permodalan Dan Peningkatan Kap",
         anggaran: 923097100,
       },
       {
         nama:
-          "Program Peningkatan Kewaspadaan Nasional Dan Peningkatan Kualitas Dan Fasilitasi Penanganan Konflik Sosial",
+          "Program Peningkatan Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Akses Pasar Dan Peningkatan Kap",
         indikator:
-          "Persentase Peningkatan Kewaspadaan Nasional Dan Peningkatan Kualitas Dan Fasilitasi Penanganan Konflik Sosial",
+          "Persentase Peningkatan Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Akses Pasar Dan Peningkatan Kap",
         anggaran: 354565000,
       },
       {
         nama:
-          "Program Peningkatan Peran Partai Politik Dan Lembaga Pendidikan Melalui Pendidikan Politik Dan Pengembangan Etika Serta Budaya Politik",
+          "Program Peningkatan Pelaku usaha Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Kapasitas Sumber Daya Manusia",
         indikator:
-          "Persentase Peningkatan Peran Partai Politik Dan Lembaga Pendidikan Melalui Pendidikan Politik Dan Pengembangan Etika Serta Budaya Politik",
+          "Persentase Peningkatan Pelaku usaha Koperasi Dan Usaha Mikro, Kecil, Dan Menengah Melalui Peningkatan Kapasitas Sumber Daya Manusia",
         anggaran: 6502165284,
       },
       {
