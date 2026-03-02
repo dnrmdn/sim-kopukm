@@ -23,7 +23,7 @@ const getAuthHeader = () => {
  * 📋 Get all pegawai records
  * Fetches: id, nama, nip, jabatan, email
  */
-export const getAllPegawai = async () => {
+export const getPegawai = async () => {
   return axios.get(API_URL, getAuthHeader());
 };
 

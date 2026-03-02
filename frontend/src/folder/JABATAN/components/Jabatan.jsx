@@ -66,7 +66,7 @@ export default function DaftarJabatan() {
             startContent={<PlusCircle size={18} />}
             // 4. Navigate to the ROUTE path (defined in your App.jsx)
             // DO NOT use the .jsx file name here
-            onPress={() => navigate("/dokumen/create-jabatan-page")} 
+            onPress={() => navigate("/dokumen/jabatan/create-jabatan-page")} 
           >
             Tambah Jabatan
           </Button>

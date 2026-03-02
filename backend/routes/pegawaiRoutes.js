@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  getAllPegawai,
+  getPegawai,
   createPegawai,
   updatePegawai,
   deletePegawai,
@@ -8,7 +8,8 @@ import {
 
 const router = express.Router();
 
-router.get("/", getAllPegawai);
+router.get("/", getPegawai);
+router.get("/:id", getPegawai); // ✅ TAMBAHKAN INI
 router.post("/", createPegawai);
 router.put("/:id", updatePegawai);
 router.delete("/:id", deletePegawai);
