@@ -122,6 +122,13 @@ export default function AddSubModal({ open, onClose, onSuccess, kegiatanId, kegi
                     placeholder="Masukkan nama lengkap sub-kegiatan..." value={formData.nama_sub}
                     onChange={(e) => setFormData({ ...formData, nama_sub: e.target.value })} />
                </div>
+               
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Indikator Kinerja</label>
+                  <textarea required className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-slate-800 min-h-[80px]" 
+                    placeholder="Apa indikator keberhasilannya?..." value={formData.output_sub}
+                    onChange={(e) => setFormData({ ...formData, output_sub: e.target.value })} />
+               </div>
 
                <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Indikator Kinerja</label>
@@ -129,6 +136,7 @@ export default function AddSubModal({ open, onClose, onSuccess, kegiatanId, kegi
                     placeholder="Apa indikator keberhasilannya?..." value={formData.indikator_sub}
                     onChange={(e) => setFormData({ ...formData, indikator_sub: e.target.value })} />
                </div>
+
             </div>
 
             {/* DATA ANGGARAN (KANAN) */}

@@ -104,29 +104,42 @@ export async function update(req, res, next) {
     const { 
       kegiatan_id, 
       kodering, 
-      nama_sub_kegiatan, 
+      nama_sub, 
       output_sub, 
-      indikator, 
+      indikator_sub, 
       satuan, 
       keterangan 
     } = req.body;
 
-    const [result] = await pool.query(
-      `UPDATE renstra_sub_kegiatan SET 
+    const query = `
+      UPDATE renstra_sub_kegiatan 
+      SET 
         kegiatan_id = ?, 
         kodering = ?, 
-        nama_sub_kegiatan = ?, 
+        nama_sub = ?, 
         output_sub = ?, 
-        indikator = ?, 
+        indikator_sub = ?, 
         satuan = ?, 
-        keterangan = ? 
-      WHERE id = ?`,
-      [kegiatan_id, kodering, nama_sub_kegiatan, output_sub, indikator, satuan, keterangan, id]
-    );
+        keterangan = ?
+      WHERE id = ?
+    `;
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Data tidak ditemukan" });
+    const [result] = await pool.query(query, [
+      kegiatan_id, 
+      kodering, 
+      nama_sub, 
+      output_sub, 
+      indikator_sub, 
+      satuan, 
+      keterangan || null, 
+      id
+    ]);
 
-    res.json({ message: "Berhasil update sub kegiatan" });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ status: "error", message: "Sub-Kegiatan tidak ditemukan" });
+    }
+
+    res.json({ status: "success", message: "Identitas Sub-Kegiatan berhasil diupdate" });
   } catch (err) {
     next(err);
   }

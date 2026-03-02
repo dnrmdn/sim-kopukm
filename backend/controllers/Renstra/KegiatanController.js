@@ -86,31 +86,50 @@ export async function create(req, res, next) {
 // UPDATE
 export async function update(req, res, next) {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID Kegiatan dari URL
     const { 
       program_id, 
       kodering, 
       nama_kegiatan, 
-      indikator, 
-      satuan 
+      output_kegiatan, 
+      indikator_kegiatan,
+      keterangan 
     } = req.body;
 
-    const [result] = await pool.query(
-      `UPDATE renstra_kegiatan SET 
+    // Kueri update tanpa menyentuh tabel anggaran
+    const query = `
+      UPDATE renstra_kegiatan 
+      SET 
         program_id = ?, 
         kodering = ?, 
         nama_kegiatan = ?, 
-        indikator = ?, 
-        satuan = ? 
-      WHERE id = ?`,
-      [program_id, kodering, nama_kegiatan, indikator, satuan, id]
-    );
+        output_kegiatan = ?, 
+        indikator_kegiatan = ?,
+        keterangan = ?
+      WHERE id = ?
+    `;
+
+    const [result] = await pool.query(query, [
+      program_id, 
+      kodering, 
+      nama_kegiatan, 
+      output_kegiatan, 
+      indikator_kegiatan,
+      keterangan || null,
+      id
+    ]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Gagal update, ID kegiatan tidak ditemukan" });
+      return res.status(404).json({ 
+        status: "error", 
+        message: "Data kegiatan tidak ditemukan" 
+      });
     }
 
-    res.json({ message: "Berhasil update data kegiatan" });
+    res.json({ 
+      status: "success", 
+      message: "Data Kegiatan berhasil diperbarui!" 
+    });
   } catch (err) {
     next(err);
   }
