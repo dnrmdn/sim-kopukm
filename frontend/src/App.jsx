@@ -42,6 +42,7 @@ import ModulCetakPK from "./folder/PK/components/ModulCetakCover";
 import PKEselonII from "./folder/PK/components/PKEselonII";
 import PKEselonIII from "./folder/PK/components/PKEselonIII";
 import PKEselonIV from "./folder/PK/components/PKEselonIV";
+import RencanaAksiPage from "./folder/RENCANAAKSI/RencanaAksiPage";
 
 
 
@@ -91,6 +92,7 @@ function App() {
           <Route path="/dokumen/PKEselonII" element={<PKEselonII />} />
           <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
           <Route path="/dokumen/PKEselonIV" element={<PKEselonIV />} />
+          <Route path="/dokumen/rencana-aksi" element={<RencanaAksiPage />} />
 
         </Route>
       </Routes>
