@@ -23,28 +23,28 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
   }
 
   const handleDelete = async (program) => {
-  Swal.fire({
-    title: "Apakah Anda yakin?",
-    text: `Program "${program.nama_program}" akan dihapus permanen beserta seluruh data kegiatan di bawahnya!`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444", // Merah
-    cancelButtonColor: "#64748b",
-    confirmButtonText: "Ya, Hapus!",
-    cancelButtonText: "Batal",
-    reverseButtons: true,
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        await axiosInstance.delete(`/renstra/program/${program.id}`);
-        Swal.fire("Terhapus!", "Program telah berhasil dihapus.", "success");
-        fetchData(); // Refresh tabel
-      } catch (err) {
-        Swal.fire("Gagal!", err.response?.data?.message || "Terjadi kesalahan", "error");
+    Swal.fire({
+      title: "Apakah Anda yakin?",
+      text: `Program "${program.nama_program}" akan dihapus permanen beserta seluruh data kegiatan di bawahnya!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444", 
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axiosInstance.delete(`/renstra/program/${program.id}`);
+          Swal.fire("Terhapus!", "Program telah berhasil dihapus.", "success");
+          fetchData(); 
+        } catch (err) {
+          Swal.fire("Gagal!", err.response?.data?.message || "Terjadi kesalahan", "error");
+        }
       }
-    }
-  });
-};
+    });
+  };
   
   const YEARS = [2025, 2026, 2027, 2028, 2029];
 
@@ -82,7 +82,7 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
 
   return (
     <div className="w-full bg-white overflow-hidden flex flex-col h-full">
-      {/* TOOLBAR TERPADU */}
+      {/* TOOLBAR */}
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
         <div className="flex gap-2">
           <button 
@@ -115,7 +115,7 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
               {YEARS.map(y => (
                 <th key={y} colSpan={2} className="px-4 py-3 text-center font-black border-b border-r border-slate-700 bg-slate-800 uppercase text-[10px]">Tahun {y}</th>
               ))}
-              <th rowSpan={2} className="sticky right-0 z-50 w-[100px] bg-slate-900 px-4 py-4 text-center font-black border-l border-slate-700 uppercase text-[10px]">Aksi</th>
+              <th rowSpan={2} className="sticky right-0 z-50 w-[140px] bg-slate-900 px-4 py-4 text-center font-black border-l border-slate-700 uppercase text-[10px]">Aksi</th>
             </tr>
             <tr className="bg-slate-800 text-slate-400 text-[10px] font-black uppercase">
               {YEARS.map(y => (
@@ -130,7 +130,7 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
           <tbody className="text-sm">
             {data.map((p) => (
               <React.Fragment key={`p-${p.id}`}>
-                <tr className="bg-blue-50/40 hover:bg-blue-50 transition-colors group">
+                <tr className="bg-blue-50/40 hover:bg-blue-50 transition-colors group text-[13px]">
                   <td 
                     className="sticky left-0 z-40 bg-white group-hover:bg-blue-50 px-6 py-5 border-b border-r border-slate-200 font-black text-blue-900 cursor-pointer"
                     onClick={() => toggleProgram(p.id)}
@@ -141,18 +141,18 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
                       </div>
                       <div>
                         <span className="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-sm uppercase mb-1 inline-block font-black tracking-widest">Program</span>
-                        <div className="leading-tight uppercase tracking-tighter text-[13px]">
+                        <div className="leading-tight uppercase tracking-tighter">
                             <span className="text-blue-500 mr-1 font-black">{p.kodering}</span> {p.nama_program}
                         </div>
                       </div>
                     </div>
                   </td>
                   
-                  <td className="px-4 py-5 border-b border-r border-slate-200 text-xs font-bold text-blue-700 italic bg-blue-50/20">
+                  <td className="px-4 py-5 border-b border-r border-slate-200 font-bold text-blue-700 italic bg-blue-50/20">
                     {p.indikator_program || "-"}
                   </td>
                   
-                  <td className="px-4 py-5 border-b border-r border-slate-200 text-xs font-medium text-slate-500 italic">
+                  <td className="px-4 py-5 border-b border-r border-slate-200 font-medium text-slate-500 italic">
                     {p.output_program || "-"}
                   </td>
 
@@ -162,29 +162,43 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
                     const ang = p.anggaran?.find(a => Number(a.tahun) === Number(y));
                     return (
                       <React.Fragment key={`p-val-${y}`}>
-                        <td className="px-3 py-5 border-b border-r border-slate-200 text-center font-black text-slate-700 text-xs">
+                        <td className="px-3 py-5 border-b border-r border-slate-200 text-center font-black text-slate-700">
                           {ang ? parseFloat(ang.target).toLocaleString('id-ID') : "0"}
                         </td>
-                        <td className="px-3 py-5 border-b border-r border-slate-200 text-right font-black text-blue-700 bg-blue-50/10 text-xs">
+                        <td className="px-3 py-5 border-b border-r border-slate-200 text-right font-black text-blue-700 bg-blue-50/10">
                           {ang ? Number(ang.pagu).toLocaleString('id-ID') : "0"}
                         </td>
                       </React.Fragment>
                     );
                   })}
 
-                  <td className="sticky right-0 z-40 bg-white group-hover:bg-blue-50 px-4 py-5 border-b border-l border-slate-200 text-center">
-                    <button onClick={() => openAddKegiatan(p)} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm">
-                      <Plus size={14} />
-                    </button>
+                  {/* BAGIAN AKSI YANG SUDAH DISTYLING RAPI */}
+                  <td className="sticky right-0 z-40 bg-white group-hover:bg-blue-50 px-4 py-5 border-b border-l border-slate-200">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => openAddKegiatan(p)} 
+                        className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm active:scale-90"
+                        title="Tambah Kegiatan"
+                      >
+                        <Plus size={14} />
+                      </button>
 
-                    <button onClick={() => openEditProgram(p)} className="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform active:scale-95 shadow-md">
-                      <Edit3 size={14} />
-                    </button>
+                      <button 
+                        onClick={() => openEditProgram(p)} 
+                        className="p-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-all shadow-sm active:scale-90"
+                        title="Edit Program"
+                      >
+                        <Edit3 size={14} />
+                      </button>
 
-                    <button onClick={() => handleDelete(p)} className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all active:scale-95 shadow-md" title="Hapus Program">
-    <Trash2 size={14} />
-  </button>
-                    
+                      <button 
+                        onClick={() => handleDelete(p)} 
+                        className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all shadow-sm active:scale-90" 
+                        title="Hapus Program"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
 
@@ -215,7 +229,6 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
         onSuccess={fetchData}
         programData={selectedProgram}
       />
-
     </div>
   );
 }

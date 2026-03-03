@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Plus, CornerDownRight, ChevronDown, Edit3, Trash2 } from "lucide-react"; // Tambah Edit3 & Trash2
+import { Plus, ChevronDown, Edit3, Trash2 } from "lucide-react"; 
 import AddSubModal from "./AddSubModal"; 
-import EditKegiatanModal from "./EditKegiatanModal"; // Import modal edit
+import EditKegiatanModal from "./EditKegiatanModal"; 
 import TabelSub from "./TabelSub";
 import Swal from "sweetalert2";
 import axiosInstance from "@/utils/axiosInstance";
 
 export default function TabelKegiatan({ kegiatans = [], YEARS = [], onSuccess }) {
   const [showSubModal, setShowSubModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // State Modal Edit
+  const [showEditModal, setShowEditModal] = useState(false); 
   const [selectedKegiatan, setSelectedKegiatan] = useState(null);
   const [expandedKegiatans, setExpandedKegiatans] = useState({});
 
@@ -43,7 +43,7 @@ export default function TabelKegiatan({ kegiatans = [], YEARS = [], onSuccess })
         try {
           await axiosInstance.delete(`/renstra/kegiatan/${kegiatan.id}`);
           Swal.fire("Terhapus!", "Kegiatan telah dihapus.", "success");
-          onSuccess(); // Refresh data utama
+          onSuccess(); 
         } catch (err) {
           Swal.fire("Gagal!", "Gagal menghapus data.", "error");
         }
@@ -51,53 +51,61 @@ export default function TabelKegiatan({ kegiatans = [], YEARS = [], onSuccess })
     });
   };
 
-  // ... (render if empty tetap sama) ...
-
   return (
     <>
       {kegiatans.map((k) => (
         <React.Fragment key={`group-keg-${k.id}`}>
-          <tr className="bg-amber-50/20 hover:bg-amber-50/50 transition-colors group cursor-pointer" onClick={() => toggleKegiatan(k.id)}>
-            <td className="sticky left-0 z-30 bg-amber-50/10 group-hover:bg-amber-50/50 pl-12 pr-6 py-4 border-b border-r border-slate-200 font-bold text-slate-700 shadow-[4px_0_10px_rgba(0,0,0,0.01)]">
-              {/* ... (isi nomenclatur tetap sama) ... */}
-              <div className="flex gap-2 items-start">
-                <div className={`mt-1 p-0.5 rounded transition-all ${expandedKegiatans[k.id] ? 'bg-amber-500 text-white rotate-180' : 'text-amber-500'}`}>
-                   <ChevronDown size={12} />
+          <tr 
+            className="bg-amber-50/30 hover:bg-amber-100/50 transition-colors group cursor-pointer text-[12px]" 
+            onClick={() => toggleKegiatan(k.id)}
+          >
+            {/* STICKY LEFT: Background harus SOLID (Putih atau Amber Solid) */}
+            <td className="sticky left-0 z-30 bg-[#fdfcf9] group-hover:bg-[#f9f5eb] pl-12 pr-6 py-4 border-b border-r border-slate-200 font-bold text-slate-700">
+              <div className="flex gap-3 items-start">
+                <div className={`mt-1 p-1 rounded transition-all border ${expandedKegiatans[k.id] ? 'bg-amber-500 border-amber-500 text-white rotate-180' : 'bg-white border-amber-200 text-amber-500'}`}>
+                   <ChevronDown size={10} />
                 </div>
                 <div>
-                  <span className="text-[8px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded uppercase mb-1 inline-block font-black">Kegiatan</span>
-                  <div className="leading-tight text-[11px] uppercase tracking-tighter">
-                    <span className="text-amber-700 font-black mr-1">{k.kodering}</span> {k.nama_kegiatan}
+                  <span className="text-[8px] bg-amber-500 text-white px-1.5 py-0.5 rounded-sm uppercase mb-1 inline-block font-black tracking-tighter">Kegiatan</span>
+                  <div className="leading-tight uppercase tracking-tighter">
+                    <span className="text-amber-600 font-black mr-1">{k.kodering}</span> {k.nama_kegiatan}
                   </div>
                 </div>
               </div>
             </td>
 
-            {/* ... (TD indikator, output, satuan, anggaran tetap sama) ... */}
-            <td className="px-4 py-4 border-b border-r border-slate-200 text-[10px] font-bold text-amber-700 italic">{k.indikator_kegiatan || "-"}</td>
-            <td className="px-4 py-4 border-b border-r border-slate-200 text-[10px] font-medium text-slate-400 italic">{k.output_kegiatan || "-"}</td>
-            <td className="px-4 py-4 border-b border-r border-slate-200 text-center font-bold text-slate-500 text-[10px]">{k.satuan || "%"}</td>
+            <td className="px-4 py-4 border-b border-r border-slate-200 font-bold text-amber-700 italic bg-amber-50/10">
+              {k.indikator_kegiatan || "-"}
+            </td>
+            <td className="px-4 py-4 border-b border-r border-slate-200 font-medium text-slate-400 italic">
+              {k.output_kegiatan || "-"}
+            </td>
+            <td className="px-4 py-4 border-b border-r border-slate-200 text-center font-bold text-slate-500">{k.satuan || "%"}</td>
             
             {YEARS.map(y => {
                 const ang = k.anggaran?.find(a => Number(a.tahun) === Number(y));
                 return (
                     <React.Fragment key={`v-keg-${y}-${k.id}`}>
-                        <td className="px-3 py-4 border-b border-r border-slate-200 text-center font-bold text-slate-500 text-[10px]">{ang ? parseFloat(ang.target).toLocaleString('id-ID') : "0"}</td>
-                        <td className="px-3 py-4 border-b border-r border-slate-200 text-right font-black text-amber-700 bg-amber-50/30 text-[10px]">{ang ? Number(ang.pagu).toLocaleString('id-ID') : "0"}</td>
+                        <td className="px-3 py-4 border-b border-r border-slate-200 text-center font-bold text-slate-600">
+                          {ang ? parseFloat(ang.target).toLocaleString('id-ID') : "0"}
+                        </td>
+                        <td className="px-3 py-4 border-b border-r border-slate-200 text-right font-black text-amber-700 bg-amber-50/40">
+                          {ang ? Number(ang.pagu).toLocaleString('id-ID') : "0"}
+                        </td>
                     </React.Fragment>
                 )
             })}
 
-            {/* AKSI KEGIATAN */}
-            <td className="sticky right-0 z-30 bg-amber-50/10 group-hover:bg-amber-50/50 px-4 py-4 border-b border-l border-slate-200 text-center">
-                <div className="flex items-center justify-center gap-1.5">
-                    <button type="button" onClick={(e) => handleOpenAddSub(e, k)} className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm" title="Tambah Sub">
+            {/* STICKY RIGHT: Background harus SOLID */}
+            <td className="sticky right-0 z-30 bg-[#fdfcf9] group-hover:bg-[#f9f5eb] px-4 py-4 border-b border-l border-slate-200">
+                <div className="flex items-center justify-center gap-2">
+                    <button onClick={(e) => handleOpenAddSub(e, k)} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm transition-all active:scale-90" title="Tambah Sub">
                         <Plus size={12} />
                     </button>
-                    <button type="button" onClick={(e) => handleOpenEdit(e, k)} className="p-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 shadow-sm" title="Edit Kegiatan">
+                    <button onClick={(e) => handleOpenEdit(e, k)} className="p-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 shadow-sm transition-all active:scale-90" title="Edit Kegiatan">
                         <Edit3 size={12} />
                     </button>
-                    <button type="button" onClick={(e) => handleDelete(e, k)} className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-sm" title="Hapus Kegiatan">
+                    <button onClick={(e) => handleDelete(e, k)} className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600 shadow-sm transition-all active:scale-90" title="Hapus Kegiatan">
                         <Trash2 size={12} />
                     </button>
                 </div>
@@ -110,10 +118,20 @@ export default function TabelKegiatan({ kegiatans = [], YEARS = [], onSuccess })
         </React.Fragment>
       ))}
 
-      {/* Render All Modals */}
-      <AddSubModal open={showSubModal} onClose={() => setShowSubModal(false)} onSuccess={onSuccess} kegiatanId={selectedKegiatan?.id} kegiatanName={selectedKegiatan?.nama_kegiatan} />
+      <AddSubModal 
+        open={showSubModal} 
+        onClose={() => setShowSubModal(false)} 
+        onSuccess={onSuccess} 
+        kegiatanId={selectedKegiatan?.id} 
+        kegiatanName={selectedKegiatan?.nama_kegiatan} 
+      />
       
-      <EditKegiatanModal open={showEditModal} onClose={() => setShowEditModal(false)} onSuccess={onSuccess} kegiatanData={selectedKegiatan} />
+      <EditKegiatanModal 
+        open={showEditModal} 
+        onClose={() => setShowEditModal(false)} 
+        onSuccess={onSuccess} 
+        kegiatanData={selectedKegiatan} 
+      />
     </>
   );
 }
