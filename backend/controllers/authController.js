@@ -66,7 +66,7 @@ export const loginUser = async (req, res) => {
     // Verifikasi password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Password salah" });
+      return res.status(401).json({ success: false, message: "username dan password salah" });
     }
 
     // Generate JWT token
