@@ -3,28 +3,37 @@ import pool from "../../config/db.js";
 // GET ALL
 export async function getAll(req, res, next) {
   try {
-    const { program_id } = req.query; // Ambil filter dari URL jika ada (?program_id=6)
-    
+    const { program_id } = req.query;
     let query = `
-      SELECT k.*, p.nama_program 
+      SELECT k.*, 
+      (
+        SELECT JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'tahun', t.tahun,
+            'target', ka.target,
+            'pagu', ka.pagu
+          )
+        )
+        FROM renstra_kegiatan_anggaran ka
+        JOIN renstra_tahun t ON ka.tahun_id = t.id
+        WHERE ka.kegiatan_id = k.id
+      ) as anggaran
       FROM renstra_kegiatan k
-      LEFT JOIN renstra_program p ON k.program_id = p.id
     `;
+    
     let params = [];
-
-    // Jika ada program_id di query string, tambahkan WHERE
     if (program_id) {
       query += " WHERE k.program_id = ?";
       params.push(program_id);
     }
 
-    query += " ORDER BY k.id DESC";
-
     const [rows] = await pool.query(query, params);
-    res.json(rows);
-  } catch (err) {
-    next(err);
-  }
+    const result = rows.map(row => ({
+      ...row,
+      anggaran: typeof row.anggaran === 'string' ? JSON.parse(row.anggaran) : (row.anggaran || [])
+    }));
+    res.json(result);
+  } catch (err) { next(err); }
 }
 
 // GET BY ID

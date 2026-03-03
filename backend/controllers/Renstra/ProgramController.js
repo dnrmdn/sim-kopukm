@@ -3,10 +3,39 @@ import pool from "../../config/db.js";
 // GET ALL
 export async function getAll(req, res, next) {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM renstra_program ORDER BY id DESC"
-    );
-    res.json(rows);
+    // Kueri ini mengambil data program sekaligus array anggarannya
+    const query = `
+      SELECT 
+        p.*, 
+        (
+          SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', pa.id,
+              'tahun_id', pa.tahun_id,
+              'tahun', t.tahun,
+              'target', pa.target,
+              'pagu', pa.pagu
+            )
+          )
+          FROM renstra_program_anggaran pa
+          LEFT JOIN renstra_tahun t ON pa.tahun_id = t.id
+          WHERE pa.program_id = p.id
+        ) as anggaran
+      FROM renstra_program p
+      ORDER BY p.id DESC
+    `;
+
+    const [rows] = await pool.query(query);
+
+    // Pastikan data anggaran di-parse dari string JSON ke Array Objek
+    const result = rows.map(row => ({
+      ...row,
+      anggaran: row.anggaran 
+        ? (typeof row.anggaran === 'string' ? JSON.parse(row.anggaran) : row.anggaran) 
+        : []
+    }));
+
+    res.json(result);
   } catch (err) {
     next(err);
   }

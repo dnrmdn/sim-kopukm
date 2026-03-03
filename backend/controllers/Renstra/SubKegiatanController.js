@@ -3,13 +3,49 @@ import pool from "../../config/db.js";
 // GET ALL
 export async function getAll(req, res, next) {
   try {
-    const [rows] = await pool.query(
-      `SELECT sk.*, k.nama_kegiatan 
-       FROM renstra_sub_kegiatan sk
-       LEFT JOIN renstra_kegiatan k ON sk.kegiatan_id = k.id
-       ORDER BY sk.id DESC`
-    );
-    res.json(rows);
+    const { kegiatan_id } = req.query;
+
+    let query = `
+      SELECT 
+        sk.*, 
+        k.nama_kegiatan,
+        (
+          SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', ska.id,
+              'tahun_id', ska.tahun_id,
+              'tahun', t.tahun,
+              'target', ska.target,
+              'pagu', ska.pagu
+            )
+          )
+          FROM renstra_sub_kegiatan_anggaran ska
+          LEFT JOIN renstra_tahun t ON ska.tahun_id = t.id
+          WHERE ska.sub_kegiatan_id = sk.id
+        ) as anggaran
+      FROM renstra_sub_kegiatan sk
+      LEFT JOIN renstra_kegiatan k ON sk.kegiatan_id = k.id
+    `;
+    
+    let params = [];
+    if (kegiatan_id) {
+      query += " WHERE sk.kegiatan_id = ?";
+      params.push(kegiatan_id);
+    }
+
+    query += " ORDER BY sk.id DESC";
+
+    const [rows] = await pool.query(query, params);
+
+    // Bagian penting: Mengubah string JSON dari MySQL menjadi Array Objek
+    const result = rows.map(row => ({
+      ...row,
+      anggaran: row.anggaran 
+        ? (typeof row.anggaran === 'string' ? JSON.parse(row.anggaran) : row.anggaran) 
+        : []
+    }));
+
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -31,23 +67,25 @@ export async function getById(req, res, next) {
 }
 
 // CREATE
+// CREATE
 export async function create(req, res, next) {
   try {
+    // Sesuaikan nama variabel dengan field di database agar tidak tertukar
     const { 
       kegiatan_id, 
       kodering, 
-      nama_sub_kegiatan, 
+      nama_sub,      // Sesuaikan dari nama_sub_kegiatan -> nama_sub
       output_sub, 
-      indikator, 
+      indikator_sub, // Sesuaikan dari indikator -> indikator_sub
       satuan, 
       keterangan 
     } = req.body;
 
     const [result] = await pool.query(
       `INSERT INTO renstra_sub_kegiatan 
-      (kegiatan_id, kodering, nama_sub_kegiatan, output_sub, indikator, satuan, keterangan) 
+      (kegiatan_id, kodering, nama_sub, output_sub, indikator_sub, satuan, keterangan) 
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [kegiatan_id, kodering, nama_sub_kegiatan, output_sub, indikator, satuan, keterangan]
+      [kegiatan_id, kodering, nama_sub, output_sub, indikator_sub, satuan, keterangan]
     );
 
     res.status(201).json({ 

@@ -12,6 +12,8 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
 
   const [isModalKegiatanOpen, setIsModalKegiatanOpen] = useState(false);
   const [activeProgram, setActiveProgram] = useState(null);
+  
+  // Konfigurasi tahun sesuai struktur tabel
   const YEARS = [2025, 2026, 2027, 2028, 2029];
 
   useEffect(() => { fetchData(); }, [apiBase]);
@@ -21,13 +23,18 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
     try {
       const res = await axiosInstance.get(apiBase);
       setData(res.data || []);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+    } catch (err) { 
+      console.error("Gagal load program:", err); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const toggleProgram = async (programId) => {
     const isExpanding = !expandedPrograms[programId];
     if (isExpanding && !kegiatanData[programId]) {
       try {
+        // Mengambil data kegiatan yang sekarang juga sudah membawa array anggaran
         const res = await axiosInstance.get(`/renstra/kegiatan?program_id=${programId}`);
         setKegiatanData(prev => ({ ...prev, [programId]: res.data }));
       } catch (err) {
@@ -81,7 +88,7 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
           <tbody className="text-sm">
             {data.map((p) => (
               <React.Fragment key={`p-${p.id}`}>
-                {/* --- ROW PROGRAM --- */}
+                {/* --- ROW PROGRAM (LEVEL 1) --- */}
                 <tr className="bg-blue-50/40 hover:bg-blue-50 transition-colors group">
                   <td 
                     className="sticky left-0 z-40 bg-white group-hover:bg-blue-50 px-6 py-5 border-b border-r border-slate-200 font-black text-blue-900 cursor-pointer"
@@ -92,8 +99,10 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
                         <ChevronDown size={14} />
                       </div>
                       <div>
-                        <span className="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded uppercase mb-1 inline-block">Program</span>
-                        <div className="leading-tight uppercase tracking-tight">{p.kodering} {p.nama_program}</div>
+                        <span className="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded uppercase mb-1 inline-block font-black">Program</span>
+                        <div className="leading-tight uppercase tracking-tight">
+                            <span className="text-blue-500 mr-1 font-black">{p.kodering}</span> {p.nama_program}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -108,12 +117,24 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
 
                   <td className="px-4 py-5 border-b border-r border-slate-200 text-center font-black text-slate-400">{p.satuan || "-"}</td>
                   
-                  {YEARS.map(y => (
-                    <React.Fragment key={`p-val-${y}`}>
-                      <td className="px-3 py-5 border-b border-r border-slate-200 text-center font-black text-slate-700 text-xs">0</td>
-                      <td className="px-3 py-5 border-b border-r border-slate-200 text-right font-black text-blue-700 bg-blue-50/10 text-xs">0</td>
-                    </React.Fragment>
-                  ))}
+                  {/* KOLOM ANGGARAN PROGRAM PER TAHUN */}
+                  {YEARS.map(y => {
+                    // Mencari data anggaran program yang sesuai tahun y
+                    const ang = p.anggaran?.find(a => Number(a.tahun) === Number(y));
+                    
+                    return (
+                      <React.Fragment key={`p-val-${y}`}>
+                        {/* Target Program */}
+                        <td className="px-3 py-5 border-b border-r border-slate-200 text-center font-black text-slate-700 text-xs">
+                          {ang ? parseFloat(ang.target).toLocaleString('id-ID') : "0"}
+                        </td>
+                        {/* Pagu Program */}
+                        <td className="px-3 py-5 border-b border-r border-slate-200 text-right font-black text-blue-700 bg-blue-50/10 text-xs">
+                          {ang ? Number(ang.pagu).toLocaleString('id-ID') : "0"}
+                        </td>
+                      </React.Fragment>
+                    );
+                  })}
 
                   <td className="sticky right-0 z-40 bg-white group-hover:bg-blue-50 px-4 py-5 border-b border-l border-slate-200 text-center text-[10px]">
                     <button onClick={() => openAddKegiatan(p)} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-transform active:scale-95 shadow-md">
@@ -122,11 +143,12 @@ export default function TabelProgram({ apiBase = "/renstra/program" }) {
                   </td>
                 </tr>
 
-                {/* --- RENDER KEGIATAN (BARIS TR DARI ANAK) --- */}
+                {/* --- RENDER ANAK (KEGIATAN) --- */}
                 {expandedPrograms[p.id] && (
                   <TabelKegiatan 
                     kegiatans={kegiatanData[p.id] || []} 
                     YEARS={YEARS} 
+                    onSuccess={fetchData} // Teruskan fetchData agar saat input sub, angka program ikut refresh
                   />
                 )}
               </React.Fragment>
