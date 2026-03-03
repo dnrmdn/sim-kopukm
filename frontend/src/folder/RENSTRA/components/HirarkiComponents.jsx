@@ -1,152 +1,90 @@
-import React from "react";
-import { ChevronDown, ChevronRight, Target, Flag, Building2, LayoutGrid, CircleDot } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 
-/* ================= UTIL BLOCK ================= */
-function Block({ children }) {
+const buildTree = (dataset) => {
+  const hashTable = Object.create(null);
+  dataset.forEach(a => hashTable[a.id] = { ...a, children: [] });
+  const dataTree = [];
+  dataset.forEach(a => {
+    if (a.parent_id) {
+      if (hashTable[a.parent_id]) hashTable[a.parent_id].children.push(hashTable[a.id]);
+    } else {
+      dataTree.push(hashTable[a.id]);
+    }
+  });
+  return dataTree;
+};
+
+/* ================= RENDER ITEM ================= */
+function HirarkiItem({ item, level = 0 }) {
+  const [isOpen, setIsOpen] = useState(level === 0);
+  const hasChildren = item.children && item.children.length > 0;
+  const isIndikator = item.level === "indikator";
+
   return (
-    // Garis vertikal dibuat lebih tegas untuk memperlihatkan alur hirarki
-    <div className="ml-4 pl-6 border-l-2 border-slate-200 space-y-4 py-2 my-1 transition-all">
-      {children}
+    <div className={`flex flex-col ${level > 0 ? "ml-5 border-l border-slate-200" : ""}`}>
+      <div 
+        onClick={() => hasChildren && setIsOpen(!isOpen)}
+        className={`
+          flex items-start gap-4 py-3 px-3 rounded-lg transition-all
+          ${level === 0 ? "bg-slate-50 mb-3 border border-slate-200 shadow-sm" : "hover:bg-slate-50/80"}
+          ${hasChildren ? "cursor-pointer" : "cursor-default"}
+        `}
+      >
+        {/* Toggle Arrow */}
+        <div className="mt-1.5 w-5 h-5 flex items-center justify-center shrink-0">
+          {hasChildren ? (
+            isOpen ? <ChevronDown size={18} className="text-slate-500" /> : <ChevronRight size={18} className="text-slate-400" />
+          ) : isIndikator ? (
+            <div className="w-2 h-2 rounded-full bg-blue-500/60 ml-1" />
+          ) : null}
+        </div>
+
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-1.5">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border border-slate-200 px-2 py-0.5 rounded shadow-sm">
+              {item.level}
+            </span>
+           
+          </div>
+          <p className={`
+            text-[14px] leading-relaxed tracking-normal
+            ${level === 0 ? "font-bold text-slate-900" : "text-slate-700 font-medium"}
+            ${isIndikator ? "text-slate-500 italic" : ""}
+          `}>
+            {item.uraian}
+          </p>
+        </div>
+      </div>
+
+      {/* Render Anak */}
+      {isOpen && hasChildren && (
+        <div className="mb-4">
+          {item.children.map((child) => (
+            <HirarkiItem key={child.id} item={child} level={level + 1} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/* ================= HEADER ================= */
-function Header({ title, level, activeLevel, setActiveLevel, icon: Icon }) {
-  const isOpen = activeLevel >= level;
-  const isActiveRow = activeLevel === level;
+/* ================= MAIN COMPONENT ================= */
+export default function HirarkiComponents({ data = [] }) {
+  const treeData = useMemo(() => buildTree(data), [data]);
 
-  const onClick = () => {
-    setActiveLevel((prev) => (prev >= level ? level - 1 : level));
-  };
+  if (!data.length) return <div className="text-center text-xs text-slate-400 py-20 font-medium uppercase tracking-widest">Belum ada data cascading.</div>;
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 
-        ${isActiveRow ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' : 'hover:bg-slate-100 text-slate-600'}`}
-    >
-      <div className={`transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}>
-        <ChevronDown size={16} className={isActiveRow ? 'text-blue-600' : 'text-slate-400'} />
-      </div>
-      
-      {Icon && <Icon size={18} className={isActiveRow ? 'text-blue-700' : 'text-slate-500'} />}
-      
-      <span className={`text-[13px] font-bold tracking-tight uppercase ${isActiveRow ? 'text-blue-900' : 'text-slate-700'}`}>
-        {title}
-      </span>
-    </button>
-  );
-}
-
-/* ================= LIST ================= */
-function BulletList({ items = [] }) {
-  if (!items.length) return null;
-  return (
-    <ul className="space-y-2">
-      {items.map((it, i) => (
-        <li key={i} className="flex items-start gap-3 group">
-          <CircleDot size={8} className="mt-1.5 text-blue-400 flex-shrink-0 group-hover:scale-125 transition-transform" />
-          <p className="text-sm text-slate-600 leading-relaxed font-medium">
-            {it}
-          </p>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/* ================= MAIN ================= */
-export default function HirarkiComponents({ data = {} }) {
-  const payload = data.data && typeof data.data === "object" ? data.data : data;
-
-  const visi = payload.visi || [];
-  const misi = payload.misi || [];
-  const tujuan_rpjmd = payload.tujuan_rpjmd || payload.tujuan || [];
-  const sasaran = payload.sasaran_strategis || payload.sasaran || [];
-  const tujuan_pd = payload.tujuan_pd || payload.tujuan_perangkat_daerah || [];
-  const sasaran_pd = payload.sasaran_pd || payload.sasaranPerangkatDaerah || [];
-
-  const [activeLevel, setActiveLevel] = React.useState(1);
-
-  return (
-    // "mx-0" dan "w-full" memastikan komponen rapat ke kiri
-    <div className="w-full max-w-5xl mx-0 p-6 bg-white border border-slate-200 rounded-lg shadow-sm">
-      <div className="mb-8 border-l-4 border-blue-600 pl-4">
-        <h2 className="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Pohon Kinerja</h2>
-        <p className="text-sm text-slate-500 font-medium mt-1">Cascading Perencanaan Daerah</p>
+    <div className="w-full  max-w-5xl">
+      <div className="mb-2">
+        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Hierarki RPJMD</h2>
       </div>
 
-      <div className="flex flex-col items-start space-y-1">
-        {/* LEVEL 1: VISI */}
-        <Header title="Visi RPJMD" level={1} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={Flag} />
-        {activeLevel >= 1 && (
-          <Block>
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-2">
-               <BulletList items={visi} />
-            </div>
-
-            {/* LEVEL 2: MISI */}
-            <Header title="Misi RPJMD" level={2} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={LayoutGrid} />
-            {activeLevel >= 2 && (
-              <Block>
-                <div className="bg-white p-2 border-b border-slate-100">
-                  <BulletList items={misi} />
-                </div>
-
-                {/* LEVEL 3: TUJUAN */}
-                <Header title="Tujuan RPJMD" level={3} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={Target} />
-                {activeLevel >= 3 && (
-                  <Block>
-                    <BulletList items={tujuan_rpjmd} />
-
-                    {/* LEVEL 4: SASARAN STRATEGIS */}
-                    <Header title="Sasaran Strategis" level={4} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={Target} />
-                    {activeLevel >= 4 && (
-                      <Block>
-                        <div className="space-y-4">
-                          {sasaran.map((s, i) => (
-                            <div key={i} className="pl-4 border-l-2 border-blue-400">
-                              <div className="text-sm font-bold text-slate-800 mb-2 italic">"{s.nama}"</div>
-                              <BulletList items={s.indikator || []} />
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* LEVEL 5: TUJUAN PD */}
-                        <Header title="Tujuan Perangkat Daerah" level={5} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={Building2} />
-                        {activeLevel >= 5 && (
-                          <Block>
-                            {tujuan_pd.map((t, i) => (
-                              <div key={i} className="mb-4 bg-blue-50/50 p-3 rounded-md border border-blue-100">
-                                <div className="text-sm font-bold text-blue-800 mb-2 uppercase tracking-wide">{t.nama}</div>
-                                <BulletList items={t.indikator || []} />
-                              </div>
-                            ))}
-
-                            {/* LEVEL 6: SASARAN PD */}
-                            <Header title="Sasaran Perangkat Daerah" level={6} activeLevel={activeLevel} setActiveLevel={setActiveLevel} icon={Building2} />
-                            {activeLevel >= 6 && (
-                              <Block>
-                                {sasaran_pd.map((s, i) => (
-                                  <div key={i} className="mb-3 p-3 bg-white border border-slate-200 rounded shadow-sm">
-                                    <div className="text-sm font-bold text-slate-700 mb-1 leading-snug">{s.nama}</div>
-                                    <BulletList items={s.indikator || []} />
-                                  </div>
-                                ))}
-                              </Block>
-                            )}
-                          </Block>
-                        )}
-                      </Block>
-                    )}
-                  </Block>
-                )}
-              </Block>
-            )}
-          </Block>
-        )}
+      <div className="space-y-2">
+        {treeData.map((rootItem) => (
+          <HirarkiItem key={rootItem.id} item={rootItem} />
+        ))}
       </div>
     </div>
   );
