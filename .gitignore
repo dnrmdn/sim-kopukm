@@ -62,3 +62,5 @@ pids/
 # Docker (optional)
 docker-compose.override.yml
 Dockerfile.local
+*.log
+*.log

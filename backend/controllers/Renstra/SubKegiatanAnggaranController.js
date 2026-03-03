@@ -147,25 +147,100 @@ export async function create(req, res, next) {
 
 // UPDATE
 export async function update(req, res, next) {
+  const connection = await pool.getConnection(); // Gunakan transaksi agar data konsisten
   try {
-    const { id } = req.params;
-    const { sub_kegiatan_id, tahun_id, target, pagu } = req.body;
+    const { sub_kegiatan_id, anggaran_list } = req.body;
 
-    const [result] = await pool.query(
-      `UPDATE renstra_sub_kegiatan_anggaran SET 
-        sub_kegiatan_id = ?, 
-        tahun_id = ?, 
-        target = ?, 
-        pagu = ? 
-      WHERE id = ?`,
-      [sub_kegiatan_id, tahun_id, target, pagu, id]
+    await connection.beginTransaction();
+
+    const query = `
+      INSERT INTO renstra_sub_kegiatan_anggaran (sub_kegiatan_id, tahun_id, target, pagu)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE 
+        target = VALUES(target), 
+        pagu = VALUES(pagu)
+    `;
+
+    for (const item of anggaran_list) {
+      await connection.query(query, [
+        sub_kegiatan_id, 
+        item.tahun_id, 
+        item.target, 
+        item.pagu
+      ]);
+    }
+
+    await connection.commit();
+    res.json({ status: "success", message: "Anggaran 5 tahun berhasil diperbarui" });
+  } catch (err) {
+    await connection.rollback();
+    next(err);
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateAll(req, res, next) {
+  const connection = await pool.getConnection(); 
+  try {
+    await connection.beginTransaction();
+
+    // SESUAIKAN DENGAN ROUTER (:subKegiatanId)
+    const { subKegiatanId } = req.params; 
+    
+    const { 
+      kegiatan_id, 
+      kodering, 
+      nama_sub, 
+      output_sub, 
+      indikator_sub, 
+      satuan, 
+      keterangan,
+      anggaran_list 
+    } = req.body;
+
+    // 1. UPDATE IDENTITAS SUB KEGIATAN (Gunakan subKegiatanId)
+    await connection.query(
+      `UPDATE renstra_sub_kegiatan 
+       SET kegiatan_id = ?, kodering = ?, nama_sub = ?, output_sub = ?, indikator_sub = ?, satuan = ?, keterangan = ?
+       WHERE id = ?`,
+      [kegiatan_id, kodering, nama_sub, output_sub, indikator_sub, satuan, keterangan, subKegiatanId]
     );
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: "Data tidak ditemukan" });
+    // 2. UPDATE/INSERT ANGGARAN (Gunakan subKegiatanId)
+    if (anggaran_list && Array.isArray(anggaran_list)) {
+      const queryAnggaran = `
+        INSERT INTO renstra_sub_kegiatan_anggaran 
+        (id, sub_kegiatan_id, tahun_id, target, pagu) 
+        VALUES ? 
+        ON DUPLICATE KEY UPDATE 
+        target = VALUES(target), 
+        pagu = VALUES(pagu)
+      `;
 
-    res.json({ message: "Berhasil update anggaran sub kegiatan" });
+      const values = anggaran_list.map(item => [
+        item.id || null, 
+        subKegiatanId,  // Pake ID dari params
+        item.tahun_id,
+        item.target || 0,
+        item.pagu || 0
+      ]);
+
+      await connection.query(queryAnggaran, [values]);
+
+      // 3. TRIGGER LOGIC AGREGASI
+      const tahunIds = anggaran_list.map(a => a.tahun_id);
+      await updateParentTotals(connection, subKegiatanId, tahunIds);
+    }
+
+    await connection.commit();
+    res.status(200).json({ message: "Update Sub Kegiatan & Anggaran Berhasil!" });
+
   } catch (err) {
+    await connection.rollback();
     next(err);
+  } finally {
+    connection.release();
   }
 }
 
@@ -180,5 +255,59 @@ export async function remove(req, res, next) {
     res.json({ message: "Berhasil hapus anggaran sub kegiatan" });
   } catch (err) {
     next(err);
+  }
+}
+
+// REMOVE ALL (Hapus Sub Kegiatan + Semua Anggarannya)
+export async function removeAll(req, res, next) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const { subKegiatanId } = req.params;
+
+    // 1. Ambil list tahun_id yang terlibat dulu sebelum data dihapus
+    // Ini buat bahan re-calculate (updateParentTotals) nanti
+    const [anggaranLama] = await connection.query(
+      "SELECT tahun_id FROM renstra_sub_kegiatan_anggaran WHERE sub_kegiatan_id = ?",
+      [subKegiatanId]
+    );
+    const tahunIds = anggaranLama.map(a => a.tahun_id);
+
+    // 2. Hapus semua baris di tabel ANGGARAN (Anak)
+    await connection.query(
+      "DELETE FROM renstra_sub_kegiatan_anggaran WHERE sub_kegiatan_id = ?",
+      [subKegiatanId]
+    );
+
+    // 3. Hapus baris di tabel SUB KEGIATAN (Bapak)
+    const [result] = await connection.query(
+      "DELETE FROM renstra_sub_kegiatan WHERE id = ?",
+      [subKegiatanId]
+    );
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Data tidak ditemukan atau sudah dihapus" });
+    }
+
+    // 4. Update Anggaran di level Kegiatan & Program (Sinkronisasi)
+    // Supaya Pagu di atasnya otomatis berkurang/update
+    if (tahunIds.length > 0) {
+      await updateParentTotals(connection, subKegiatanId, tahunIds);
+    }
+
+    await connection.commit();
+    res.json({ 
+      status: "success", 
+      message: "Sub Kegiatan dan seluruh anggaran 5 tahun berhasil dibersihkan" 
+    });
+
+  } catch (err) {
+    await connection.rollback();
+    console.error("Gagal Remove All:", err);
+    next(err);
+  } finally {
+    connection.release();
   }
 }

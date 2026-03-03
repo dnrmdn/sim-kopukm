@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
-import { Plus, ChevronDown, RefreshCw, FileUp } from "lucide-react";
+import { Plus, ChevronDown, RefreshCw } from "lucide-react";
 import AddKegiatanModal from "./AddKegiatanModal";
+import EditProgramModal from "./EditProgramModal";
 import TabelKegiatan from "./TabelKegiatan";
+import Swal from "sweetalert2";
 
 export default function TabelProgram({ apiBase = "/renstra/program", onAddProgram }) {
   const [data, setData] = useState([]);
@@ -11,6 +13,38 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
   const [kegiatanData, setKegiatanData] = useState({});
   const [isModalKegiatanOpen, setIsModalKegiatanOpen] = useState(false);
   const [activeProgram, setActiveProgram] = useState(null);
+
+  const [isModalEditOpen, setIsModalEditOpen] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState(null);
+
+  const openEditProgram = (prog) => {
+    setSelectedProgram(prog);
+    setIsModalEditOpen(true);
+  }
+
+  const handleDelete = async (program) => {
+  Swal.fire({
+    title: "Apakah Anda yakin?",
+    text: `Program "${program.nama_program}" akan dihapus permanen beserta seluruh data kegiatan di bawahnya!`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444", // Merah
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Ya, Hapus!",
+    cancelButtonText: "Batal",
+    reverseButtons: true,
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await axiosInstance.delete(`/renstra/program/${program.id}`);
+        Swal.fire("Terhapus!", "Program telah berhasil dihapus.", "success");
+        fetchData(); // Refresh tabel
+      } catch (err) {
+        Swal.fire("Gagal!", err.response?.data?.message || "Terjadi kesalahan", "error");
+      }
+    }
+  });
+};
   
   const YEARS = [2025, 2026, 2027, 2028, 2029];
 
@@ -122,7 +156,7 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
                     {p.output_program || "-"}
                   </td>
 
-                  <td className="px-4 py-5 border-b border-r border-slate-200 text-center font-black text-slate-400">{p.satuan || "-"}</td>
+                  <td className="px-4 py-5 border-b border-r border-slate-200 text-center font-black text-slate-400">{p.satuan || "%"}</td>
                   
                   {YEARS.map(y => {
                     const ang = p.anggaran?.find(a => Number(a.tahun) === Number(y));
@@ -142,6 +176,15 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
                     <button onClick={() => openAddKegiatan(p)} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all shadow-sm">
                       <Plus size={14} />
                     </button>
+
+                    <button onClick={() => openEditProgram(p)} className="ml-2 p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform active:scale-95 shadow-md">
+                      <Edit3 size={14} />
+                    </button>
+
+                    <button onClick={() => handleDelete(p)} className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-all active:scale-95 shadow-md" title="Hapus Program">
+    <Trash2 size={14} />
+  </button>
+                    
                   </td>
                 </tr>
 
@@ -165,6 +208,14 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
         programId={activeProgram?.id}
         programName={activeProgram?.nama_program}
       />
+
+      <EditProgramModal 
+        open={isModalEditOpen}
+        onClose={() => setIsModalEditOpen(false)}
+        onSuccess={fetchData}
+        programData={selectedProgram}
+      />
+
     </div>
   );
 }

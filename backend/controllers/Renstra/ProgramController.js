@@ -104,27 +104,43 @@ export async function update(req, res, next) {
     const { 
       kodering, 
       nama_program, 
-      output_program, 
       indikator_program, 
-      satuan 
+      output_program,
+      keterangan // Pastikan ini sesuai dengan JSON yang lo kirim
     } = req.body;
 
-    const [result] = await pool.query(
-      `UPDATE renstra_program SET 
+    // Perhatikan: Tidak ada koma setelah 'keterangan = ?'
+    const query = `
+      UPDATE renstra_program 
+      SET 
         kodering = ?, 
         nama_program = ?, 
-        output_program = ?, 
         indikator_program = ?, 
-        satuan = ? 
-      WHERE id = ?`,
-      [kodering, nama_program, output_program, indikator_program, satuan, id]
-    );
+        output_program = ?,
+        keterangan = ?
+      WHERE id = ?
+    `;
+
+    const [result] = await pool.query(query, [
+      kodering, 
+      nama_program, 
+      indikator_program, 
+      output_program, 
+      keterangan,
+      id
+    ]);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Data gagal diupdate, ID tidak ditemukan" });
+      return res.status(404).json({ 
+        status: "error", 
+        message: "Data tidak ditemukan" 
+      });
     }
 
-    res.json({ message: "Berhasil update data program" });
+    res.json({ 
+      status: "success", 
+      message: "Data Program berhasil diperbarui!" 
+    });
   } catch (err) {
     next(err);
   }
