@@ -1,4 +1,4 @@
-// backend/src/routes/dokumenSpip.js
+// backend/src/routes/dokumenKak.js
 import express from "express";
 import multer from "multer";
 import pool from "../config/db.js";
@@ -14,14 +14,14 @@ const upload = multer({
 // ================== LIST DOKUMEN ==================
 router.get("/", async (req, res) => {
   try {
-    // Disable cache supaya frontend tidak dapat 304
+    // Disable cache supaya frontend selalu dapat data terbaru
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
     res.setHeader("Surrogate-Control", "no-store");
 
     const [rows] = await pool.execute(
-      "SELECT id, name, mime, created_at FROM dokumen_spip ORDER BY created_at DESC"
+      "SELECT id, name, mime, created_at FROM dokumen_kak ORDER BY created_at DESC"
     );
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -42,15 +42,15 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     const name = title?.trim() || file.originalname;
 
-    // INSERT file ke DB
+    // Insert ke DB
     const [result] = await pool.execute(
-      "INSERT INTO dokumen_spip (name, mime, data) VALUES (?, ?, ?)",
+      "INSERT INTO dokumen_kak (name, mime, data) VALUES (?, ?, ?)",
       [name, file.mimetype, file.buffer]
     );
 
     // Ambil data terbaru dari DB (termasuk created_at)
     const [rows] = await pool.execute(
-      "SELECT id, name, mime, created_at FROM dokumen_spip WHERE id = ?",
+      "SELECT id, name, mime, created_at FROM dokumen_kak WHERE id = ?",
       [result.insertId]
     );
 
@@ -67,7 +67,7 @@ router.get("/:id", async (req, res) => {
     const { id } = req.params;
 
     const [rows] = await pool.execute(
-      "SELECT name, mime, data FROM dokumen_spip WHERE id = ?",
+      "SELECT name, mime, data FROM dokumen_kak WHERE id = ?",
       [id]
     );
 
@@ -95,10 +95,10 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ success: false, message: "Nama tidak boleh kosong" });
     }
 
-    await pool.execute("UPDATE dokumen_spip SET name = ? WHERE id = ?", [name, id]);
+    await pool.execute("UPDATE dokumen_kak SET name = ? WHERE id = ?", [name, id]);
 
     const [rows] = await pool.execute(
-      "SELECT id, name, mime, created_at FROM dokumen_spip WHERE id = ?",
+      "SELECT id, name, mime, created_at FROM dokumen_kak WHERE id = ?",
       [id]
     );
 
@@ -113,7 +113,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    await pool.execute("DELETE FROM dokumen_spip WHERE id = ?", [id]);
+    await pool.execute("DELETE FROM dokumen_kak WHERE id = ?", [id]);
     res.json({ success: true });
   } catch (err) {
     console.error(err);

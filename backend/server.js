@@ -32,6 +32,12 @@ import dokumenLakipRoutes from "./routes/dokumenLakip.js"
 import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
 import dokumenLppdRoutes from "./routes/dokumenLppd.js";
 import paguRoutes from "./routes/paguRoutes.js";
+import skmRoutes from "./routes/skmRoutes.js";
+import dokumenLhpRoutes from "./routes/dokumenLhp.js";
+import dokumenLkeRoutes from "./routes/dokumenLke.js";
+import dokumenDpaRoutes from "./routes/dokumenDpa.js";
+import dokumenKakRoutes from "./routes/dokumenKak.js";
+
 
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
@@ -205,6 +211,14 @@ app.use("/api/dokumen/lkpj", dokumenLkpjRoutes);
 app.use("/api/dokumen/lakip", dokumenLakipRoutes);
 app.use("/api/lppd", dokumenLppdRoutes);
 app.use("/api/pagu", paguRoutes);
+app.use("/api/skm", skmRoutes);
+app.use("/api/lhp", dokumenLhpRoutes);
+app.use("/api/dokumen/lke", dokumenLkeRoutes);
+app.use("/api/dokumen/dpa", dokumenDpaRoutes);
+app.use("/api/dokumen/kak", dokumenKakRoutes);
+
+
+
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
