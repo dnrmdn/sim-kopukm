@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   FileText,
-  Edit2,
+  PencilLine,
   Trash2,
-  UploadCloud,
   Plus,
-  XCircle,
+  AlertCircle,
+  ArrowLeft,
+  Eye,
 } from "lucide-react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
 import FilePreviewModal from "@/LAYOUTS/FilePreviewModal";
 
-/* ===== FALLBACK API (TIDAK DIUBAH) ===== */
+/* ===== API INSTANCE ===== */
 const api =
   axiosInstance ||
   axios.create({
@@ -19,12 +21,16 @@ const api =
   });
 
 export default function SotkPage() {
-  /* ===== STATE ASLI — TIDAK DIUBAH ===== */
+  const navigate = useNavigate();
+
+  /* ===== STATE ===== */
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+
   const [uploadingFile, setUploadingFile] = useState(null);
   const [uploadingName, setUploadingName] = useState("");
-  const [error, setError] = useState("");
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
@@ -44,12 +50,8 @@ export default function SotkPage() {
       prefixHasApi ? `/dokumen/sotk/${id}` : `/api/dokumen/sotk/${id}`,
   };
 
-  useEffect(() => {
-    fetchList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function fetchList() {
+  // ================= FETCH LIST =================
+  const fetchList = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -66,8 +68,13 @@ export default function SotkPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
+
+  // ================= HELPERS =================
   const buildFileUrl = (filePath) => {
     const baseRaw = api.defaults?.baseURL
       ? api.defaults.baseURL.replace(/\/$/, "")
@@ -81,48 +88,77 @@ export default function SotkPage() {
       : `${base}/${filePath}`;
   };
 
+  const detectMime = (file) => {
+    if (file.mime) return file.mime;
+    const name = file.name?.toLowerCase() || "";
+    if (name.endsWith(".pdf")) return "application/pdf";
+    if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+    if (name.endsWith(".png")) return "image/png";
+    if (name.endsWith(".doc")) return "application/msword";
+    if (name.endsWith(".docx"))
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    return "application/octet-stream";
+  };
+
+  // ================= PREVIEW =================
   const handlePreview = (file) => {
     setPreviewFile({
       name: file.name,
-      mime: file.mime,
+      mime: detectMime(file),
       url: buildFileUrl(file.path),
     });
     setPreviewOpen(true);
   };
 
+  const handlePreviewOrgChart = () => {
+    setPreviewFile({
+      name: "Struktur Organisasi DINKOPUKM",
+      mime: "image/png",
+      url: "/public/SOTK_DINKOPUKM.jpeg",
+    });
+    setPreviewOpen(true);
+  };
+
+  // ================= EDIT =================
   const handleEdit = async (file) => {
     const newName = prompt("Ubah nama dokumen:", file.name);
-    if (!newName?.trim()) return;
+    if (!newName || !newName.trim()) return;
+
     try {
-      const res = await api.put(endpoints.update(file.id), { name: newName });
+      const res = await api.put(endpoints.update(file.id), { name: newName.trim() });
       if (res.data?.success) {
         setFiles((p) =>
           p.map((f) => (f.id === file.id ? res.data.data : f))
         );
+        alert("Dokumen berhasil diubah");
       } else {
-        alert("Gagal mengubah nama.");
+        alert(res.data?.message || "Gagal mengubah nama.");
       }
     } catch (e) {
       console.error(e);
-      alert("Gagal mengubah nama (server).");
+      alert(e.response?.data?.message || "Gagal mengubah dokumen (server).");
     }
   };
 
+  // ================= DELETE =================
   const handleDelete = async (file) => {
     if (!window.confirm(`Hapus dokumen "${file.name}"?`)) return;
+
     try {
       const res = await api.delete(endpoints.remove(file.id));
       if (res.data?.success) {
         setFiles((p) => p.filter((f) => f.id !== file.id));
+        alert("Dokumen berhasil dihapus");
       } else {
-        alert("Gagal menghapus dokumen.");
+        alert(res.data?.message || "Gagal menghapus dokumen.");
       }
     } catch (e) {
       console.error(e);
-      alert("Gagal menghapus dokumen (server).");
+      alert(e.response?.data?.message || "Gagal menghapus dokumen (server).");
     }
   };
 
+  // ================= UPLOAD =================
   const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
   const handleFileChange = (e) => {
@@ -133,32 +169,49 @@ export default function SotkPage() {
       return;
     }
     setUploadingFile(f);
-    setUploadingName(f ? f.name : "");
+    setUploadingName(f?.name?.replace(/\.[^/.]+$/, "") || "");
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!uploadingFile) return alert("Pilih file terlebih dahulu.");
+
+    if (!uploadingFile) {
+      alert("Pilih file terlebih dahulu.");
+      return;
+    }
+
+    if (!uploadingName.trim()) {
+      alert("Masukkan nama dokumen");
+      return;
+    }
 
     const fd = new FormData();
     fd.append("file", uploadingFile);
-    fd.append("title", uploadingName);
+    fd.append("title", uploadingName.trim());
 
     try {
+      setIsUploading(true);
       const res = await api.post(endpoints.upload, fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       if (res.data?.success) {
         setFiles((p) => [res.data.data, ...p]);
         setUploadingFile(null);
         setUploadingName("");
-        document.getElementById("sotk-upload-input").value = "";
+
+        const fileInput = document.getElementById("sotk-upload-input");
+        if (fileInput) fileInput.value = "";
+
+        alert("File berhasil diupload");
       } else {
-        alert("Upload gagal.");
+        alert(res.data?.message || "Upload gagal.");
       }
     } catch (e) {
       console.error(e);
-      alert("Upload gagal (server).");
+      alert(e.response?.data?.message || "Upload gagal (server).");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -166,178 +219,282 @@ export default function SotkPage() {
 
   /* ================= RENDER ================= */
   return (
-    <div className="min-h-screen bg-slate-50 p-4 lg:p-8 font-sans text-slate-900">
-      <div className="max-w-[1200px] mx-auto space-y-8">
-
-        {/* ===== HEADER ===== */}
-        <header className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-            Struktur Organisasi & Tata Kerja (SOTK)
-          </h1>
-          <p className="mt-3 text-sm text-slate-500 leading-relaxed">
-            Peraturan Bupati Karawang Nomor 68 Tahun 2021 tentang Kedudukan,
-            Susunan Organisasi, Tugas, Fungsi dan Tata Kerja Dinas Koperasi,
-            Usaha Kecil dan Menengah Kabupaten Karawang
-          </p>
-        </header>
-
-        {/* ===== STRUKTUR ORGANISASI ===== */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-bold text-slate-700">
-              Struktur Organisasi Perangkat Daerah
-            </h3>
-            <span className="text-xs text-slate-500">
-              Klik gambar untuk memperbesar
-            </span>
-          </div>
-
-          <button
-            onClick={() => {
-              setPreviewFile({
-                name: "Struktur Organisasi DINKOPUKM",
-                mime: "image/png",
-                url: ORG_IMAGE_PATH,
-              });
-              setPreviewOpen(true);
-            }}
-            className="w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
-          >
-            <img
-              src={ORG_IMAGE_PATH}
-              alt="Struktur Organisasi"
-              className="w-full max-h-[420px] object-contain hover:scale-[1.01] transition"
-            />
-          </button>
-        </section>
-
-        {/* ===== TABEL DOKUMEN ===== */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-xl">
-                <FileText className="w-5 h-5 text-blue-700" />
-              </div>
-              <h2 className="text-lg font-bold text-slate-700">
-                Dokumen SK & Lampiran SOTK
-              </h2>
-            </div>
-            <span className="text-xs font-bold bg-slate-100 px-3 py-1 rounded-full">
-              {files.length} Dokumen
-            </span>
-          </div>
-
-          {error && (
-            <div className="mb-4 flex items-center gap-2 text-red-600 font-semibold">
-              <XCircle className="w-5 h-5" />
-              {error}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="py-10 text-center text-slate-500">
-              Memuat data dokumen…
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-slate-200 text-slate-600">
-                <tr>
-                  <th className="py-3 text-left">Nama Dokumen</th>
-                  <th className="py-3 w-40 text-left">Tanggal</th>
-                  <th className="py-3 w-56 text-left">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {files.map((file) => (
-                  <tr key={file.id} className="border-b last:border-0">
-                    <td className="py-3">
-                      <div className="font-semibold text-slate-700">
-                        {file.name}
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {file.mime || "-"}
-                      </div>
-                    </td>
-                    <td className="py-3 text-slate-600">
-                      {(file.created_at || "").slice(0, 10)}
-                    </td>
-                    <td className="py-3 flex gap-2">
-                      <button
-                        onClick={() => handlePreview(file)}
-                        className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
-                      >
-                        Lihat
-                      </button>
-                      <button
-                        onClick={() => handleEdit(file)}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(file)}
-                        className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {files.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="py-8 text-center text-slate-500"
-                    >
-                      Belum ada dokumen.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </section>
-
-        {/* ===== UPLOAD ===== */}
-        <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <h3 className="flex items-center gap-2 font-bold text-slate-700 mb-1">
-            <UploadCloud className="w-5 h-5 text-sky-600" />
-            Upload Dokumen SOTK
-          </h3>
-          <p className="text-xs text-slate-500 mb-4">
-            Upload SK, Lampiran, atau dokumen pendukung SOTK (PDF/DOC/JPG/PNG)
-          </p>
-
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div className="grid md:grid-cols-3 gap-3">
-              <input
-                id="sotk-upload-input"
-                type="file"
-                accept=".pdf,.doc,.docx,.jpg,.png"
-                onChange={handleFileChange}
-                className="md:col-span-2 file:mr-4 file:px-4 file:py-2 file:rounded-lg file:border-0 file:bg-slate-100 file:font-semibold"
-              />
-              <input
-                type="text"
-                placeholder="Nama dokumen (opsional)"
-                value={uploadingName}
-                onChange={(e) => setUploadingName(e.target.value)}
-                className="border border-slate-200 rounded-lg p-2"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow"
-            >
-              <Plus className="w-4 h-4" />
-              Upload
-            </button>
-          </form>
-        </section>
+    <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden">
+      {/* Background decoration */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10 bg-blue-500" />
+        <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10 bg-purple-500" />
       </div>
 
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="backdrop-blur-xl bg-slate-900/40 border-b border-white/10 sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
+            <div className="flex items-center justify-between mb-2">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <ArrowLeft size={20} />
+                <span className="text-sm">Kembali</span>
+              </button>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-linear-to-br from-blue-500 to-cyan-400 rounded-xl shadow-lg shadow-blue-500/30">
+                  <FileText size={24} className="text-white" />
+                </div>
+                <h1 className="text-4xl font-bold bg-linear-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent">
+                  SOTK & Dokumen
+                </h1>
+              </div>
+              <p className="text-slate-400 text-sm">
+                Struktur Organisasi & Tata Kerja - Kelola dokumen dengan mudah
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Error Box */}
+        {error && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
+            <div className="rounded-2xl border border-red-500/30 bg-linear-to-br from-red-950/40 to-red-900/20 backdrop-blur-sm p-4 sm:p-5 shadow-lg flex items-center gap-4">
+              <div className="shrink-0 p-2 rounded-lg bg-red-500/20">
+                <AlertCircle size={20} className="text-red-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-red-100">{error}</p>
+              </div>
+              <button
+                onClick={() => fetchList()}
+                className="shrink-0 px-3 py-1 rounded-lg bg-red-500/30 hover:bg-red-500/50 text-red-100 font-medium text-xs transition-all duration-200"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-6">
+          {/* Struktur Organisasi Section */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-linear-to-br from-slate-900/40 to-slate-800/30 backdrop-blur-xl shadow-xl">
+            {/* Decorative orbs */}
+            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-linear-to-br from-blue-500 to-cyan-300" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-linear-to-br from-purple-500 to-pink-300" />
+
+            <div className="relative p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-lg font-bold text-white">📊 Struktur Organisasi Perangkat Daerah</h2>
+                  <p className="text-slate-400 text-sm mt-1">Peraturan Bupati Karawang Nomor 68 Tahun 2021</p>
+                </div>
+                <span className="text-xs text-slate-400">Klik untuk memperbesar</span>
+              </div>
+
+              <button
+                onClick={handlePreviewOrgChart}
+                className="w-full rounded-2xl overflow-hidden border border-white/10 bg-slate-800/30 hover:bg-slate-800/50 transition-all duration-200"
+              >
+                <img
+                  src={ORG_IMAGE_PATH}
+                  alt="Struktur Organisasi"
+                  className="w-full max-h-[500px] object-contain hover:scale-[1.02] transition-transform duration-300"
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Upload Section */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-linear-to-br from-slate-900/40 to-slate-800/30 backdrop-blur-xl shadow-xl">
+            {/* Decorative orbs */}
+            <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-linear-to-br from-blue-500 to-cyan-300" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-linear-to-br from-purple-500 to-pink-300" />
+
+            <div className="relative p-6 sm:p-8">
+              <h2 className="text-lg font-bold text-white mb-2">📤 Upload Dokumen SOTK</h2>
+              <p className="text-slate-400 text-sm mb-6">
+                Upload SK, Lampiran, atau dokumen pendukung SOTK (PDF/DOC/JPG/PNG). Ukuran maksimal 25MB.
+              </p>
+
+              <form onSubmit={handleUpload} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* File Input */}
+                  <div className="md:col-span-1">
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">
+                      Pilih File
+                    </label>
+                    <input
+                      id="sotk-upload-input"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      onChange={handleFileChange}
+                      className="block w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-sm placeholder-slate-400 cursor-pointer hover:bg-white/20 transition-all duration-200"
+                    />
+                    {uploadingFile && (
+                      <p className="text-xs text-cyan-300 mt-2">✓ {uploadingFile.name}</p>
+                    )}
+                  </div>
+
+                  {/* Name Input */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-slate-200 mb-2">
+                      Nama Dokumen
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: SK Bupati No. 68 Tahun 2021"
+                      value={uploadingName}
+                      onChange={(e) => setUploadingName(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-white/40 transition-all duration-200"
+                    />
+                  </div>
+
+                  {/* Upload Button */}
+                  <div className="md:col-span-1 flex items-end">
+                    <button
+                      type="submit"
+                      disabled={isUploading}
+                      className="w-full px-6 py-2 rounded-lg bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 disabled:from-slate-600 disabled:to-slate-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 text-white disabled:shadow-none"
+                    >
+                      <Plus size={16} />
+                      {isUploading ? "Upload..." : "Upload"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Documents Table */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-24 bg-slate-900/40 backdrop-blur-xl">
+                <div className="relative w-16 h-16 mb-6">
+                  <div className="absolute inset-0 rounded-full border-4 border-slate-700" />
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-400 border-r-cyan-400 animate-spin" />
+                </div>
+                <p className="text-slate-300 font-medium">Memuat dokumen...</p>
+              </div>
+            ) : files.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-12 bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-dashed border-white/10">
+                <FileText size={48} className="text-slate-500 mb-4" />
+                <p className="text-xl font-bold text-white mb-2">Tidak ada dokumen</p>
+                <p className="text-slate-400 text-sm text-center max-w-sm">
+                  Upload dokumen SOTK pertama Anda sekarang
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  {/* Table Header */}
+                  <thead>
+                    <tr className="bg-slate-900/60 backdrop-blur-sm border-b border-white/10">
+                      <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wide">
+                        Nama Dokumen
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wide">
+                        Tipe File
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wide">
+                        Tanggal Upload
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wide">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+
+                  {/* Table Body */}
+                  <tbody>
+                    {files.map((file) => (
+                      <tr
+                        key={file.id}
+                        className="border-b border-white/5 hover:bg-white/5 transition-all duration-200 group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors">
+                              <FileText size={18} className="text-cyan-300" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-white truncate group-hover:text-cyan-100 transition-colors">
+                                {file.name}
+                              </p>
+                              <p className="text-xs text-slate-400">ID: {file.id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-xs font-semibold bg-white/10 px-2 py-1 rounded text-slate-300">
+                            {(file.mime || "-").split("/")[1]?.toUpperCase() || "FILE"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-slate-300">
+                            {new Date(file.created_at).toLocaleDateString("id-ID", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => handlePreview(file)}
+                              className="p-2 rounded-lg bg-white/10 hover:bg-blue-500/30 transition-all duration-200 text-white hover:text-blue-100"
+                              title="Lihat"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(file)}
+                              className="p-2 rounded-lg bg-white/10 hover:bg-amber-500/30 transition-all duration-200 text-white hover:text-amber-100"
+                              title="Edit"
+                            >
+                              <PencilLine size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(file)}
+                              className="p-2 rounded-lg bg-white/10 hover:bg-red-500/30 transition-all duration-200 text-white hover:text-red-100"
+                              title="Hapus"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Stats */}
+          {files.length > 0 && (
+            <div className="text-xs text-slate-400 text-center">
+              Total {files.length} dokumen SOTK
+            </div>
+          )}
+        </main>
+
+        {/* Footer */}
+        <footer className="backdrop-blur-xl bg-slate-900/40 border-t border-white/10 mt-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400">
+              <p>© 2026 Management System v2.0</p>
+              <div className="flex gap-6 mt-4 sm:mt-0">
+                <span>Total Dokumen: {files.length}</span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      {/* Preview Modal */}
       <FilePreviewModal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
@@ -345,4 +502,4 @@ export default function SotkPage() {
       />
     </div>
   );
-}
+};
