@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { PlusCircle, CheckCircle, ArrowLeft, AlertCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createJabatan, getJabatanById, updateJabatan } from "@/services/jabatanService";
+import { getJabatanById, updateJabatan } from "@/services/jabatanService";
 
-export default function FormJabatan({ isEdit = false }) {
+export default function EditJabatan() {
   const [namaJabatan, setNamaJabatan] = useState("");
-  const [isLoading, setIsLoading] = useState(isEdit ? true : false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -13,30 +13,30 @@ export default function FormJabatan({ isEdit = false }) {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Fetch data jabatan jika edit mode
+  // Fetch data jabatan saat component mount
   useEffect(() => {
-    if (isEdit && id) {
-      const fetchJabatan = async () => {
-        try {
-          setIsLoading(true);
-          setError("");
-          const response = await getJabatanById(id);
-          const jabatan = response.data.data;
-          setNamaJabatan(jabatan.nama_jabatan);
-          setOriginalNama(jabatan.nama_jabatan);
-        } catch (error) {
-          console.error("Error fetching jabatan:", error);
-          setError(
-            error.response?.data?.message || "Gagal memuat data jabatan"
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      };
+    const fetchJabatan = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+        const response = await getJabatanById(id);
+        const jabatan = response.data.data;
+        setNamaJabatan(jabatan.nama_jabatan);
+        setOriginalNama(jabatan.nama_jabatan);
+      } catch (error) {
+        console.error("Error fetching jabatan:", error);
+        setError(
+          error.response?.data?.message || "Gagal memuat data jabatan"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    if (id) {
       fetchJabatan();
     }
-  }, [isEdit, id]);
+  }, [id]);
 
   const handleSimpan = async () => {
     setError("");
@@ -47,24 +47,18 @@ export default function FormJabatan({ isEdit = false }) {
       return;
     }
 
-    if (isEdit && namaJabatan === originalNama) {
+    if (namaJabatan === originalNama) {
       setError("Tidak ada perubahan data");
       return;
     }
 
     try {
       setIsSaving(true);
-      const response = isEdit
-        ? await updateJabatan(id, namaJabatan)
-        : await createJabatan(namaJabatan);
+      const response = await updateJabatan(id, namaJabatan);
 
       if (response.data.success) {
         setSuccess(true);
-        if (!isEdit) {
-          setNamaJabatan("");
-        } else {
-          setOriginalNama(namaJabatan);
-        }
+        setOriginalNama(namaJabatan);
         setTimeout(() => {
           navigate(-1);
         }, 1500);
@@ -84,24 +78,12 @@ export default function FormJabatan({ isEdit = false }) {
   };
 
   const handleReset = () => {
-    if (isEdit) {
-      setNamaJabatan(originalNama);
-    } else {
-      setNamaJabatan("");
-    }
+    setNamaJabatan(originalNama);
     setError("");
     setSuccess(false);
   };
 
-  const isChanged = isEdit 
-    ? namaJabatan !== originalNama && namaJabatan.trim() !== ""
-    : namaJabatan.trim() !== "";
-
-  const pageTitle = isEdit ? "Edit Jabatan" : "Tambah Jabatan";
-  const pageDesc = isEdit 
-    ? "Perbarui informasi jabatan dalam organisasi Anda"
-    : "Tambahkan jabatan baru untuk struktur organisasi Anda";
-  const buttonText = isEdit ? "Simpan Perubahan" : "Simpan Jabatan";
+  const isChanged = namaJabatan !== originalNama && namaJabatan.trim() !== "";
 
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-x-hidden py-8 sm:py-12 px-4">
@@ -126,23 +108,15 @@ export default function FormJabatan({ isEdit = false }) {
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-xl shadow-lg ${
-                  isEdit
-                    ? "bg-gradient-to-br from-blue-500 to-cyan-400 shadow-blue-500/30"
-                    : "bg-gradient-to-br from-emerald-500 to-teal-400 shadow-emerald-500/30"
-                }`}>
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-xl shadow-lg shadow-blue-500/30">
                   <PlusCircle size={24} className="text-white" />
                 </div>
-                <h1 className={`text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${
-                  isEdit
-                    ? "from-white via-blue-100 to-cyan-100"
-                    : "from-white via-emerald-100 to-teal-100"
-                }`}>
-                  {pageTitle}
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent">
+                  Edit Jabatan
                 </h1>
               </div>
               <p className="text-slate-400 text-sm pl-1">
-                {pageDesc}
+                Perbarui informasi jabatan dalam organisasi Anda
               </p>
             </div>
           </div>
@@ -165,9 +139,7 @@ export default function FormJabatan({ isEdit = false }) {
                     <CheckCircle size={20} className="text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-emerald-100 font-semibold">
-                      ✓ Data berhasil {isEdit ? "diperbarui" : "disimpan"}!
-                    </p>
+                    <p className="text-emerald-100 font-semibold">✓ Data berhasil diperbarui!</p>
                     <p className="text-emerald-200 text-sm">Mengalihkan ke halaman sebelumnya...</p>
                   </div>
                 </div>
@@ -189,11 +161,7 @@ export default function FormJabatan({ isEdit = false }) {
               {/* Form Card */}
               <div className="relative overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br from-slate-900/40 to-slate-800/30 backdrop-blur-xl shadow-xl">
                 {/* Decorative orbs */}
-                <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-gradient-to-br ${
-                  isEdit
-                    ? "from-blue-500 to-cyan-300"
-                    : "from-emerald-500 to-teal-300"
-                }`} />
+                <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-gradient-to-br from-blue-500 to-cyan-300" />
                 <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-15 blur-3xl bg-gradient-to-br from-purple-500 to-pink-300" />
 
                 <div className="relative p-6 sm:p-10">
@@ -201,8 +169,8 @@ export default function FormJabatan({ isEdit = false }) {
                   <div className="space-y-8">
                     {/* Nama Jabatan Input */}
                     <div>
-                      <label className={`block text-slate-200 font-semibold text-sm mb-3 flex items-center gap-2`}>
-                        <PlusCircle size={16} className={isEdit ? "text-cyan-400" : "text-emerald-400"} />
+                      <label className="block text-slate-200 font-semibold text-sm mb-3 flex items-center gap-2">
+                        <PlusCircle size={16} className="text-cyan-400" />
                         Nama Jabatan
                       </label>
                       <input
@@ -217,9 +185,7 @@ export default function FormJabatan({ isEdit = false }) {
                         className={`w-full px-4 py-3 rounded-xl bg-white/10 border backdrop-blur-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                           error && !isChanged
                             ? "border-red-500/50 focus:ring-red-400/50 focus:border-red-500"
-                            : isEdit
-                            ? "border-white/20 focus:ring-blue-400/50 focus:border-white/40"
-                            : "border-white/20 focus:ring-emerald-400/50 focus:border-white/40"
+                            : "border-white/20 focus:ring-blue-400/50 focus:border-white/40"
                         }`}
                         disabled={isSaving}
                       />
@@ -227,7 +193,7 @@ export default function FormJabatan({ isEdit = false }) {
                         <div className="text-xs text-slate-400">
                           {namaJabatan.length} karakter
                         </div>
-                        {isEdit && isChanged && (
+                        {isChanged && (
                           <div className="text-xs text-cyan-400 font-semibold">
                             ● Ada perubahan
                           </div>
@@ -235,66 +201,40 @@ export default function FormJabatan({ isEdit = false }) {
                       </div>
                     </div>
 
-                    {/* Original Value Info (Edit Mode Only) */}
-                    {isEdit && (
-                      <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-xs text-slate-300">
-                        <p className="font-semibold text-slate-200 mb-1">Nilai Sebelumnya:</p>
-                        <p className="text-slate-400">{originalNama}</p>
-                      </div>
-                    )}
+                    {/* Original Value Info */}
+                    <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 text-xs text-slate-300">
+                      <p className="font-semibold text-slate-200 mb-1">Nilai Sebelumnya:</p>
+                      <p className="text-slate-400">{originalNama}</p>
+                    </div>
 
                     {/* Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/10">
-                      {isEdit ? (
-                        <>
-                          <button
-                            onClick={handleReset}
-                            className="px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50"
-                            disabled={isSaving || !isChanged}
-                          >
-                            <ArrowLeft size={16} />
-                            Reset
-                          </button>
+                      <button
+                        onClick={handleReset}
+                        className="px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50"
+                        disabled={isSaving || !isChanged}
+                      >
+                        <ArrowLeft size={16} />
+                        Reset
+                      </button>
 
-                          <button
-                            onClick={() => navigate(-1)}
-                            className="px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50"
-                            disabled={isSaving}
-                          >
-                            <ArrowLeft size={16} />
-                            Batal
-                          </button>
+                      <button
+                        onClick={() => navigate(-1)}
+                        className="px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50"
+                        disabled={isSaving}
+                      >
+                        <ArrowLeft size={16} />
+                        Batal
+                      </button>
 
-                          <button
-                            onClick={handleSimpan}
-                            disabled={isSaving || !isChanged}
-                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 disabled:from-slate-600 disabled:to-slate-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 text-white disabled:shadow-none"
-                          >
-                            <CheckCircle size={16} />
-                            {isSaving ? "Menyimpan..." : buttonText}
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => navigate(-1)}
-                            className="px-6 py-3 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 text-white disabled:opacity-50"
-                            disabled={isSaving}
-                          >
-                            <ArrowLeft size={16} />
-                            Batal
-                          </button>
-
-                          <button
-                            onClick={handleSimpan}
-                            disabled={isSaving || !isChanged}
-                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 disabled:from-slate-600 disabled:to-slate-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 text-white disabled:shadow-none"
-                          >
-                            <CheckCircle size={16} />
-                            {isSaving ? "Menyimpan..." : buttonText}
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={handleSimpan}
+                        disabled={isSaving || !isChanged}
+                        className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 disabled:from-slate-600 disabled:to-slate-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 text-white disabled:shadow-none"
+                      >
+                        <CheckCircle size={16} />
+                        {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -305,7 +245,7 @@ export default function FormJabatan({ isEdit = false }) {
                 <AlertCircle size={16} className="text-cyan-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-slate-200 mb-1">💡 Tips</p>
-                  <p>Gunakan nama jabatan yang jelas dan deskriptif agar memudahkan identifikasi posisi dalam organisasi. {isEdit && "Anda dapat melihat nilai sebelumnya di atas."}Contoh: Manager IT, Senior Developer, Staff Admin, dll.</p>
+                  <p>Gunakan nama jabatan yang jelas dan deskriptif agar memudahkan identifikasi posisi dalam organisasi. Anda dapat melihat nilai sebelumnya di atas.</p>
                 </div>
               </div>
             </>

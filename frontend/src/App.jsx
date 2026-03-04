@@ -45,6 +45,7 @@ import PKEselonIV from "./folder/PK/components/PKEselonIV";
 import RencanaAksiPage from "./folder/RENCANAAKSI/RencanaAksiPage";
 import EditPegawai from "./folder/PEGAWAI/components/editPegawai";
 import TambahPegawai from "./folder/PEGAWAI/components/tambahPegawai";
+import EditJabatan from "./folder/JABATAN/components/editJabatan";
 
 
 
@@ -92,6 +93,7 @@ function App() {
           <Route path="/dokumen/pegawai/edit/:id" element={<EditPegawai />} />
           <Route path="/dokumen/jabatan" element={<JabatanPage />} />
           <Route path="/dokumen/jabatan/create-jabatan-page" element={<CreateJabatanPage />} />
+          <Route path="/dokumen/jabatan/edit/:id" element={<EditJabatan />} />
           <Route path="/dokumen/cetak-cover" element={<ModulCetakPK />} />
           <Route path="/dokumen/PKEselonII" element={<PKEselonII />} />
           <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
