@@ -23,7 +23,7 @@ export const getAllJabatan = async (req, res) => {
 export const getJabatanById = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT * FROM jabatan WHERE id = ?", [id]);
+    const [rows] = await pool.query("SELECT * FROM jabatan WHERE id_jabatan = ?", [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: "Jabatan tidak ditemukan" });
@@ -82,7 +82,7 @@ export const updateJabatan = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      "UPDATE jabatan SET nama_jabatan = ? WHERE id = ?",
+      "UPDATE jabatan SET nama_jabatan = ? WHERE id_jabatan = ?",
       [nama_jabatan, id]
     );
 
@@ -106,7 +106,7 @@ export const deleteJabatan = async (req, res) => {
 
     // Catatan: Jika jabatan ini sedang dipakai di tabel pegawai, 
     // pastikan handle constraint error (RESTRICT) di database.
-    const [result] = await pool.query("DELETE FROM jabatan WHERE id = ?", [id]);
+    const [result] = await pool.query("DELETE FROM jabatan WHERE id_jabatan = ?", [id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Jabatan tidak ditemukan" });

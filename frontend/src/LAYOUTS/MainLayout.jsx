@@ -5,7 +5,7 @@ import NavbarApp from "@/LAYOUTS/NAVBAR/navbar";
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen">
       {" "}
       {/* pb-24 supaya konten tidak tertutup */}
       <NavbarApp/>
