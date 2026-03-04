@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
 
 // Import existing image assets
-import logoDinkop from "@/assets/logo_dinkopukm.png";
+import logoDinkopNew from "@/assets/logo_baru.png";
 import logoKarawang from "@/assets/logo_karawang.png";
 import logoKoperasi from "@/assets/logo_koperasi.png";
 
@@ -47,7 +47,7 @@ export default function LoginPageKece() {
         {/* Left: Branding / Promo */}
         <div className="hidden md:flex flex-col items-start justify-center bg-gradient-to-tr from-white/60 to-white/30 p-8 rounded-2xl shadow-lg border border-white/60 backdrop-blur-md">
           <div className="flex items-center gap-3 mb-4">
-            <img src={logoDinkop} alt="Logo DinkopUKM" className="w-100 h-30 object-contain" />
+            <img src={logoDinkopNew} alt="Logo DinkopUKM" className="w-100 h-30 object-contain" />
           </div>
 
           <h3 className="text-2xl font-semibold text-slate-800 mb-2">Selamat Datang</h3>
