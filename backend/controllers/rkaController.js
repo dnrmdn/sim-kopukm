@@ -1,147 +1,135 @@
-// backend/src/controllers/rkaController.js
 import pool from "../config/db.js";
 
-function fmtRow(row) {
-  // ensure numeric fields present
-  return {
-    ...row,
-    murni: Number(row.murni || 0),
-    pergeseran_i: Number(row.pergeseran_i || 0),
-    pergeseran_ii: Number(row.pergeseran_ii || 0),
-    efisiensi: Number(row.efisiensi || 0),
-    perubahan: Number(row.perubahan || 0),
-  };
-}
-
-/**
- * GET /api/rka?year=YYYY
- * returns list of RKA with aggregated belanja sums and program/keg/sub names
- */
-export async function listRka(req, res, next) {
+// GET ALL RKA (Untuk RkaTable dan RkaTreeTable)
+export async function getAllRka(req, res, next) {
   try {
-    const year = req.query.year ? Number(req.query.year) : null;
-
-    let sql = `
-      SELECT
-        r.id,
-        r.year,
-        r.program_id,
-        pr.kodering AS program_kodering,
-        pr.name AS program_name,
-        r.kegiatan_id,
-        k.name AS kegiatan_name,
-        k.kodering AS kegiatan_kodering,
-        r.subkegiatan_id,
-        s.name AS subkegiatan_name,
-        s.kodering AS subkegiatan_kodering,
-        r.keterangan,
-        r.tanggal_mulai,
-        r.tanggal_selesai,
-        COALESCE(SUM(rb.murni), 0) AS murni,
-        COALESCE(SUM(rb.pergeseran_i), 0) AS pergeseran_i,
-        COALESCE(SUM(rb.pergeseran_ii), 0) AS pergeseran_ii,
-        COALESCE(SUM(rb.efisiensi), 0) AS efisiensi,
-        COALESCE(SUM(rb.perubahan), 0) AS perubahan
-      FROM rkas r
-      LEFT JOIN programs pr ON pr.id = r.program_id
-      LEFT JOIN kegiatans k ON k.id = r.kegiatan_id
-      LEFT JOIN subkegiatans s ON s.id = r.subkegiatan_id
-      LEFT JOIN rka_belanja rb ON rb.rka_id = r.id
-      ${year ? "WHERE r.year = ?" : ""}
-      GROUP BY r.id
-      ORDER BY r.id DESC
-    `;
-
-    const params = year ? [year] : [];
-    const [rows] = await pool.query(sql, params);
-
-    return res.json(rows);
-  } catch (err) {
-    console.error("rka:list", err);
-    return next(err);
-  }
-}
-
-
-/**
- * POST /api/rka
- * create an RKA entry (basic)
- */
-export async function createRka(req, res, next) {
-  try {
-    const { year, program_id, kegiatan_id, subkegiatan_id, target_sub, satuan, penanggungjawab_id, pelaksana_id, tanggal_mulai, tanggal_selesai, keterangan } = req.body;
-    const [result] = await pool.query(
-      `INSERT INTO rkas (year, program_id, kegiatan_id, subkegiatan_id, target_sub, satuan, penanggungjawab_id, pelaksana_id, tanggal_mulai, tanggal_selesai, keterangan, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [year, program_id, kegiatan_id, subkegiatan_id, target_sub || null, satuan || null, penanggungjawab_id || null, pelaksana_id || null, tanggal_mulai || null, tanggal_selesai || null, keterangan || null]
-    );
-
-    const insertedId = result.insertId;
-    const [rows] = await pool.query("SELECT * FROM rkas WHERE id = ? LIMIT 1", [insertedId]);
-    return res.status(201).json(rows[0]);
-  } catch (err) {
-    console.error("rka:create", err);
-    return next(err);
-  }
-}
-
-/**
- * POST /api/rka/:id/belanja
- * Accepts { items: [ { belanja, koef, perhitungan, harga_satuan, murni, pergeseran_i, pergeseran_ii, efisiensi, perubahan } ] }
- */
-export async function addBelanja(req, res, next) {
-  try {
-    const rkaId = Number(req.params.id);
-    const items = Array.isArray(req.body.items) ? req.body.items : [];
-
-    if (!rkaId) return res.status(400).json({ message: "Invalid RKA id" });
-    if (!items.length) return res.status(400).json({ message: "Items array required" });
-
-    const conn = await pool.getConnection();
-    try {
-      await conn.beginTransaction();
-      const insertSql = `
-        INSERT INTO rka_belanja (rka_id, belanja, koef, perhitungan, harga_satuan, murni, pergeseran_i, pergeseran_ii, efisiensi, perubahan, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+    const query = `
+        SELECT 
+          rh.id_rka AS id,
+          rp.nama_program AS program_name,
+          rk.nama_kegiatan AS kegiatan_name,
+          rsk.nama_sub AS subkegiatan_name,
+          rsk.keterangan,
+          rt.tahun AS renstra_year,
+          rh.target_kinerja AS capaian,
+          COALESCE(SUM(rb.volume * rb.harga_satuan), 0) AS murni,
+          COALESCE(SUM(rb.pergeseran_1), 0) AS pergeseran_i,
+          COALESCE(SUM(rb.pergeseran_2), 0) AS pergeseran_ii,
+          0 AS efisiensi, 
+          COALESCE(SUM(rb.perubahan), 0) AS perubahan,
+          COALESCE(SUM(rb.realisasi), 0) AS realisasi,
+          MAX(rb.file_eviden) AS eviden
+        FROM rka_header rh
+        JOIN renstra_sub_kegiatan rsk ON rh.id_sub_kegiatan = rsk.id
+        JOIN renstra_kegiatan rk ON rsk.kegiatan_id = rk.id
+        JOIN renstra_program rp ON rk.program_id = rp.id
+        LEFT JOIN renstra_tahun rt ON rh.id_tahun = rt.id
+        LEFT JOIN rka_belanja rb ON rh.id_rka = rb.id_rka
+        GROUP BY rh.id_rka
+        ORDER BY rh.id_rka DESC
       `;
 
-      for (const it of items) {
-        const koef = Number(it.koef || 0);
-        const perhitungan = Number(it.perhitungan || 0);
-        const harga = Number(it.harga_satuan || 0);
-        const murni = Number(it.murni ?? (koef * perhitungan * harga));
-        const pergeseran_i = Number(it.pergeseran_i || 0);
-        const pergeseran_ii = Number(it.pergeseran_ii || 0);
-        const efisiensi = Number(it.efisiensi || 0);
-        const perubahan = Number(it.perubahan || 0);
-
-        await conn.query(insertSql, [rkaId, it.belanja, koef, perhitungan, harga, murni, pergeseran_i, pergeseran_ii, efisiensi, perubahan]);
-      }
-
-      await conn.commit();
-    } catch (e) {
-      await conn.rollback();
-      throw e;
-    } finally {
-      conn.release();
-    }
-
-    // Return updated aggregated totals for this RKA
-    const [aggRows] = await pool.query(
-      `SELECT
-         COALESCE(SUM(murni),0) AS murni,
-         COALESCE(SUM(pergeseran_i),0) AS pergeseran_i,
-         COALESCE(SUM(pergeseran_ii),0) AS pergeseran_ii,
-         COALESCE(SUM(efisiensi),0) AS efisiensi,
-         COALESCE(SUM(perubahan),0) AS perubahan
-       FROM rka_belanja
-       WHERE rka_id = ?`,
-      [rkaId]
-    );
-
-    return res.status(201).json({ id: rkaId, totals: aggRows[0] || {} });
+    const [rows] = await pool.query(query);
+    res.json(rows);
   } catch (err) {
-    console.error("rka:addBelanja", err);
-    return next(err);
+    next(err);
   }
 }
+
+/// Di rkaController.js pada fungsi createRka
+export async function createRka(req, res, next) {
+  try {
+    const {
+      subkegiatan_id,
+      penanggungjawab_id,
+      pelaksana_id,
+      tanggal_mulai,
+      tanggal_selesai,
+      target_sub,
+      jenis_pagu,
+    } = req.body;
+
+    const id_tahun = 1; 
+
+    // Pastikan nilai kosong dikonversi ke NULL agar tidak error di MySQL
+    const values = [
+      subkegiatan_id || null,
+      id_tahun,
+      jenis_pagu || null,
+      penanggungjawab_id || null,
+      pelaksana_id || null,
+      tanggal_mulai || null,
+      tanggal_selesai || null,
+      target_sub || null,
+    ];
+
+    const query = `
+        INSERT INTO rka_header 
+        (id_sub_kegiatan, id_tahun, pagu_id, id_pj, id_pelaksana, tgl_mulai, tgl_selesai, target_kinerja) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+    // Gunakan pool.query sesuai format baru kita
+    const [result] = await pool.query(query, values);
+
+    res.status(201).json({
+      message: "Data RKA berhasil ditambahkan",
+      id_rka: result.insertId,
+    });
+  } catch (err) {
+    console.error("DATABASE ERROR:", err.sqlMessage); // Agar terlihat di terminal nodemon
+    next(err); 
+  }
+}
+
+// DELETE RKA
+export async function deleteRka(req, res, next) {
+  try {
+    const { id } = req.params;
+    const [result] = await pool.query("DELETE FROM rka_header WHERE id_rka = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Data RKA tidak ditemukan" });
+    }
+
+    res.json({ message: "Data RKA berhasil dihapus" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// SAVE BELANJA (Transaction support)
+export async function saveBelanja(req, res, next) {
+  const connection = await pool.getConnection();
+  try {
+    const { id } = req.params; // id_rka
+    const { items } = req.body;
+
+    await connection.beginTransaction();
+
+    const query = `
+        INSERT INTO rka_belanja 
+        (id_rka, uraian_belanja, koefisien, volume, harga_satuan) 
+        VALUES (?, ?, ?, ?, ?)
+      `;
+
+    for (const item of items) {
+      await connection.execute(query, [
+        id,
+        item.belanja,
+        item.koef,
+        item.perhitungan,
+        item.harga_satuan,
+      ]);
+    }
+
+    await connection.commit();
+    res.status(201).json({ message: "Rincian Belanja berhasil disimpan!" });
+  } catch (err) {
+    await connection.rollback();
+    next(err);
+  } finally {
+    connection.release();
+  }
+}
+

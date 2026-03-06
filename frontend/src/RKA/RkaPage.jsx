@@ -1,320 +1,224 @@
-// src/pages/RkaPage.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
-
-import InputRKA from "../RKA/components/InputRKA";
-import BelanjaSection from "../RKA/components/BelanjaSection";
-import RkaTable from "../RKA/components/RkaTable";
-
-function formatIdr(x) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(x || 0));
-}
+import InputRKA from "./components/InputRKA";
+import BelanjaSection from "./components/BelanjaSection";
+import RkaTreeTable from "./components/RkaTable";
+import DashboardSuper from "./components/DashboardSuper";
 
 export default function RkaPage() {
-  // --- LOGIC: TIDAK DISENTUH ---
-  const defaultYear = new Date().getFullYear() + 1;
-  const [year, setYear] = useState(defaultYear);
-  const years = useMemo(() => {
-    const y = new Date().getFullYear();
-    return [y - 1, y, y + 1, y + 2, y + 3, y + 4];
-  }, []);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [renstraPrograms, setRenstraPrograms] = useState([]);
-  const [pegawaiList, setPegawaiList] = useState([]);
-  const [satuanList, setSatuanList] = useState([]);
-  const [loadingMasters, setLoadingMasters] = useState(true);
+  // State Form & Modals
   const [showInputModal, setShowInputModal] = useState(false);
   const [showBelanjaStep, setShowBelanjaStep] = useState(false);
-  const [paguOptions, setPaguOptions] = useState([]);
-
+  const [currentRkaDetail, setCurrentRkaDetail] = useState(null);
   const [rkaForm, setRkaForm] = useState({
-    program_id: null,
-    kegiatan_id: null,
-    subkegiatan_id: null,
-    target_sub: "",
-    satuan: "",
-    penanggungjawab_id: null,
-    pelaksana_id: null,
+    program_id: "",
+    kegiatan_id: "",
+    subkegiatan_id: "",
+    penanggungjawab_id: "",
+    pelaksana_id: "",
     tanggal_mulai: "",
     tanggal_selesai: "",
+    target_sub: "",
+    jenis_pagu: ""
   });
-  const [currentRkaDetail, setCurrentRkaDetail] = useState(null);
-  const [rkaTableData, setRkaTableData] = useState([]);
 
-  useEffect(() => {
-    loadAllMasters();
-    fetchRkaTable();
+  // Master Data Options
+  const [options, setOptions] = useState({
+    programs: [], 
+    kegiatan: [], 
+    subkegiatan: [], 
+    pegawai: [], 
+    pagu: [], 
+    satuan: [{id: 1, name: 'Dokumen'}, {id: 2, name: 'Bulan'}]
+  });
+
+  useEffect(() => { 
+    fetchList();
+    loadInitialMaster();
   }, []);
 
-async function loadAllMasters() {
-  setLoadingMasters(true);
-  try {
-    await Promise.all([
-      fetchRenstra(), 
-      fetchPegawai(), 
-      fetchSatuan(),
-      fetchPagu() // Tambahkan ini
-    ]);
-  } catch (err) {
-    console.error("loadAllMasters error", err);
-  } finally {
-    setLoadingMasters(false);
-  }
-}
-
-  async function fetchRenstra() {
+  async function fetchList() {
+    setLoading(true);
     try {
-      const res = await axiosInstance.get("/renstra/programs");
-      const programs = Array.isArray(res.data) ? res.data : (res.data?.data ?? res.data?.programs ?? []);
-      setRenstraPrograms(programs);
-    } catch (err) {
-      setRenstraPrograms([]);
+      const res = await axiosInstance.get("/rka");
+      setList(res.data || []);
+    } catch (err) { 
+      console.error("Fetch List Error:", err); 
+    } finally { 
+      setLoading(false); 
     }
   }
 
-  async function fetchPegawai() {
+  async function loadInitialMaster() {
     try {
-      const res = await axiosInstance.get("/pegawai");
-      const arr = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
-      setPegawaiList(arr);
+      const [p, pg, pa] = await Promise.all([
+        axiosInstance.get("/master/programs"),
+        axiosInstance.get("/master/pegawai"),
+        axiosInstance.get("/master/pagu")
+      ]);
+      setOptions(prev => ({ 
+        ...prev, 
+        programs: p.data, 
+        pegawai: pg.data, 
+        pagu: pa.data 
+      }));
     } catch (err) {
-      setPegawaiList([]);
+      console.error("Load Master Error:", err);
     }
   }
 
-  async function fetchSatuan() {
-    try {
-      const res = await axiosInstance.get("/renstra/satuans");
-      const arr = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
-      setSatuanList(arr);
-    } catch (err) {
-      setSatuanList([]);
-    }
-  }
-
-  async function fetchRkaTable(y = year) {
-    try {
-      const res = await axiosInstance.get(`/rka?year=${y}`);
-      const arr = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
-      setRkaTableData(arr);
-    } catch (err) {
-      setRkaTableData([]);
-    }
-  }
-
-async function fetchPagu() {
-  try {
-    const res = await axiosInstance.get("/pagu");
-    // Karena bentuknya [{}, {}], maka res.data adalah array-nya
-    const data = res.data; 
+  // Handler Cascading Dropdown
+  const onChangeForm = async (key, val) => {
+    setRkaForm(prev => ({ ...prev, [key]: val }));
     
-    if (Array.isArray(data)) {
-      setPaguOptions(data);
-    } else if (data && Array.isArray(data.data)) {
-      // Jaga-jaga jika interceptor axios kamu mengembalikan seluruh object res
-      setPaguOptions(data.data);
+    if (key === "program_id") {
+      const res = await axiosInstance.get(`/master/kegiatan?program_id=${val}`);
+      setOptions(prev => ({ ...prev, kegiatan: res.data, subkegiatan: [] }));
     }
-  } catch (err) {
-    console.error("Gagal ambil data pagu", err);
-    setPaguOptions([]);
-  }
-}
-
-  function onChangeForm(key, value) {
-    setRkaForm((prev) => ({ ...prev, [key]: value }));
-  }
-
-  const kegiatanOptions = useMemo(() => {
-    if (!rkaForm.program_id) return [];
-    const p = renstraPrograms.find((x) => Number(x.id) === Number(rkaForm.program_id));
-    return p?.kegiatans || [];
-  }, [rkaForm.program_id, renstraPrograms]);
-
-  const subkegiatanOptions = useMemo(() => {
-    if (!rkaForm.kegiatan_id) return [];
-    const k = kegiatanOptions.find((x) => Number(x.id) === Number(rkaForm.kegiatan_id));
-    return k?.subkegiatans || [];
-  }, [rkaForm.kegiatan_id, kegiatanOptions]);
-
-  async function handleSubmitRka(e) {
-    e?.preventDefault?.();
-    if (!rkaForm.program_id || !rkaForm.kegiatan_id || !rkaForm.subkegiatan_id) {
-      return alert("Program, Kegiatan, Sub Kegiatan wajib dipilih.");
+    if (key === "kegiatan_id") {
+      const res = await axiosInstance.get(`/master/sub-kegiatan?kegiatan_id=${val}`);
+      setOptions(prev => ({ ...prev, subkegiatan: res.data }));
     }
+  };
+
+  const handleSubmitRka = () => {
+    // Validasi sederhana sebelum lanjut ke belanja
+    if (!rkaForm.subkegiatan_id || !rkaForm.pelaksana_id) {
+      return alert("Mohon lengkapi data Sub Kegiatan dan Pelaksana");
+    }
+
+    // Cari detail object untuk ditampilkan di header BelanjaSection
+    const prog = options.programs.find(p => p.id == rkaForm.program_id);
+    const keg = options.kegiatan.find(k => k.id == rkaForm.kegiatan_id);
+    const sub = options.subkegiatan.find(s => s.id == rkaForm.subkegiatan_id);
+    const pel = options.pegawai.find(p => p.id == rkaForm.pelaksana_id);
+
+    setCurrentRkaDetail({
+      program: prog,
+      kegiatan: keg,
+      subkegiatan: sub,
+      pelaksana: pel
+    });
+
+    setShowInputModal(false);
+    setShowBelanjaStep(true);
+  };
+
+  /**
+   * ALUR SIMPAN DUA TAHAP (FIXED)
+   */
+  const handleSaveBelanja = async (belanjaRows) => {
     try {
-      const payload = { year, ...rkaForm };
-      const res = await axiosInstance.post("/rka", payload);
-      const saved = res.data;
-      const prog = renstraPrograms.find((p) => Number(p.id) === Number(rkaForm.program_id));
-      const keg = (prog?.kegiatans || []).find((k) => Number(k.id) === Number(rkaForm.kegiatan_id));
-      const sub = (keg?.subkegiatans || []).find((s) => Number(s.id) === Number(rkaForm.subkegiatan_id));
-
-      setCurrentRkaDetail({
-        id: saved?.id ?? saved?.insertId ?? null,
-        program: prog,
-        kegiatan: keg,
-        subkegiatan: sub,
-        penanggungjawab: pegawaiList.find((p) => Number(p.id) === Number(rkaForm.penanggungjawab_id)) || null,
-        pelaksana: pegawaiList.find((p) => Number(p.id) === Number(rkaForm.pelaksana_id)) || null,
+      // TAHAP 1: Simpan Header RKA (Sesuai rkaController.createRka)
+      const resHeader = await axiosInstance.post("/rka", {
+        subkegiatan_id: rkaForm.subkegiatan_id,
+        penanggungjawab_id: rkaForm.penanggungjawab_id,
+        pelaksana_id: rkaForm.pelaksana_id,
         tanggal_mulai: rkaForm.tanggal_mulai,
         tanggal_selesai: rkaForm.tanggal_selesai,
+        target_sub: rkaForm.target_sub,
+        jenis_pagu: rkaForm.jenis_pagu
       });
 
-      setShowInputModal(false);
-      setShowBelanjaStep(true);
-      fetchRkaTable();
-    } catch (err) {
-      alert("Gagal menyimpan RKA.");
-    }
-  }
+      const newIdRka = resHeader.data.id_rka;
 
-  async function handleSaveBelanja(items) {
-    if (!currentRkaDetail?.id) return alert("RKA belum tersimpan id-nya.");
-    try {
-      await axiosInstance.post(`/rka/${currentRkaDetail.id}/belanja`, { items });
-      alert("Belanja tersimpan.");
+      // TAHAP 2: Simpan Rincian Belanja (Sesuai rkaController.saveBelanja)
+      await axiosInstance.post(`/rka/${newIdRka}/belanja`, {
+        items: belanjaRows // Mapping dilakukan di dalam BelanjaSection atau di sini
+      });
+
+      alert("Data RKA dan Rincian Belanja Berhasil Disimpan!");
+      
+      // Reset State
       setShowBelanjaStep(false);
-      setCurrentRkaDetail(null);
-      fetchRkaTable();
-    } catch (err) {
-      alert("Gagal menyimpan belanja");
+      setRkaForm({
+        program_id: "", kegiatan_id: "", subkegiatan_id: "", 
+        penanggungjawab_id: "", pelaksana_id: "", 
+        tanggal_mulai: "", tanggal_selesai: "", 
+        target_sub: "", jenis_pagu: ""
+      });
+      
+      fetchList();
+    } catch (err) { 
+      console.error("Save Error:", err);
+      alert("Gagal simpan data: " + (err.response?.data?.message || err.message)); 
     }
-  }
-  // --- END LOGIC ---
+  };
+
+  // Suplai props ke komponen anak
+  const rkaProps = {
+    showInputModal, setShowInputModal,
+    showBelanjaStep, setShowBelanjaStep,
+    rkaTreeData: list,
+    currentRkaDetail,
+    rkaForm,
+    onChangeForm,
+    handleSubmitRka,
+    handleSaveBelanja,
+    renstraPrograms: options.programs,
+    kegiatanOptions: options.kegiatan,
+    subkegiatanOptions: options.subkegiatan,
+    pegawaiList: options.pegawai,
+    satuanList: options.satuan,
+    paguOptions: options.pagu
+  };
+
+  if (loading) return <div className="p-10 animate-pulse text-blue-600 font-bold">LOADING DATA...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 lg:p-8 font-sans text-slate-900">
-      <div className="max-w-[1600px] mx-auto">
-        
-        {/* Header Section */}
-        <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-8 h-1 bg-blue-600 rounded-full"></span>
-              <span className="text-sm font-bold tracking-widest text-blue-600 uppercase">Perencanaan & Anggaran</span>
-            </div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-              RENCANA KERJA ANGGARAN <span className="text-blue-600">(RKA)</span>
-            </h1>
-            <p className="text-slate-500 font-medium mt-1 uppercase tracking-wider">Dinkopukm Kabupaten Karawang</p>
-          </div>
-          <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200 text-center md:text-right">
-            <span className="text-xs font-bold text-slate-400 uppercase block tracking-tighter">Periode Anggaran</span>
-            <span className="text-2xl font-black text-slate-700">TAHUN {year}</span>
-          </div>
-        </header>
-
-        {/* Toolbar Section */}
-        <div className="flex flex-col xl:flex-row gap-4 items-center justify-between mb-6">
-          <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
-              <label className="text-xs font-bold text-slate-400 uppercase whitespace-nowrap">Pilih Tahun:</label>
-              <select
-                value={year}
-                onChange={(e) => {
-                  const y = Number(e.target.value);
-                  setYear(y);
-                  fetchRkaTable(y);
-                }}
-                className="bg-transparent font-bold text-slate-700 focus:outline-none cursor-pointer min-w-[80px]"
-              >
-                {years.map((y) => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
-
-            <button 
-              onClick={() => setShowInputModal(true)} 
-              className="flex-1 md:flex-none px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              INPUT RKA BARU
-            </button>
-          </div>
-
-          {/* Module Nav - Disabled States */}
-          <div className="flex flex-wrap gap-2 w-full xl:w-auto justify-start xl:justify-end">
-            {["KAK","Cascading","PK","Rencana Aksi","Pohon Kinerja","Manajemen Resiko"].map(t => (
-              <button 
-                key={t} 
-                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border border-slate-200 bg-white text-slate-300 rounded-lg cursor-not-allowed" 
-                disabled
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+    <div className="min-h-screen bg-slate-50 p-4 lg:p-8">
+      <header className="mb-8 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">RENCANA KERJA ANGGARAN (RKA)</h1>
+          <p className="text-slate-500 text-sm">Sistem Perencanaan & Manajemen Anggaran</p>
         </div>
+        {!showBelanjaStep && (
+          <button 
+            onClick={() => setShowInputModal(true)} 
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
+          >
+            + INPUT RKA BARU
+          </button>
+        )}
+      </header>
 
-        {/* Main Content Area */}
-        <main className="space-y-6">
-          {!showBelanjaStep && (
-            <>
-              {/* Status Info Card */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${loadingMasters ? 'bg-amber-50 text-amber-500 animate-pulse' : 'bg-emerald-50 text-emerald-500'}`}>
-                    {loadingMasters ? (
-                       <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-700 leading-none mb-1">Status Sistem</h4>
-                    <p className="text-xs text-slate-500 font-medium">
-                      {loadingMasters ? "Sinkronisasi data master..." : `Data tahun ${year} siap dikelola`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg">
-                   <span className="w-2 h-2 bg-slate-400 rounded-full"></span>
-                   TOTAL: {rkaTableData.length} KEGIATAN
-                </div>
+      {/* Tampilan Dashboard Statistik */}
+      {!showBelanjaStep && <DashboardSuper data={list} />}
+
+      {/* Konten Utama: Tabel RKA atau Form Belanja */}
+      <main>
+        {!showBelanjaStep ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            {list.length > 0 ? (
+              <RkaTreeTable data={list} onEdit={() => setShowInputModal(true)} />
+            ) : (
+              <div className="p-20 text-center">
+                <div className="text-slate-300 mb-2">Empty Data</div>
+                <p className="text-slate-400 italic text-sm">Belum ada data RKA yang tersimpan.</p>
               </div>
-
-              {/* Table Component Container */}
-              <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-200">
-                <RkaTable data={rkaTableData} onEdit={() => setShowInputModal(true)} />
-              </div>
-            </>
-          )}
-
-          {/* Stepper View for Belanja */}
-          {showBelanjaStep && currentRkaDetail && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <BelanjaSection 
-                currentRkaDetail={currentRkaDetail} 
-                rkaForm={rkaForm} 
-                onSave={handleSaveBelanja} 
-                onCancel={() => setShowBelanjaStep(false)} 
-              />
-            </div>
-          )}
-        </main>
-
-        {/* Modal Logic Remains Untouched */}
-        {showInputModal && (
-          <InputRKA
-            renstraPrograms={renstraPrograms}
-            kegiatanOptions={kegiatanOptions}
-            subkegiatanOptions={subkegiatanOptions}
-            pegawaiList={pegawaiList}
-            satuanList={satuanList}
+            )}
+          </div>
+        ) : (
+          <BelanjaSection 
+            currentRkaDetail={currentRkaDetail} 
             rkaForm={rkaForm}
-            onChangeForm={onChangeForm}
-            onClose={() => setShowInputModal(false)}
-            onSubmit={handleSubmitRka}
-            paguOptions={paguOptions}
+            onSave={handleSaveBelanja} 
+            onCancel={() => setShowBelanjaStep(false)} 
           />
         )}
-      </div>
-      
-      {/* Footer / Copyright */}
-      <footer className="mt-12 py-6 text-center border-t border-slate-200">
-        <p className="text-xs font-bold text-slate-400 tracking-widest uppercase">
-          &copy; 2026 E-Budgeting Dinkopukm Karawang
-        </p>
-      </footer>
+      </main>
+
+      {/* Modal Step 1: Input Header */}
+      {showInputModal && (
+        <InputRKA 
+          {...rkaProps} 
+          onClose={() => setShowInputModal(false)} 
+          onSubmit={handleSubmitRka} 
+        />
+      )}
     </div>
   );
 }
