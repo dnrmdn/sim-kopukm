@@ -207,7 +207,12 @@ app.use("/api/jabatan", jabatanRouter);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 app.use("/api/rka", rkaRouter);
+=======
+app.use("/api/pegawai-hirarki", pegawaiHirarkiRoutes);
+app.use("/api/rka", rkaRoutes);
+>>>>>>> Stashed changes
 =======
 app.use("/api/pegawai-hirarki", pegawaiHirarkiRoutes);
 app.use("/api/rka", rkaRoutes);
