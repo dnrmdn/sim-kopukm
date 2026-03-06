@@ -3,22 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import logoDinkopNew from '@/assets/logo_baru.png';
 import logoKarawang from '@/assets/logo_karawang.png';
 import logoKoperasi from '@/assets/logo_koperasi.png';
-import DecorativeBackground from './components/decorativeBg';
-import BrandingSection from './components/brandingSection';
-import LoginCard from './components/loginCard';
+import RegisterCard from './components/cardRegister';
+import BrandingSection from '../LOGIN/components/brandingSection';
+import DecorativeBackground from '../LOGIN/components/decorativeBg';
 
 const BRANDING_DATA = {
-  title: 'Selamat Datang',
-  description: 'Masuk untuk mengelola data umkm, koperasi, pelayanan, dan laporan.',
+  title: 'Bergabunglah dengan Kami',
+  description: 'Daftar akun baru untuk mengelola data umkm, koperasi, pelayanan, dan laporan.',
   features: [
     'Akses laporan real-time',
     'Kelola pengaduan dan layanan',
-    'Dashboard analisa'
+    'Dashboard analisa',
+    'Integrasi data lengkap'
   ]
 };
 
-const LOGIN_CARD_DATA = {
-  title: 'Login SIM-KOPUKM',
+const REGISTER_CARD_DATA = {
+  title: 'Daftar SIM-KOPUKM',
   logos: [
     {
       src: logoKarawang,
@@ -31,21 +32,23 @@ const LOGIN_CARD_DATA = {
   ]
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
 
-  const handleLoginSuccess = (user) => {
-    console.log('Login success:', user);
-    navigate('/overview');
+  const handleRegisterSuccess = (userData) => {
+    console.log('Register success:', userData);
+    // Tampilkan success message atau redirect
+    alert('Registrasi berhasil! Silakan login dengan akun Anda.');
+    navigate('/login');
   };
 
-  const handleNavigateRegister = () => {
-    navigate('/register');
+  const handleNavigateLogin = () => {
+    navigate('/login');
   };
 
-  const handleNavigateForgot = () => {
-    navigate('/forgot-password');
-  };
+//   const handleNavigateTerms = () => {
+//     navigate('/terms');
+//   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-sky-50 via-white to-rose-50 p-6">
@@ -62,15 +65,15 @@ export default function LoginPage() {
           features={BRANDING_DATA.features}
         />
 
-        {/* Right: Login Card */}
-        <LoginCard
-          logos={LOGIN_CARD_DATA.logos}
-          title={LOGIN_CARD_DATA.title}
-          onLoginSuccess={handleLoginSuccess}
-          onNavigateRegister={handleNavigateRegister}
-          onNavigateForgot={handleNavigateForgot}
+        {/* Right: Register Card */}
+        <RegisterCard
+          logos={REGISTER_CARD_DATA.logos}
+          title={REGISTER_CARD_DATA.title}
+          onRegisterSuccess={handleRegisterSuccess}
+          onNavigateLogin={handleNavigateLogin}
+        //   onNavigateTerms={handleNavigateTerms}
         />
       </div>
     </div>
   );
-};
+}
