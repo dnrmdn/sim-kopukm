@@ -50,6 +50,8 @@ import KegiatanAnggaranRoutes from "./routes/Renstra/KegiatanAnggaranRoutes.js";
 import TahunRoutes from "./routes/Renstra/TahunRoutes.js";
 import SubKegiatanRoutes from "./routes/Renstra/SubKegiatanRoutes.js";
 import SubKegiatanAnggaranRoutes from "./routes/Renstra/SubKegiatanAnggaranRoutes.js";
+import DokumenRenstraRoutes from "./routes/Renstra/DokumenRoutes.js";
+import DashboardRenstraRoutes from "./routes/Renstra/DashboardRoutes.js"
 
 dotenv.config();
 
@@ -239,7 +241,8 @@ app.use("/api/renstra/kegiatan-anggaran", KegiatanAnggaranRoutes);
 app.use("/api/renstra/sub-kegiatan", SubKegiatanRoutes);
 app.use("/api/renstra/sub-kegiatan-anggaran", SubKegiatanAnggaranRoutes);
 app.use("/api/renstra/tahun", TahunRoutes);
-
+app.use("/api/renstra/dokumen", DokumenRenstraRoutes);
+app.use("/api/renstra/dashboard", DashboardRenstraRoutes);
 
 // ================================
 // 🔹 Handler 404 (after routes)

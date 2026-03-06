@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { Plus, ChevronDown, RefreshCw, FileUp, Edit3, Trash2 } from "lucide-react";
 import AddKegiatanModal from "./AddKegiatanModal";
+import AddDokumenModal from "./AddDokumenModal";
 import EditProgramModal from "./EditProgramModal";
 import TabelKegiatan from "./TabelKegiatan";
 import Swal from "sweetalert2";
@@ -16,6 +17,8 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
 
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState(null);
+
+  const [isModalDokumenOpen, setIsModalDokumenOpen] = useState(false);
 
   const openEditProgram = (prog) => {
     setSelectedProgram(prog);
@@ -92,11 +95,12 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
             <Plus size={14} /> Tambah Program
           </button>
           
-          <button 
-            className="flex items-center gap-2 px-4 py-2 border border-slate-300 bg-white text-slate-700 text-[11px] font-black uppercase tracking-tighter hover:bg-slate-50 transition-all rounded-sm shadow-sm"
-          >
-            <FileUp size={14} /> Upload Dokumen
-          </button>
+<button 
+  onClick={() => setIsModalDokumenOpen(true)}
+  className="flex items-center gap-2 px-4 py-2 border border-slate-300 bg-white text-slate-700 text-[11px] font-black uppercase tracking-tighter hover:bg-slate-50 transition-all rounded-sm shadow-sm"
+>
+  <FileUp size={14} /> Upload Dokumen
+</button>
         </div>
 
         <button onClick={fetchData} className="p-2 hover:bg-slate-200 rounded-lg transition-all border border-slate-200 bg-white">
@@ -229,6 +233,12 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
         onSuccess={fetchData}
         programData={selectedProgram}
       />
+
+      <AddDokumenModal 
+  open={isModalDokumenOpen}
+  onClose={() => setIsModalDokumenOpen(false)}
+  onSuccess={() => console.log("Upload Sukses")}
+/>
     </div>
   );
 }
