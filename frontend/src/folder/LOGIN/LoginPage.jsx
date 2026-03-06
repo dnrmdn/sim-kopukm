@@ -36,7 +36,7 @@ export default function LoginPageKece() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-white to-rose-50 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-sky-50 via-white to-rose-50 p-6">
       {/* Decorative background shapes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         <div className="absolute -left-20 -top-10 blur-3xl opacity-30 w-72 h-72 rounded-full bg-blue-300 transform rotate-45" />
@@ -45,7 +45,7 @@ export default function LoginPageKece() {
 
       <div className="relative z-10 w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         {/* Left: Branding / Promo */}
-        <div className="hidden md:flex flex-col items-start justify-center bg-gradient-to-tr from-white/60 to-white/30 p-8 rounded-2xl shadow-lg border border-white/60 backdrop-blur-md">
+        <div className="hidden md:flex flex-col items-start justify-center bg-linear-to-tr from-white/60 to-white/30 p-8 rounded-2xl shadow-lg border border-white/60 backdrop-blur-md">
           <div className="flex items-center gap-3 mb-4">
             <img src={logoDinkopNew} alt="Logo DinkopUKM" className="w-100 h-30 object-contain" />
           </div>
