@@ -20,9 +20,8 @@ import umkmRoute from "./routes/umkmRoutes.js";
 import dokumenSotkRoutes from "./routes/dokumenSotk.js";
 import hirarkiRoutes from "./routes/hirarkiRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
-import rkaRouter from './routes/rkaRoutes.js';
+import rkaRoutes from './routes/rkaRoutes.js';
 import pegawaiRouter from './routes/pegawaiRoutes.js';
-import pegawaiHirarkiRoutes from "./routes/pegawaiHirarkiRoutes.js";
 import jabatanRouter from './routes/jabatanRoutes.js';
 import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
 import dokumenRenjaRoutes from './routes/dokumenRenja.js';
@@ -32,12 +31,16 @@ import dokumenLakipRoutes from "./routes/dokumenLakip.js"
 import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
 import dokumenLppdRoutes from "./routes/dokumenLppd.js";
 import paguRoutes from "./routes/paguRoutes.js";
+<<<<<<< Updated upstream
+=======
 import skmRoutes from "./routes/skmRoutes.js";
 import dokumenLhpRoutes from "./routes/dokumenLhp.js";
 import dokumenLkeRoutes from "./routes/dokumenLke.js";
 import dokumenDpaRoutes from "./routes/dokumenDpa.js";
 import dokumenKakRoutes from "./routes/dokumenKak.js";
+import masterRoutes from "./routes/masterRoutes.js";
 
+>>>>>>> Stashed changes
 
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
@@ -201,8 +204,12 @@ app.use("/api/programs", programRoutes);
 app.use("/api/renstra/programs", programRoutes);
 app.use("/api/pegawai", pegawaiRouter);
 app.use("/api/jabatan", jabatanRouter);
-app.use("/api/pegawai-hirarki", pegawaiHirarkiRoutes);
+<<<<<<< Updated upstream
 app.use("/api/rka", rkaRouter);
+=======
+app.use("/api/pegawai-hirarki", pegawaiHirarkiRoutes);
+app.use("/api/rka", rkaRoutes);
+>>>>>>> Stashed changes
 app.use("/api/renstra/satuans", renstraSatuansRouter);
 app.use("/api/dokumen/renja", dokumenRenjaRoutes);
 app.use("/api/dokumen/sop", dokumenSopRoute);
@@ -211,14 +218,18 @@ app.use("/api/dokumen/lkpj", dokumenLkpjRoutes);
 app.use("/api/dokumen/lakip", dokumenLakipRoutes);
 app.use("/api/lppd", dokumenLppdRoutes);
 app.use("/api/pagu", paguRoutes);
+<<<<<<< Updated upstream
+=======
 app.use("/api/skm", skmRoutes);
 app.use("/api/lhp", dokumenLhpRoutes);
 app.use("/api/dokumen/lke", dokumenLkeRoutes);
 app.use("/api/dokumen/dpa", dokumenDpaRoutes);
 app.use("/api/dokumen/kak", dokumenKakRoutes);
+app.use("/api/master", masterRoutes);
 
 
 
+>>>>>>> Stashed changes
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);

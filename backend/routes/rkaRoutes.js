@@ -1,11 +1,35 @@
-// backend/src/routes/rkaRoutes.js
 import express from "express";
-import * as ctrl from "../controllers/rkaController.js";
+import { 
+  getAllRka, 
+  createRka, 
+  deleteRka, 
+  saveBelanja 
+} from "../controllers/rkaController.js";
 
 const router = express.Router();
 
-router.get("/", ctrl.listRka);              // GET /api/rka?year=YYYY
-router.post("/", ctrl.createRka);           // POST /api/rka
-router.post("/:id/belanja", ctrl.addBelanja); // POST /api/rka/:id/belanja
+/**
+ * @route   GET /api/rka
+ * @desc    Mengambil semua list RKA (Table & Tree view)
+ */
+router.get("/", getAllRka);
+
+/**
+ * @route   POST /api/rka
+ * @desc    Membuat Header RKA baru
+ */
+router.post("/", createRka);
+
+/**
+ * @route   DELETE /api/rka/:id
+ * @desc    Menghapus satu data RKA berdasarkan ID
+ */
+router.delete("/:id", deleteRka);
+
+/**
+ * @route   POST /api/rka/:id/belanja
+ * @desc    Menyimpan rincian item belanja untuk satu RKA (Bulk Insert)
+ */
+router.post("/:id/belanja", saveBelanja);
 
 export default router;

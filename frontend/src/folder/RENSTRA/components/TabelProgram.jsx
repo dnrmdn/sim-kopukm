@@ -46,7 +46,7 @@ export default function TabelProgram({ apiBase = "/renstra/program", onAddProgra
     });
   };
   
-  const YEARS = [2025, 2026, 2027, 2028, 2029];
+  const YEARS = [2026, 2027, 2028, 2029, 2030];
 
   useEffect(() => { fetchData(); }, [apiBase]);
 

@@ -40,7 +40,7 @@ export default function InputRKA({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="max-h-[75vh] overflow-y-auto">
+        <form onSubmit={(e) => {e.preventDefault();onSubmit(e);}}className="max-h-[75vh] overflow-y-auto">
           <div className="p-8 space-y-8">
 
             {/* ===================== */}
@@ -62,7 +62,7 @@ export default function InputRKA({
     <select
       value={rkaForm.jenis_pagu ?? ""}
       onChange={(e) =>
-        onChangeForm("jenis_pagu", e.target.value)
+        onChangeForm("pagu_id", e.target.value)
       }
       className={inputStyle}
     >
@@ -176,24 +176,6 @@ export default function InputRKA({
                   />
                 </div>
 
-                {/* ✅ JENIS PAGU */}
-                <div>
-                  <label className={labelStyle}>Jenis Pagu</label>
-                  <select
-                    value={rkaForm.jenis_pagu ?? ""}
-                    onChange={(e) =>
-                      onChangeForm("jenis_pagu", e.target.value)
-                    }
-                    className={inputStyle}
-                  >
-                    <option value="">-- pilih jenis pagu --</option>
-                    <option value="MURNI">MURNI</option>
-                    <option value="PERGESERAN_I">PERGESERAN I</option>
-                    <option value="PERGESERAN_II">PERGESERAN II</option>
-                    <option value="EFISIENSI">EFISIENSI</option>
-                    <option value="PERUBAHAN">PERUBAHAN</option>
-                  </select>
-                </div>
 
                 <div>
                   <label className={labelStyle}>Satuan</label>

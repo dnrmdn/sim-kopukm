@@ -55,7 +55,7 @@ export default function RenstraProgramsComponent({ apiBase = "/programs" }) {
   const [expandedKegiatans, setExpandedKegiatans] = useState({});
 
   // WAJIB MULAI 2025
-  const YEARS = [2025, 2026, 2027, 2028, 2029];
+  const YEARS = [2026, 2027, 2028, 2029, 2030];
 
   useEffect(() => {
     fetchAll();
@@ -133,7 +133,7 @@ export default function RenstraProgramsComponent({ apiBase = "/programs" }) {
                 <Calendar size={24} />
             </div>
             <div>
-                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Matriks Renstra 2025 - 2029</h2>
+                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Matriks Renstra 2026 - 2030</h2>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dinkopukm Kabupaten Karawang</p>
             </div>
         </div>
