@@ -44,7 +44,7 @@ export default function NavUser() {
     {/* Text - Hidden di Mobile */}
     <div className="hidden md:flex flex-col text-left">
       <span className="text-white text-sm font-semibold capitalize">
-        {user.username}
+        {user.name}
       </span>
       <span className="text-emerald-400 text-xs font-medium self-end">
         ● {user.status || "Active"}

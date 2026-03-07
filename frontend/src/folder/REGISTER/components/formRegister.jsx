@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "@/utils/axiosInstance";
+import { getPegawai } from "@/services/pegawaiService";
 import ErrorAlert from "../../LOGIN/components/errorAlert.jsx";
 import FormInput from "../../LOGIN/components/formInput.jsx";
 import PasswordInput from "../../LOGIN/components/passwordInput.jsx";
@@ -14,12 +15,7 @@ const UserIcon = () => (
 
 const IdCardIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M10 6H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2H9.17C9.583 16.835 10.694 16 12 16z"
-    />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2H9.17C9.583 16.835 10.694 16 12 16z" />
   </svg>
 );
 
@@ -36,59 +32,142 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
     name: "",
     password: "",
     confirmPassword: "",
-    role: "user",
+    role: "super_admin",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [nipVerified, setNipVerified] = useState(false);
   const [nipData, setNipData] = useState(null);
   const [checkingNip, setCheckingNip] = useState(false);
+  const [nipError, setNipError] = useState("");
+  const [pegawaiList, setPegawaiList] = useState([]);
+  const [loadingPegawai, setLoadingPegawai] = useState(true);
+
+  const NIP_LENGTH = 18;
+
+  // ✅ Load pegawai data on component mount with proper error handling
+ useEffect(() => {
+  const loadPegawaiData = async () => {
+    setLoadingPegawai(true);
+    try {
+      const response = await getPegawai();
+      
+      // ✅ FIX: Backend now returns array directly
+      const data = response?.data?.data; // response.data.data = array
+      
+      // console.log("=== Pegawai Load ===");
+      // console.log("Response:", response?.data);
+      // console.log("Data type:", typeof data);
+      // console.log("Is array?", Array.isArray(data));
+      
+      let pegawaiArray = [];
+      
+      // Since backend should return array:
+      if (Array.isArray(data)) {
+        // console.log(`✓ Loaded ${data.length} pegawai`);
+        pegawaiArray = data;
+      } else {
+        console.warn("⚠️ Data is not array");
+        pegawaiArray = [];
+      }
+      
+      setPegawaiList(pegawaiArray);
+    } catch (err) {
+      console.error("Failed to load pegawai:", err);
+      setPegawaiList([]);
+      setError("Gagal memuat data pegawai");
+    } finally {
+      setLoadingPegawai(false);
+    }
+  };
+
+  loadPegawaiData();
+}, []);
+
+  // ✅ Handle NIP input dengan pembatasan length
+  const handleNipChange = (e) => {
+    let value = e.target.value;
+
+    // Hanya terima angka
+    value = value.replace(/[^0-9]/g, "");
+
+    // Batasi maksimal 18 karakter
+    if (value.length > NIP_LENGTH) {
+      value = value.slice(0, NIP_LENGTH);
+    }
+
+    setForm((prev) => ({ ...prev, nip: value }));
+
+    // Reset verification jika NIP berubah
+    setNipVerified(false);
+    setNipData(null);
+    setNipError("");
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-
-    // Reset NIP verification if NIP changes
-    if (name === "nip") {
-      setNipVerified(false);
-      setNipData(null);
-    }
   };
 
-  // ✅ Check NIP exists di database pegawai
+  // ✅ Verify NIP from pegawai data (client-side lookup) dengan safety checks
   const handleVerifyNip = async () => {
-    if (!form.nip.trim()) {
-      setError("NIP tidak boleh kosong");
+    // Validasi NIP length
+    if (form.nip.length === 0) {
+      setNipError("NIP tidak boleh kosong");
       return;
     }
 
-    if (form.nip.length < 16) {
-      setError("NIP harus 16 digit");
+    if (form.nip.length < NIP_LENGTH) {
+      setNipError(`NIP harus tepat ${NIP_LENGTH} digit (Anda masukkan ${form.nip.length} digit)`);
+      return;
+    }
+
+    // ✅ FIX: Check if pegawaiList is valid array
+    if (!Array.isArray(pegawaiList)) {
+      setNipError("Data pegawai tidak valid. Silakan refresh halaman.");
+      console.error("pegawaiList is not an array:", typeof pegawaiList, pegawaiList);
+      return;
+    }
+
+    if (pegawaiList.length === 0) {
+      setNipError("Data pegawai kosong. Silakan refresh halaman.");
       return;
     }
 
     setCheckingNip(true);
+    setNipError("");
     setError("");
 
     try {
-      // Call endpoint untuk verify NIP
-      const response = await axiosInstance.get(`/api/pegawai/verify-nip/${form.nip}`);
+      // ✅ Safe search
+      const pegawai = pegawaiList.find((p) => p.nip === form.nip);
 
-      if (response.data?.success && response.data?.data) {
-        // NIP ditemukan di database
+      if (pegawai) {
+        // NIP ditemukan - auto-fill name
         setNipVerified(true);
-        setNipData(response.data.data);
-        setError("");
+        setNipData(pegawai);
+
+        // Auto-fill name dari pegawai data
+        const namaLengkap = pegawai.nama || pegawai.nama_lengkap || "";
+        setForm((prev) => ({
+          ...prev,
+          name: namaLengkap,
+        }));
+
+        setNipError("");
+        // console.log("NIP verified:", pegawai);
       } else {
+        // NIP tidak ditemukan
         setNipVerified(false);
         setNipData(null);
-        setError("NIP tidak terdaftar di database");
+        setForm((prev) => ({ ...prev, name: "" }));
+        setNipError("NIP tidak terdaftar di database pegawai");
       }
     } catch (err) {
       setNipVerified(false);
       setNipData(null);
-      const errorMessage = err.response?.data?.message || "NIP tidak ditemukan";
-      setError(errorMessage);
+      setForm((prev) => ({ ...prev, name: "" }));
+      setNipError("Gagal verifikasi NIP");
       console.error("NIP Verification Error:", err);
     } finally {
       setCheckingNip(false);
@@ -114,15 +193,9 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
       return false;
     }
 
-    // Check name
+    // Check name (should be auto-filled)
     if (!form.name.trim()) {
       setError("Nama tidak boleh kosong");
-      return false;
-    }
-
-    // Name validation (min 3 chars)
-    if (form.name.length < 3) {
-      setError("Nama minimal 3 karakter");
       return false;
     }
 
@@ -158,12 +231,13 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
     setError("");
 
     try {
+      // ✅ Use axiosInstance for registration
       const response = await axiosInstance.post("/auth/register", {
         nip: form.nip,
         username: form.username,
         name: form.name,
         password: form.password,
-        role: form.role || "user",
+        role: form.role || "super_admin",
       });
 
       if (response.data?.success) {
@@ -186,18 +260,54 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
       {/* Error Alert */}
       <ErrorAlert message={error} onDismiss={() => setError("")} />
 
-      {/* NIP Input with Verification */}
+      {/* Loading pegawai data indicator */}
+      {loadingPegawai && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">⟳ Memuat data pegawai...</p>
+        </div>
+      )}
+
+      {/* NIP Input with Length Validation */}
       <div className="space-y-2">
-        <label className="block text-sm text-slate-600 font-medium">Nomor Induk Pegawai (NIP) *</label>
+        <label className="block text-sm text-slate-600 font-medium">
+          Nomor Induk Pegawai (NIP) * 
+          <span className="text-slate-400 text-xs ml-2">({form.nip.length}/{NIP_LENGTH})</span>
+        </label>
         <div className="flex gap-2">
-          <FormInput name="nip" type="text" placeholder="masukkan NIP (16 digit)" value={form.nip} onChange={handleChange} icon={IdCardIcon} ariaLabel="nip" required className="flex-1" />
+          <div className="flex-1 flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-sky-300 focus-within:border-sky-300 transition">
+            <div className="px-3 text-slate-400">
+              <IdCardIcon />
+            </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder={`masukkan NIP (${NIP_LENGTH} digit)`}
+              value={form.nip}
+              onChange={handleNipChange}
+              maxLength={NIP_LENGTH}
+              disabled={nipVerified || loadingPegawai}
+              className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder-slate-400 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-wider"
+              aria-label="nip"
+            />
+          </div>
           <button
             type="button"
             onClick={handleVerifyNip}
-            disabled={checkingNip || nipVerified || !form.nip.trim()}
+            disabled={checkingNip || nipVerified || form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0}
             className={`px-4 py-2.5 rounded-lg font-medium transition text-white whitespace-nowrap ${
-              nipVerified ? "bg-green-600 cursor-not-allowed" : checkingNip ? "bg-slate-400 cursor-not-allowed" : "bg-sky-600 hover:bg-sky-700 active:bg-sky-800"
+              nipVerified
+                ? "bg-green-600 cursor-not-allowed"
+                : checkingNip
+                ? "bg-slate-400 cursor-not-allowed"
+                : form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0
+                ? "bg-slate-300 cursor-not-allowed text-slate-600"
+                : "bg-sky-600 hover:bg-sky-700 active:bg-sky-800"
             }`}
+            title={
+              loadingPegawai ? "Sedang memuat data..." :
+              pegawaiList.length === 0 ? "Data pegawai tidak tersedia" :
+              form.nip.length < NIP_LENGTH ? `NIP harus ${NIP_LENGTH} digit` : ""
+            }
           >
             {nipVerified ? (
               <span className="flex items-center gap-1">
@@ -219,43 +329,100 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
             )}
           </button>
         </div>
+
+        {/* NIP Error Message */}
+        {nipError && (
+          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800">
+              ✗ {nipError}
+            </p>
+          </div>
+        )}
+
+        {/* NIP Verified Success */}
         {nipVerified && nipData && (
           <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800 font-medium">✓ NIP Terverifikasi: {nipData.nama_lengkap}</p>
+            <p className="text-sm text-green-800 font-medium">
+              ✓ NIP Terverifikasi: {nipData.nama || nipData.nama_lengkap}
+            </p>
           </div>
+        )}
+
+        {/* NIP Length Helper */}
+        {!nipVerified && form.nip.length > 0 && form.nip.length < NIP_LENGTH && (
+          <p className="text-xs text-amber-600 mt-1">
+            ⚠️ NIP harus {NIP_LENGTH} digit, masukkan {NIP_LENGTH - form.nip.length} digit lagi
+          </p>
         )}
       </div>
 
       {/* Username Input */}
-      <FormInput name="username" type="text" label="Username" placeholder="masukkan username" value={form.username} onChange={handleChange} icon={UserIcon} ariaLabel="username" required disabled={!nipVerified} />
+      <FormInput
+        name="username"
+        type="text"
+        label="Username"
+        placeholder="masukkan username"
+        value={form.username}
+        onChange={handleChange}
+        icon={UserIcon}
+        ariaLabel="username"
+        required
+        disabled={!nipVerified}
+      />
 
-      {/* Name Input dengan info gelar */}
+      {/* Name Input (Auto-filled from pegawai data) */}
       <div className="space-y-1.5">
-        <label className="block text-sm text-slate-600 font-medium">Nama Lengkap (dengan Gelar) *</label>
+        <label className="block text-sm text-slate-600 font-medium">
+          Nama Lengkap *
+          {nipVerified && <span className="text-green-600 ml-2">✓ Otomatis diisi</span>}
+        </label>
         <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-sky-300 focus-within:border-sky-300 transition">
-          <div className="px-3">
+          <div className="px-3 text-slate-400">
             <BadgeIcon />
           </div>
           <input
             name="name"
             type="text"
-            placeholder="contoh: Drs. John Doe, M.Si"
+            placeholder="nama akan otomatis terisi setelah verifikasi NIP"
             value={form.name}
             onChange={handleChange}
+            readOnly={nipVerified}
             disabled={!nipVerified}
             required
             className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder-slate-400 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="nama-lengkap"
           />
         </div>
-        <p className="text-xs text-slate-500 mt-1">📌 Masukkan nama lengkap dengan gelar (contoh: Drs., S.E., M.Si, S.H., dll)</p>
+        {nipVerified && (
+          <p className="text-xs text-slate-500 mt-1">
+            📌 Nama diambil dari data pegawai. Verifikasi NIP lagi jika ingin mengubah.
+          </p>
+        )}
       </div>
 
       {/* Password Input */}
-      <PasswordInput name="password" label="Password" placeholder="masukkan password" value={form.password} onChange={handleChange} ariaLabel="password" required disabled={!nipVerified} />
+      <PasswordInput
+        name="password"
+        label="Password"
+        placeholder="masukkan password"
+        value={form.password}
+        onChange={handleChange}
+        ariaLabel="password"
+        required
+        disabled={!nipVerified}
+      />
 
       {/* Confirm Password Input */}
-      <PasswordInput name="confirmPassword" label="Konfirmasi Password" placeholder="masukkan ulang password" value={form.confirmPassword} onChange={handleChange} ariaLabel="confirm-password" required disabled={!nipVerified} />
+      <PasswordInput
+        name="confirmPassword"
+        label="Konfirmasi Password"
+        placeholder="masukkan ulang password"
+        value={form.confirmPassword}
+        onChange={handleChange}
+        ariaLabel="confirm-password"
+        required
+        disabled={!nipVerified}
+      />
 
       {/* Submit Button */}
       <button
@@ -271,7 +438,11 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
       <div className="pt-3 text-center">
         <p className="text-sm text-slate-500">
           Sudah punya akun?{" "}
-          <button type="button" className="text-sky-600 hover:text-sky-700 font-medium transition" onClick={() => onNavigateLogin?.()}>
+          <button
+            type="button"
+            className="text-sky-600 hover:text-sky-700 font-medium transition"
+            onClick={() => onNavigateLogin?.()}
+          >
             Masuk
           </button>
         </p>
