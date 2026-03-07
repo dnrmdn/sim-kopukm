@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import FormPegawai from "./FormPegawai";
 import { createPegawai } from "../../../services/pegawaiService";
+import FormPegawai from "./formPegawai";
 
 export default function TambahPegawai() {
   const navigate = useNavigate();
