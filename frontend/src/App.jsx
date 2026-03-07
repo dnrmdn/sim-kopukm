@@ -46,6 +46,7 @@ import RencanaAksiPage from "./folder/RENCANAAKSI/RencanaAksiPage";
 import EditPegawai from "./folder/PEGAWAI/components/editPegawai";
 import TambahPegawai from "./folder/PEGAWAI/components/tambahPegawai";
 import EditJabatan from "./folder/JABATAN/components/editJabatan";
+import RegisterPage from "./folder/REGISTER/registerPage";
 
 
 
@@ -55,6 +56,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* routes with footer */}
         <Route element={<MainLayout />}>

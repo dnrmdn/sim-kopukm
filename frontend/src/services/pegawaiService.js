@@ -1,15 +1,7 @@
 import axios from "axios";
 
-/**
- * 🌐 Backend API URL
- * Adjust the port if your backend runs on a different one (e.g., 4849 or 5000)
- */
 const API_URL = "http://127.0.0.1:4849/api/pegawai";
 
-/**
- * 🔑 Helper to get the auth header
- * Ensures every request sends the JWT token from localStorage
- */
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
   return {
@@ -20,39 +12,38 @@ const getAuthHeader = () => {
 };
 
 /**
- * 📋 Get all pegawai records
- * Fetches: id, nama, nip, jabatan, email
+ * 📋 Get all pegawai (returns ARRAY)
+ * Must call without ID to get all records
  */
 export const getPegawai = async () => {
+  // ✅ IMPORTANT: Call without ID to get all pegawai
   return axios.get(API_URL, getAuthHeader());
+  // This calls: GET /api/pegawai (not /api/pegawai/something)
 };
 
 /**
- * 🔍 Get a single pegawai by ID
- * Useful for the "Edit" form initialization
+ * 🔍 Get single pegawai by ID (returns SINGLE OBJECT)
  */
 export const getPegawaiById = async (id) => {
   return axios.get(`${API_URL}/${id}`, getAuthHeader());
 };
 
 /**
- * ➕ Create a new pegawai
- * Expects: { nama, nip, jabatan, email }
+ * ➕ Create new pegawai
  */
 export const createPegawai = async (pegawaiData) => {
   return axios.post(API_URL, pegawaiData, getAuthHeader());
 };
 
 /**
- * ✏️ Update an existing pegawai
- * Expects: id and { nama, nip, jabatan, email }
+ * ✏️ Update pegawai
  */
 export const updatePegawai = async (id, pegawaiData) => {
   return axios.put(`${API_URL}/${id}`, pegawaiData, getAuthHeader());
 };
 
 /**
- * 🗑️ Delete a pegawai
+ * 🗑️ Delete pegawai
  */
 export const deletePegawai = async (id) => {
   return axios.delete(`${API_URL}/${id}`, getAuthHeader());
