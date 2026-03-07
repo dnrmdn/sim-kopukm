@@ -17,6 +17,7 @@ import DokumenKesekretariatan from "./folder/DASHBOARD/SekretariatDashboard";
 import SOTKPage from "./folder/SOTK/SOTKPage";
 
 import RkaPage from "./folder/RKA/RkaPage";
+import BelanjaSectionPage from "./folder/RKA/components/BelanjaSection";
 import RenstraPage from "./folder/RENSTRA/RenstraPage";
 
 import RenjaPage from "./folder/RENJA/RenjaPage";
@@ -73,6 +74,7 @@ function App() {
           <Route path="/sekretariat" element={<DokumenKesekretariatan />} />
           <Route path="/dokumen/sotk" element={<SOTKPage />} />
           <Route path="/dokumen/rka" element={<RkaPage />} />
+          <Route path="/dokumen/rka/edit-belanja/:id" element={<BelanjaSectionPage />} />
           <Route path="/dokumen/renstra" element={<RenstraPage />} />
           <Route path="/dokumen/renja" element={<RenjaPage />} />
           <Route path="/dokumen/sop" element={<SopPage />} />

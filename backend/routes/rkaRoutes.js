@@ -3,7 +3,9 @@ import {
   getAllRka, 
   createRka, 
   deleteRka, 
-  saveBelanja 
+  saveBelanja,
+  getBelanjaByRka, // Tambah ini
+  updateRka        // Tambah ini
 } from "../controllers/rkaController.js";
 
 const router = express.Router();
@@ -26,6 +28,8 @@ router.post("/", createRka);
  */
 router.delete("/:id", deleteRka);
 
+router.get("/:id/belanja", getBelanjaByRka); // Untuk ambil data belanja lama (Fungsi Edit)
+router.put("/:id", updateRka);               // Untuk update header (PUT method)
 /**
  * @route   POST /api/rka/:id/belanja
  * @desc    Menyimpan rincian item belanja untuk satu RKA (Bulk Insert)
