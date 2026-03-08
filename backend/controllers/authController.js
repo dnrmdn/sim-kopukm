@@ -1,16 +1,33 @@
 import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 
 /**
- * 🧾 REGISTER USER dengan NIP dan Name
+ * Helper: hapus file avatar lama dari disk
+ */
+const deleteAvatarFile = (avatarPath) => {
+  if (!avatarPath) return;
+  try {
+    if (fs.existsSync(avatarPath)) fs.unlinkSync(avatarPath);
+  } catch (err) {
+    console.warn("Could not delete avatar file:", err);
+  }
+};
+
+/**
+ * 🧾 REGISTER USER dengan NIP, Name, dan Avatar (opsional)
  */
 export const registerUser = async (req, res) => {
+  // Jika ada file terupload tapi terjadi error, hapus file-nya
+  const uploadedFile = req.file ? req.file.path : null;
+
   try {
     const { nip, username, name, password, role } = req.body;
 
     // ✅ Validate required fields
     if (!nip || !username || !name || !password) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "NIP, username, nama, dan password wajib diisi",
@@ -19,6 +36,7 @@ export const registerUser = async (req, res) => {
 
     // ✅ Validate NIP format (18 digits)
     if (nip.length !== 18 || !/^\d+$/.test(nip)) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "NIP harus 18 digit angka",
@@ -27,6 +45,7 @@ export const registerUser = async (req, res) => {
 
     // ✅ Validate password strength
     if (password.length < 6) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "Password minimal 6 karakter",
@@ -34,9 +53,13 @@ export const registerUser = async (req, res) => {
     }
 
     // ✅ Check if NIP exists in pegawai table
-    const [pegawaiRows] = await pool.query("SELECT id_pegawai, nama_lengkap FROM pegawai WHERE nip = ?", [nip]);
+    const [pegawaiRows] = await pool.query(
+      "SELECT id_pegawai, nama_lengkap FROM pegawai WHERE nip = ?",
+      [nip]
+    );
 
     if (pegawaiRows.length === 0) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "NIP tidak terdaftar di database pegawai",
@@ -44,9 +67,13 @@ export const registerUser = async (req, res) => {
     }
 
     // ✅ Check if username already exists
-    const [existingUsername] = await pool.query("SELECT id FROM users WHERE username = ?", [username]);
+    const [existingUsername] = await pool.query(
+      "SELECT id FROM users WHERE username = ?",
+      [username]
+    );
 
     if (existingUsername.length > 0) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "Username sudah terdaftar",
@@ -54,9 +81,13 @@ export const registerUser = async (req, res) => {
     }
 
     // ✅ Check if NIP already has user account
-    const [existingNip] = await pool.query("SELECT id FROM users WHERE nip = ?", [nip]);
+    const [existingNip] = await pool.query(
+      "SELECT id FROM users WHERE nip = ?",
+      [nip]
+    );
 
     if (existingNip.length > 0) {
+      deleteAvatarFile(uploadedFile);
       return res.status(400).json({
         success: false,
         message: "NIP ini sudah memiliki akun user",
@@ -66,18 +97,24 @@ export const registerUser = async (req, res) => {
     // ✅ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ INSERT user dengan NIP dan name
+    // ✅ Siapkan path avatar (null jika tidak ada)
+    // Simpan sebagai URL relatif yang bisa diakses frontend
+    const avatarPath = req.file
+      ? `uploads/avatars/${req.file.filename}`
+      : null;
+
+    // ✅ INSERT user dengan avatar
     const [result] = await pool.query(
-      `INSERT INTO users (nip, username, name, password, role, is_active, created_at) 
-       VALUES (?, ?, ?, ?, ?, 1, NOW())`,
-      [nip, username, name, hashedPassword, role || "user"],
+      `INSERT INTO users (nip, username, name, password, role, avatar, is_active, created_at) 
+       VALUES (?, ?, ?, ?, ?, ?, 1, NOW())`,
+      [nip, username, name, hashedPassword, role || "user", avatarPath]
     );
 
     const userId = result.insertId;
 
-    console.log(`✓ User registered: ID=${userId}, NIP=${nip}, Username=${username}, Name=${name}`);
+    console.log(`✓ User registered: ID=${userId}, NIP=${nip}, Username=${username}, Name=${name}, Avatar=${avatarPath || "none"}`);
 
-    // ✅ (Optional) Update pegawai table dengan user_id
+    // ✅ Update pegawai table dengan user_id
     try {
       await pool.query("UPDATE pegawai SET id_user = ? WHERE nip = ?", [userId, nip]);
     } catch (err) {
@@ -90,13 +127,18 @@ export const registerUser = async (req, res) => {
       message: "Registrasi berhasil",
       data: {
         id: userId,
-        nip: nip,
-        username: username,
-        name: name,
+        nip,
+        username,
+        name,
         role: role || "user",
+        avatar: avatarPath
+          ? `${process.env.BASE_URL || "http://localhost:4849"}/${avatarPath}`
+          : null,
       },
     });
   } catch (error) {
+    // Hapus file jika terjadi error server
+    deleteAvatarFile(uploadedFile);
     console.error("Register Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
@@ -116,8 +158,11 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // ✅ Find user berdasarkan username
-    const [rows] = await pool.query("SELECT id, nip, username, name, password, role, is_active FROM users WHERE username = ?", [username]);
+    // ✅ Find user
+    const [rows] = await pool.query(
+      "SELECT id, nip, username, name, password, role, avatar, is_active FROM users WHERE username = ?",
+      [username]
+    );
 
     if (rows.length === 0) {
       return res.status(401).json({
@@ -128,7 +173,6 @@ export const loginUser = async (req, res) => {
 
     const user = rows[0];
 
-    // ✅ Check if user is active
     if (!user.is_active) {
       return res.status(403).json({
         success: false,
@@ -136,7 +180,6 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // ✅ Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -145,7 +188,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    // ✅ Generate JWT token
+    // ✅ Generate JWT
     const token = jwt.sign(
       {
         id: user.id,
@@ -155,7 +198,7 @@ export const loginUser = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET || "secretkey",
-      { expiresIn: "7d" },
+      { expiresIn: "7d" }
     );
 
     // ✅ Update last_login
@@ -164,6 +207,11 @@ export const loginUser = async (req, res) => {
     } catch (err) {
       console.warn("Could not update last_login:", err);
     }
+
+    // ✅ Build avatar URL
+    const avatarUrl = user.avatar
+      ? `${process.env.BASE_URL || "http://localhost:4849"}/${user.avatar}`
+      : null;
 
     res.json({
       success: true,
@@ -175,6 +223,7 @@ export const loginUser = async (req, res) => {
         username: user.username,
         name: user.name,
         role: user.role,
+        avatar: avatarUrl,
       },
     });
   } catch (error) {
@@ -188,9 +237,12 @@ export const loginUser = async (req, res) => {
  */
 export const getCurrentUser = async (req, res) => {
   try {
-    const userId = req.user.id; // dari verifyToken middleware
+    const userId = req.user.id;
 
-    const [rows] = await pool.query("SELECT id, nip, username, name, role, is_active FROM users WHERE id = ?", [userId]);
+    const [rows] = await pool.query(
+      "SELECT id, nip, username, name, role, avatar, is_active FROM users WHERE id = ?",
+      [userId]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({
@@ -199,16 +251,23 @@ export const getCurrentUser = async (req, res) => {
       });
     }
 
+    const user = rows[0];
+
+    // ✅ Build avatar URL
+    const avatarUrl = user.avatar
+      ? `${process.env.BASE_URL || "http://localhost:4849"}/${user.avatar}`
+      : null;
+
     res.json({
       success: true,
-      data: rows[0],
+      data: {
+        ...user,
+        avatar: avatarUrl,
+      },
     });
   } catch (error) {
     console.error("Get Current User Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -217,8 +276,17 @@ export const getCurrentUser = async (req, res) => {
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT id, nip, username, name, role, is_active FROM users ORDER BY created_at DESC");
-    res.json({ success: true, count: rows.length, data: rows });
+    const [rows] = await pool.query(
+      "SELECT id, nip, username, name, role, avatar, is_active FROM users ORDER BY created_at DESC"
+    );
+
+    const baseUrl = process.env.BASE_URL || "http://localhost:4849";
+    const data = rows.map((u) => ({
+      ...u,
+      avatar: u.avatar ? `${baseUrl}/${u.avatar}` : null,
+    }));
+
+    res.json({ success: true, count: data.length, data });
   } catch (error) {
     console.error("Get Users Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -238,7 +306,10 @@ export const updateUserRole = async (req, res) => {
       return res.status(400).json({ success: false, message: "Role tidak valid" });
     }
 
-    const [result] = await pool.query("UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?", [role, id]);
+    const [result] = await pool.query(
+      "UPDATE users SET role = ?, updated_at = NOW() WHERE id = ?",
+      [role, id]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "User tidak ditemukan" });
@@ -256,6 +327,12 @@ export const updateUserRole = async (req, res) => {
  */
 export const deleteUser = async (req, res) => {
   try {
+    // ✅ Ambil avatar path sebelum delete, lalu hapus file-nya
+    const [rows] = await pool.query("SELECT avatar FROM users WHERE id = ?", [req.params.id]);
+    if (rows.length > 0 && rows[0].avatar) {
+      deleteAvatarFile(rows[0].avatar);
+    }
+
     const [result] = await pool.query("DELETE FROM users WHERE id = ?", [req.params.id]);
 
     if (result.affectedRows === 0) {
@@ -277,7 +354,10 @@ export const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
-    const [result] = await pool.query("UPDATE users SET name = ?, updated_at = NOW() WHERE id = ?", [name, email, no_hp, id]);
+    const [result] = await pool.query(
+      "UPDATE users SET name = ?, updated_at = NOW() WHERE id = ?",
+      [name, id]
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "User tidak ditemukan" });

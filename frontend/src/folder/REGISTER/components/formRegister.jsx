@@ -5,6 +5,7 @@ import ErrorAlert from "../../LOGIN/components/errorAlert.jsx";
 import FormInput from "../../LOGIN/components/formInput.jsx";
 import PasswordInput from "../../LOGIN/components/passwordInput.jsx";
 import LoadingSpinner from "../../LOGIN/components/loadingSpinner.jsx";
+import AvatarUpload from "./avatarUpload.jsx";
 
 // Icon Components
 const UserIcon = () => (
@@ -25,6 +26,9 @@ const BadgeIcon = () => (
   </svg>
 );
 
+const MAX_ATTEMPTS = 3;
+const COOLDOWN_MINUTES = 5;
+
 export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
   const [form, setForm] = useState({
     nip: "",
@@ -34,6 +38,7 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
     confirmPassword: "",
     role: "super_admin",
   });
+  const [avatar, setAvatar] = useState(null); // { file: File, url: string } | null
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [nipVerified, setNipVerified] = useState(false);
@@ -43,62 +48,60 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
   const [pegawaiList, setPegawaiList] = useState([]);
   const [loadingPegawai, setLoadingPegawai] = useState(true);
 
+  // Rate limiter state
+  const [verifyAttempts, setVerifyAttempts] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
   const NIP_LENGTH = 18;
 
-  // ✅ Load pegawai data on component mount with proper error handling
- useEffect(() => {
-  const loadPegawaiData = async () => {
-    setLoadingPegawai(true);
-    try {
-      const response = await getPegawai();
-      
-      // ✅ FIX: Backend now returns array directly
-      const data = response?.data?.data; // response.data.data = array
-      
-      // console.log("=== Pegawai Load ===");
-      // console.log("Response:", response?.data);
-      // console.log("Data type:", typeof data);
-      // console.log("Is array?", Array.isArray(data));
-      
-      let pegawaiArray = [];
-      
-      // Since backend should return array:
-      if (Array.isArray(data)) {
-        // console.log(`✓ Loaded ${data.length} pegawai`);
-        pegawaiArray = data;
-      } else {
-        console.warn("⚠️ Data is not array");
-        pegawaiArray = [];
+  // ✅ Load pegawai data on component mount
+  useEffect(() => {
+    const loadPegawaiData = async () => {
+      setLoadingPegawai(true);
+      try {
+        const response = await getPegawai();
+        const data = response?.data?.data;
+        let pegawaiArray = [];
+        if (Array.isArray(data)) {
+          pegawaiArray = data;
+        } else {
+          console.warn("⚠️ Data is not array");
+        }
+        setPegawaiList(pegawaiArray);
+      } catch (err) {
+        console.error("Failed to load pegawai:", err);
+        setPegawaiList([]);
+        setError("Gagal memuat data pegawai");
+      } finally {
+        setLoadingPegawai(false);
       }
-      
-      setPegawaiList(pegawaiArray);
-    } catch (err) {
-      console.error("Failed to load pegawai:", err);
-      setPegawaiList([]);
-      setError("Gagal memuat data pegawai");
-    } finally {
-      setLoadingPegawai(false);
-    }
-  };
+    };
+    loadPegawaiData();
+  }, []);
 
-  loadPegawaiData();
-}, []);
+  // ✅ Cooldown countdown timer
+  useEffect(() => {
+    if (!cooldownUntil) return;
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCooldownUntil(null);
+        setCooldownRemaining(0);
+        setVerifyAttempts(0);
+        setNipError("");
+      } else {
+        setCooldownRemaining(remaining);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldownUntil]);
 
-  // ✅ Handle NIP input dengan pembatasan length
+  // ✅ Handle NIP input
   const handleNipChange = (e) => {
-    let value = e.target.value;
-
-    // Hanya terima angka
-    value = value.replace(/[^0-9]/g, "");
-
-    // Batasi maksimal 18 karakter
-    if (value.length > NIP_LENGTH) {
-      value = value.slice(0, NIP_LENGTH);
-    }
-
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    if (value.length > NIP_LENGTH) value = value.slice(0, NIP_LENGTH);
     setForm((prev) => ({ ...prev, nip: value }));
-
-    // Reset verification jika NIP berubah
     setNipVerified(false);
     setNipData(null);
     setNipError("");
@@ -109,59 +112,45 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Verify NIP from pegawai data (client-side lookup) dengan safety checks
+  // ✅ Verify NIP with rate limiter
   const handleVerifyNip = async () => {
-    // Validasi NIP length
-    if (form.nip.length === 0) {
-      setNipError("NIP tidak boleh kosong");
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      setNipError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${cooldownRemaining} detik.`);
       return;
     }
-
-    if (form.nip.length < NIP_LENGTH) {
-      setNipError(`NIP harus tepat ${NIP_LENGTH} digit (Anda masukkan ${form.nip.length} digit)`);
-      return;
-    }
-
-    // ✅ FIX: Check if pegawaiList is valid array
-    if (!Array.isArray(pegawaiList)) {
-      setNipError("Data pegawai tidak valid. Silakan refresh halaman.");
-      console.error("pegawaiList is not an array:", typeof pegawaiList, pegawaiList);
-      return;
-    }
-
-    if (pegawaiList.length === 0) {
-      setNipError("Data pegawai kosong. Silakan refresh halaman.");
-      return;
-    }
+    if (form.nip.length === 0) { setNipError("NIP tidak boleh kosong"); return; }
+    if (form.nip.length < NIP_LENGTH) { setNipError(`NIP harus tepat ${NIP_LENGTH} digit (Anda masukkan ${form.nip.length} digit)`); return; }
+    if (!Array.isArray(pegawaiList)) { setNipError("Data pegawai tidak valid. Silakan refresh halaman."); return; }
+    if (pegawaiList.length === 0) { setNipError("Data pegawai kosong. Silakan refresh halaman."); return; }
 
     setCheckingNip(true);
     setNipError("");
     setError("");
 
     try {
-      // ✅ Safe search
       const pegawai = pegawaiList.find((p) => p.nip === form.nip);
-
       if (pegawai) {
-        // NIP ditemukan - auto-fill name
+        setVerifyAttempts(0);
         setNipVerified(true);
         setNipData(pegawai);
-
-        // Auto-fill name dari pegawai data
         const namaLengkap = pegawai.nama || pegawai.nama_lengkap || "";
-        setForm((prev) => ({
-          ...prev,
-          name: namaLengkap,
-        }));
-
+        setForm((prev) => ({ ...prev, name: namaLengkap }));
         setNipError("");
-        // console.log("NIP verified:", pegawai);
       } else {
-        // NIP tidak ditemukan
+        const newAttempts = verifyAttempts + 1;
+        setVerifyAttempts(newAttempts);
         setNipVerified(false);
         setNipData(null);
         setForm((prev) => ({ ...prev, name: "" }));
-        setNipError("NIP tidak terdaftar di database pegawai");
+        const remainingAttempts = MAX_ATTEMPTS - newAttempts;
+        if (newAttempts >= MAX_ATTEMPTS) {
+          const until = Date.now() + COOLDOWN_MINUTES * 60 * 1000;
+          setCooldownUntil(until);
+          setCooldownRemaining(COOLDOWN_MINUTES * 60);
+          setNipError(`NIP tidak terdaftar. Anda telah gagal ${MAX_ATTEMPTS}x. Verifikasi dikunci selama ${COOLDOWN_MINUTES} menit.`);
+        } else {
+          setNipError(`NIP tidak terdaftar di database pegawai. Sisa percobaan: ${remainingAttempts}x`);
+        }
       }
     } catch (err) {
       setNipVerified(false);
@@ -175,73 +164,50 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
   };
 
   const validateForm = () => {
-    // Check NIP verified
-    if (!nipVerified) {
-      setError("Verifikasi NIP terlebih dahulu");
-      return false;
-    }
-
-    // Check required fields
-    if (!form.username.trim()) {
-      setError("Username tidak boleh kosong");
-      return false;
-    }
-
-    // Username validation (min 3 chars)
-    if (form.username.length < 3) {
-      setError("Username minimal 3 karakter");
-      return false;
-    }
-
-    // Check name (should be auto-filled)
-    if (!form.name.trim()) {
-      setError("Nama tidak boleh kosong");
-      return false;
-    }
-
-    // Password validation
-    if (!form.password.trim()) {
-      setError("Password tidak boleh kosong");
-      return false;
-    }
-
-    if (form.password.length < 6) {
-      setError("Password minimal 6 karakter");
-      return false;
-    }
-
-    // Password confirmation
-    if (form.password !== form.confirmPassword) {
-      setError("Password tidak cocok");
-      return false;
-    }
-
+    if (!nipVerified) { setError("Verifikasi NIP terlebih dahulu"); return false; }
+    if (!form.username.trim()) { setError("Username tidak boleh kosong"); return false; }
+    if (form.username.length < 3) { setError("Username minimal 3 karakter"); return false; }
+    if (!form.name.trim()) { setError("Nama tidak boleh kosong"); return false; }
+    if (!form.password.trim()) { setError("Password tidak boleh kosong"); return false; }
+    if (form.password.length < 6) { setError("Password minimal 6 karakter"); return false; }
+    if (form.password !== form.confirmPassword) { setError("Password tidak cocok"); return false; }
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     setError("");
 
     try {
-      // ✅ Use axiosInstance for registration
-      const response = await axiosInstance.post("/auth/register", {
-        nip: form.nip,
-        username: form.username,
-        name: form.name,
-        password: form.password,
-        role: form.role || "super_admin",
-      });
+      // ✅ Gunakan FormData jika ada avatar, JSON biasa jika tidak
+      let response;
+
+      if (avatar?.file) {
+        const formData = new FormData();
+        formData.append("nip", form.nip);
+        formData.append("username", form.username);
+        formData.append("name", form.name);
+        formData.append("password", form.password);
+        formData.append("role", form.role || "super_admin");
+        formData.append("avatar", avatar.file);
+
+        response = await axiosInstance.post("/auth/register", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        response = await axiosInstance.post("/auth/register", {
+          nip: form.nip,
+          username: form.username,
+          name: form.name,
+          password: form.password,
+          role: form.role || "super_admin",
+        });
+      }
 
       if (response.data?.success) {
-        // Success callback
         onRegisterSuccess?.(form);
       } else {
         setError(response.data?.message || "Registrasi gagal");
@@ -267,17 +233,15 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
         </div>
       )}
 
-      {/* NIP Input with Length Validation */}
+      {/* NIP Input */}
       <div className="space-y-2">
         <label className="block text-sm text-slate-600 font-medium">
-          Nomor Induk Pegawai (NIP) * 
+          Nomor Induk Pegawai (NIP) *
           <span className="text-slate-400 text-xs ml-2">({form.nip.length}/{NIP_LENGTH})</span>
         </label>
         <div className="flex gap-2">
           <div className="flex-1 flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-sky-300 focus-within:border-sky-300 transition">
-            <div className="px-3 text-slate-400">
-              <IdCardIcon />
-            </div>
+            <div className="px-3 text-slate-400"><IdCardIcon /></div>
             <input
               type="text"
               inputMode="numeric"
@@ -285,7 +249,7 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
               value={form.nip}
               onChange={handleNipChange}
               maxLength={NIP_LENGTH}
-              disabled={nipVerified || loadingPegawai}
+              disabled={nipVerified || loadingPegawai || !!cooldownUntil}
               className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none placeholder-slate-400 disabled:opacity-50 disabled:cursor-not-allowed font-mono tracking-wider"
               aria-label="nip"
             />
@@ -293,21 +257,14 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
           <button
             type="button"
             onClick={handleVerifyNip}
-            disabled={checkingNip || nipVerified || form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0}
+            disabled={checkingNip || nipVerified || form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0 || !!cooldownUntil}
             className={`px-4 py-2.5 rounded-lg font-medium transition text-white whitespace-nowrap ${
-              nipVerified
-                ? "bg-green-600 cursor-not-allowed"
-                : checkingNip
-                ? "bg-slate-400 cursor-not-allowed"
-                : form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0
-                ? "bg-slate-300 cursor-not-allowed text-slate-600"
-                : "bg-sky-600 hover:bg-sky-700 active:bg-sky-800"
+              nipVerified ? "bg-green-600 cursor-not-allowed"
+              : cooldownUntil ? "bg-red-400 cursor-not-allowed"
+              : checkingNip ? "bg-slate-400 cursor-not-allowed"
+              : form.nip.length < NIP_LENGTH || loadingPegawai || pegawaiList.length === 0 ? "bg-slate-300 cursor-not-allowed text-slate-600"
+              : "bg-sky-600 hover:bg-sky-700 active:bg-sky-800"
             }`}
-            title={
-              loadingPegawai ? "Sedang memuat data..." :
-              pegawaiList.length === 0 ? "Data pegawai tidak tersedia" :
-              form.nip.length < NIP_LENGTH ? `NIP harus ${NIP_LENGTH} digit` : ""
-            }
           >
             {nipVerified ? (
               <span className="flex items-center gap-1">
@@ -315,6 +272,10 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 Terverifikasi
+              </span>
+            ) : cooldownUntil ? (
+              <span className="flex items-center gap-1">
+                🔒 {Math.floor(cooldownRemaining / 60)}:{String(cooldownRemaining % 60).padStart(2, "0")}
               </span>
             ) : checkingNip ? (
               <span className="flex items-center gap-1">
@@ -324,18 +285,30 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
                 </svg>
                 Verifikasi...
               </span>
-            ) : (
-              "Verifikasi"
-            )}
+            ) : "Verifikasi"}
           </button>
         </div>
 
-        {/* NIP Error Message */}
+        {/* NIP Error */}
         {nipError && (
-          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">
-              ✗ {nipError}
+          <div className={`mt-2 p-3 border rounded-lg ${cooldownUntil ? "bg-orange-50 border-orange-200" : "bg-red-50 border-red-200"}`}>
+            <p className={`text-sm font-medium ${cooldownUntil ? "text-orange-800" : "text-red-800"}`}>
+              {cooldownUntil ? "🔒" : "✗"} {nipError}
             </p>
+            {cooldownUntil && (
+              <p className="text-xs text-orange-600 mt-1">
+                Sisa waktu: <span className="font-mono font-bold">{Math.floor(cooldownRemaining / 60)}:{String(cooldownRemaining % 60).padStart(2, "0")}</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Attempts progress bar */}
+        {!cooldownUntil && verifyAttempts > 0 && verifyAttempts < MAX_ATTEMPTS && !nipVerified && (
+          <div className="mt-1 flex gap-1 items-center">
+            {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => (
+              <div key={i} className={`h-1.5 flex-1 rounded-full ${i < verifyAttempts ? "bg-red-400" : "bg-slate-200"}`} />
+            ))}
           </div>
         )}
 
@@ -348,13 +321,20 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
           </div>
         )}
 
-        {/* NIP Length Helper */}
-        {!nipVerified && form.nip.length > 0 && form.nip.length < NIP_LENGTH && (
+        {/* NIP length helper */}
+        {!nipVerified && !cooldownUntil && form.nip.length > 0 && form.nip.length < NIP_LENGTH && (
           <p className="text-xs text-amber-600 mt-1">
             ⚠️ NIP harus {NIP_LENGTH} digit, masukkan {NIP_LENGTH - form.nip.length} digit lagi
           </p>
         )}
       </div>
+
+      {/* ✅ Avatar Upload — muncul setelah NIP terverifikasi */}
+      <AvatarUpload
+        value={avatar}
+        onChange={setAvatar}
+        disabled={!nipVerified}
+      />
 
       {/* Username Input */}
       <FormInput
@@ -370,16 +350,14 @@ export default function RegisterForm({ onRegisterSuccess, onNavigateLogin }) {
         disabled={!nipVerified}
       />
 
-      {/* Name Input (Auto-filled from pegawai data) */}
+      {/* Name Input */}
       <div className="space-y-1.5">
         <label className="block text-sm text-slate-600 font-medium">
           Nama Lengkap *
           {nipVerified && <span className="text-green-600 ml-2">✓ Otomatis diisi</span>}
         </label>
         <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-sky-300 focus-within:border-sky-300 transition">
-          <div className="px-3 text-slate-400">
-            <BadgeIcon />
-          </div>
+          <div className="px-3 text-slate-400"><BadgeIcon /></div>
           <input
             name="name"
             type="text"
