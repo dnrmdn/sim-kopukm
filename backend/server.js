@@ -171,19 +171,13 @@ app.use(
 app.use(
   "/uploads",
   (req, res, next) => {
-    // remove frame options so uploads can be embedded in iframes
-    try {
-      res.removeHeader("X-Frame-Options");
-      // optional: remove CSP if you added restrictive policy earlier
-      // res.removeHeader("Content-Security-Policy");
-    } catch (e) {
-      // ignore if not supported
-    }
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    try { res.removeHeader("X-Frame-Options"); } catch (e) {}
     next();
   },
   express.static(uploadsDir, { index: false })
 );
-
 
 // ================================
 // 🔹 Routing
@@ -191,7 +185,6 @@ app.use(
 app.get("/", (req, res) => {
   res.send("🚀 API KHFDZ Backend Aktif!");
 });
-
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/dashboard", koperasiRoute);
