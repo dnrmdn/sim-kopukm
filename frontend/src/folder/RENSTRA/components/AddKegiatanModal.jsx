@@ -80,6 +80,17 @@ export default function AddKegiatanModal({ open, onClose, onSuccess, programId, 
           </div>
 
           <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Output Kegiatan</label>
+            <input
+              required
+              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-amber-500 outline-none transition-all font-bold"
+              placeholder="Target output..."
+              value={formData.output_kegiatan}
+              onChange={(e) => setFormData({ ...formData, output_kegiatan: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Indikator Kegiatan</label>
             <textarea
               required
@@ -90,16 +101,7 @@ export default function AddKegiatanModal({ open, onClose, onSuccess, programId, 
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Output Kegiatan</label>
-            <input
-              required
-              className="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-amber-500 outline-none transition-all font-bold"
-              placeholder="Target output..."
-              value={formData.output_kegiatan}
-              onChange={(e) => setFormData({ ...formData, output_kegiatan: e.target.value })}
-            />
-          </div>
+          
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Keterangan</label>

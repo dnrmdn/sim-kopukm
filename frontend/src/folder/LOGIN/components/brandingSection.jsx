@@ -7,7 +7,7 @@ export default function BrandingSection({ logoSrc, title, description, features 
           <img
             src={logoSrc}
             alt="Logo"
-            className="w-24 h-auto object-contain"
+            className="w-52 h-auto object-contain"
           />
         </div>
       )}

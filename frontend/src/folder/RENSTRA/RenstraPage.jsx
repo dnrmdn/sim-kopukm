@@ -10,6 +10,7 @@ import AddProgramModal from "@/folder/RENSTRA/components/AddProgramModal";
 import TabelProgram from "@/folder/RENSTRA/components/TabelProgram";
 import TabelDokumen from "@/folder/RENSTRA/components/TabelDokumen";
 import AddDokumenModal from "@/folder/RENSTRA/components/AddDokumenModal";
+import Footer from "@/components/Footer";
 
 export default function RenstraPage() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function RenstraPage() {
       </div>
 
       <div className="relative z-10">
-        {/* Header */}
+        {/* Header Utama */}
         <header className="backdrop-blur-xl bg-white/40 border-b border-blue-200/50 sticky top-0 z-20 shadow-sm">
           <div className="w-full px-4 sm:px-8 py-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -109,7 +110,7 @@ export default function RenstraPage() {
         ) : (
           <main className="w-full px-4 sm:px-8 py-8 space-y-6">
 
-            {/* Dashboard (wrapped) */}
+            {/* Dashboard */}
             <div className="rounded-2xl border border-blue-200/70 bg-linear-to-br from-white/80 to-blue-50/80 backdrop-blur-sm shadow-xl overflow-hidden">
               <div className="h-1 w-full bg-linear-to-r from-blue-500 to-cyan-400" />
               <div className="p-1">
@@ -142,11 +143,15 @@ export default function RenstraPage() {
                     </div>
                     Rencana Strategis (Program)
                   </h2>
+                  <button
+                    onClick={() => setOpenAddProgram(true)}
+                    className="px-4 py-2.5 rounded-lg bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 flex items-center gap-2 text-white"
+                  >
+                    <Plus size={15} />
+                    <span className="hidden sm:inline">Tambah Program</span>
+                  </button>
                 </div>
-                <TabelProgram
-                  apiBase="/renstra/program"
-                  onAddProgram={() => setOpenAddProgram(true)}
-                />
+                <TabelProgram apiBase="/renstra/program" />
               </div>
             </div>
 
@@ -177,17 +182,10 @@ export default function RenstraPage() {
         )}
 
         {/* Footer */}
-        <footer className="backdrop-blur-xl bg-white/40 border-t border-blue-200/50 mt-20 shadow-sm">
-          <div className="w-full px-4 sm:px-8 py-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
-              <p>© 2026 Management System v2.0</p>
-              <div className="flex gap-6 mt-4 sm:mt-0">
-                <span>Total Dokumen: {dokumen.length}</span>
-                <span>Total Program: {list.length}</span>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <Footer>
+          <span>Total Dokumen: {dokumen.length}</span>
+          <span>Total Program: {list.length}</span>
+        </Footer>
       </div>
 
       {/* Modals */}

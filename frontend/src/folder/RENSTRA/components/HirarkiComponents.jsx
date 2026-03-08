@@ -26,8 +26,8 @@ function HirarkiItem({ item, level = 0 }) {
       <div 
         onClick={() => hasChildren && setIsOpen(!isOpen)}
         className={`
-          flex items-start gap-4 py-3 px-3 rounded-lg transition-all
-          ${level === 0 ? "bg-slate-50 mb-3 border border-slate-200 shadow-sm" : "hover:bg-slate-50/80"}
+           flex items-start gap-4 py-3 px-3 rounded-lg transition-all
+          ${level === 0 ? "" : "hover:bg-slate-50/80"}
           ${hasChildren ? "cursor-pointer" : "cursor-default"}
         `}
       >
@@ -42,14 +42,14 @@ function HirarkiItem({ item, level = 0 }) {
 
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-1.5">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border border-slate-200 px-2 py-0.5 rounded shadow-sm">
+            <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider border border-slate-200 px-2 py-0.5 rounded shadow-sm">
               {item.level}
             </span>
            
           </div>
           <p className={`
             text-[14px] leading-relaxed tracking-normal
-            ${level === 0 ? "font-bold text-slate-900" : "text-slate-700 font-medium"}
+            ${level === 0 ? "font-medium text-slate-900" : "text-slate-800 font-medium"}
             ${isIndikator ? "text-slate-500 italic" : ""}
           `}>
             {item.uraian}

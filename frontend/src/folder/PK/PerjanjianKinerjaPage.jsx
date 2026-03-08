@@ -157,14 +157,9 @@ export default function PerjanjianKinerjaPage() {
         </main>
 
         {/* Footer */}
-        <footer className="backdrop-blur-xl bg-white/40 border-t border-blue-200/50 mt-16 shadow-sm">
-          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
-              <p>© 2026 Management System v2.0</p>
-              <p className="mt-2 sm:mt-0">E-Planning Dinkopukm Karawang • Ver 2.1</p>
-            </div>
-          </div>
-        </footer>
+        <Footer>
+          <p className="mt-2 sm:mt-0">E-Planning Dinkopukm Karawang • Ver 2.1</p>
+        </Footer>
       </div>
     </div>
   );

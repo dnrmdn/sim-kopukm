@@ -1,5 +1,6 @@
 // src/pages/SopPage.jsx
 import React, { useEffect, useState } from "react";
+import Footer from "@/components/Footer";
 import {
   Edit2,
   Trash2,
@@ -380,16 +381,9 @@ export default function SopPage() {
         </main>
 
         {/* Footer */}
-        <footer className="backdrop-blur-xl bg-white/40 border-t border-blue-200/50 mt-20 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
-              <p>© 2026 Management System v2.0</p>
-              <div className="flex gap-6 mt-4 sm:mt-0">
-                <span>Total Dokumen: {files.length}</span>
-              </div>
-            </div>
-          </div>
-        </footer>
+        <Footer>
+          <span>Total Dokumen: {files.length}</span>
+        </Footer>
       </div>
 
       <FilePreviewModal
