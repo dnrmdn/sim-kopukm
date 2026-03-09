@@ -100,7 +100,7 @@ export default function NavUser() {
         >
           <div className="flex flex-col">
             <span className="text-slate-800 text-sm font-semibold capitalize">{user.name}</span>
-            <span className="text-slate-400 text-xs mt-0.5">{user.role || user.username || "—"}</span>
+            {/* <span className="text-slate-400 text-xs mt-0.5">{user.role || "—"}</span> */}
           </div>
         </DropdownItem>
 

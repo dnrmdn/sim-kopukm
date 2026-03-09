@@ -18,7 +18,7 @@ const BRANDING_DATA = {
 };
 
 const LOGIN_CARD_DATA = {
-  title: 'Login SIM-KOPUKM',
+  title: 'Login DISPERINDAG KOPUKM',
   logos: [
     {
       src: logoKarawang,
