@@ -98,31 +98,47 @@ export default function RkaPage() {
     }
   };
 
-  const handleEdit = async (row) => {
+  // Tambahkan paguId dengan nilai default "1" di parameternya
+  const handleEdit = async (row, paguId = "1") => {
     setLoading(true);
     try {
-      setIsEditMode(true);
-      setEditingId(row.id);
+      // 1. Tentukan id_rka SPESIFIK berdasarkan jenis pagu yang diklik
+      let specificId = null;
+      if (paguId === "1") specificId = row.id_murni;
+      if (paguId === "2") specificId = row.id_p1;
+      if (paguId === "3") specificId = row.id_p2;
+      if (paguId === "4") specificId = row.id_efs;
+      if (paguId === "5") specificId = row.id_ubah;
 
+      // 2. Set mode: Jika sudah ada id-nya -> Edit. Jika belum (diklik dari nol) -> Buat Baru
+      if (specificId) {
+        setIsEditMode(true);
+        setEditingId(specificId); 
+      } else {
+        setIsEditMode(false);     
+        setEditingId(null);
+      }
+
+      // Pre-load kegiatan & sub untuk form dropdown
       await Promise.all([
         fetchKegiatan(row.program_id),
         fetchSubKegiatan(row.kegiatan_id)
       ]);
 
+      // 3. Pre-fill Form (meskipun pagu baru, struktur Program/Kegiatan tetap di-load otomatis)
       setRkaForm({
         program_id: row.program_id,
         kegiatan_id: row.kegiatan_id,
         subkegiatan_id: row.subkegiatan_id,
-        penanggungjawab_id: row.penanggungjawab_id || row.id_pj, // fallback antisipasi nama field backend
+        penanggungjawab_id: row.penanggungjawab_id || row.id_pj,
         pelaksana_id: row.pelaksana_id || row.id_pelaksana,
         tanggal_mulai: row.tanggal_mulai ? row.tanggal_mulai.split('T')[0] : "",
         tanggal_selesai: row.tanggal_selesai ? row.tanggal_selesai.split('T')[0] : "",
         target_sub: row.target_angka,
-        jenis_pagu: String(row.jenis_pagu || row.pagu_id || "1"),
+        jenis_pagu: String(paguId), // Kunci pagu aktif
         satuan_id: row.target_satuan || row.satuan_id
       });
 
-      // MAPPING DETAIL UNTUK BELANJA SECTION SAAT EDIT
       setCurrentRkaDetail({
         program_name: row.program_name,
         kegiatan_name: row.kegiatan_name,

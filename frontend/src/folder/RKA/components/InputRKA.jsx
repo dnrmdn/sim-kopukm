@@ -29,7 +29,7 @@ export default function InputRKA({
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] grid place-items-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Header */}
         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -155,9 +155,9 @@ export default function InputRKA({
 
                 <div>
                   <label className={labelStyle}>Satuan</label>
-                 <select 
-                    value={rkaForm.satuan_id} 
-                    onChange={(e) => onChangeForm("satuan_id", e.target.value)}
+                  <select
+                    value={rkaForm.satuan || ""}
+                    onChange={(e) => onChangeForm("satuan", e.target.value)}
                     className={inputStyle}
                   >
                     <option value="">Pilih Satuan</option>
