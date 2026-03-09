@@ -20,15 +20,15 @@ import umkmRoute from "./routes/umkmRoutes.js";
 import dokumenSotkRoutes from "./routes/dokumenSotk.js";
 import hirarkiRoutes from "./routes/hirarkiRoutes.js";
 import programRoutes from "./routes/programRoutes.js";
-import rkaRoutes from './routes/rkaRoutes.js';
-import pegawaiRouter from './routes/pegawaiRoutes.js';
-import pegawaiHirarkiRoutes from './routes/pegawaiHirarkiRoutes.js';
-import jabatanRouter from './routes/jabatanRoutes.js';
-import renstraSatuansRouter from './routes/renstraSatuansRoutes.js';
-import dokumenRenjaRoutes from './routes/dokumenRenja.js';
+import rkaRoutes from "./routes/rkaRoutes.js";
+import pegawaiRouter from "./routes/pegawaiRoutes.js";
+import pegawaiHirarkiRoutes from "./routes/pegawaiHirarkiRoutes.js";
+import jabatanRouter from "./routes/jabatanRoutes.js";
+import renstraSatuansRouter from "./routes/renstraSatuansRoutes.js";
+import dokumenRenjaRoutes from "./routes/dokumenRenja.js";
 import dokumenSopRoute from "./routes/dokumenSop.js";
 import dokumenSpipRoute from "./routes/dokumenSpip.js";
-import dokumenLakipRoutes from "./routes/dokumenLakip.js"
+import dokumenLakipRoutes from "./routes/dokumenLakip.js";
 import dokumenLkpjRoutes from "./routes/dokumenLkpj.js";
 import dokumenLppdRoutes from "./routes/dokumenLppd.js";
 import paguRoutes from "./routes/paguRoutes.js";
@@ -39,7 +39,6 @@ import dokumenDpaRoutes from "./routes/dokumenDpa.js";
 import dokumenKakRoutes from "./routes/dokumenKak.js";
 import masterRoutes from "./routes/masterRoutes.js";
 
-
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
 import ProgramAnggaranRoutes from "./routes/Renstra/ProgramAnggaranRoutes.js";
@@ -49,7 +48,7 @@ import TahunRoutes from "./routes/Renstra/TahunRoutes.js";
 import SubKegiatanRoutes from "./routes/Renstra/SubKegiatanRoutes.js";
 import SubKegiatanAnggaranRoutes from "./routes/Renstra/SubKegiatanAnggaranRoutes.js";
 import DokumenRenstraRoutes from "./routes/Renstra/DokumenRoutes.js";
-import DashboardRenstraRoutes from "./routes/Renstra/DashboardRoutes.js"
+import DashboardRenstraRoutes from "./routes/Renstra/DashboardRoutes.js";
 
 dotenv.config();
 
@@ -63,10 +62,7 @@ const NODE_ENV = process.env.NODE_ENV || "production";
 const logDir = path.join(process.cwd(), "logs");
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
-const accessLogStream = fs.createWriteStream(
-  path.join(logDir, "access.log"),
-  { flags: "a" }
-);
+const accessLogStream = fs.createWriteStream(path.join(logDir, "access.log"), { flags: "a" });
 
 // ================================
 // 🔹 Direktori uploads (static files)
@@ -114,7 +110,7 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 
 // ================================
@@ -132,8 +128,14 @@ app.use(
     crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: false, // disable for easier CSR + inline assets
     frameguard: false,
-  })
+  }),
 );
+
+// ✅ ADD THIS — fix ERR_BLOCKED_BY_RESPONSE.NotSameOrigin for all file previews
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
 
 app.use(xss());
 app.use(hpp());
@@ -146,7 +148,7 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 10000,
     message: "Too many requests",
-  })
+  }),
 );
 
 // ================================
@@ -173,10 +175,12 @@ app.use(
   (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Access-Control-Allow-Origin", "*");
-    try { res.removeHeader("X-Frame-Options"); } catch (e) {}
+    try {
+      res.removeHeader("X-Frame-Options");
+    } catch (e) {}
     next();
   },
-  express.static(uploadsDir, { index: false })
+  express.static(uploadsDir, { index: false }),
 );
 
 // ================================
@@ -214,9 +218,6 @@ app.use("/api/dokumen/dpa", dokumenDpaRoutes);
 app.use("/api/dokumen/kak", dokumenKakRoutes);
 app.use("/api/master", masterRoutes);
 
-
-
-
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
 app.use("/api/renstra/program-anggaran", ProgramAnggaranRoutes);
@@ -243,9 +244,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   const status = err.status || 500;
 
-  const logEntry = `[${new Date().toISOString()}] ${status} ${req.method} ${
-    req.originalUrl
-  } - ${err.message}\n`;
+  const logEntry = `[${new Date().toISOString()}] ${status} ${req.method} ${req.originalUrl} - ${err.message}\n`;
 
   fs.appendFileSync(path.join(logDir, "error.log"), logEntry);
 

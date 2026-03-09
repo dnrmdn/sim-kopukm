@@ -391,9 +391,9 @@ export default function SopPage() {
         </main>
 
         {/* Footer */}
-        <Footer>
+        {/* <Footer>
           <span>Total Dokumen: {files.length}</span>
-        </Footer>
+        </Footer> */}
       </div>
 
       <FilePreviewModal

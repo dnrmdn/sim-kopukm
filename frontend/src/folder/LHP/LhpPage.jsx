@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import Footer from "@/components/Footer";
 import { Plus, FileText, Search, PencilLine, Trash2, Eye, AlertCircle, ArrowLeft } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +14,7 @@ export default function LhpPage() {
   const [error, setError] = useState("");
   const [uploadingFile, setUploadingFile] = useState(null);
   const [uploadingName, setUploadingName] = useState("");
+  const [uploadingTahun, setUploadingTahun] = useState(new Date().getFullYear().toString()); // ✅ tahun state
   const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -45,33 +45,32 @@ export default function LhpPage() {
     }
   }, []);
 
-  useEffect(() => { fetchList(); }, [fetchList]);
+  useEffect(() => {
+    fetchList();
+  }, [fetchList]);
 
   const handleSearch = (query) => {
     setSearch(query);
-    if (!query.trim()) { setFilteredFiles(files); return; }
+    if (!query.trim()) {
+      setFilteredFiles(files);
+      return;
+    }
     const key = query.toLowerCase();
-    setFilteredFiles(files.filter((f) => f.name?.toLowerCase().includes(key)));
+    setFilteredFiles(files.filter((f) => f.nama_dokumen?.toLowerCase().includes(key)));
   };
 
-  const detectMime = (file) => {
-    if (file.mime) return file.mime;
-    const n = file.name?.toLowerCase() || "";
-    if (n.endsWith(".pdf")) return "application/pdf";
-    if (n.endsWith(".png")) return "image/png";
-    if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
-    if (n.endsWith(".doc")) return "application/msword";
-    if (n.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    return "application/octet-stream";
-  };
-
+  // ✅ Fixed: use file.mime_type directly (not detectMime wrapping)
   const handlePreview = (file) => {
-    setPreviewFile({ name: file.name, mime: detectMime(file), url: `${api.defaults.baseURL}${endpoints.detail(file.id)}` });
+    setPreviewFile({
+      name: file.nama_dokumen,
+      mime: file.mime_type,
+      url: `${api.defaults.baseURL}${endpoints.detail(file.id)}`,
+    });
     setPreviewOpen(true);
   };
 
   const handleEdit = async (file) => {
-    const name = prompt("Ubah nama dokumen:", file.name);
+    const name = prompt("Ubah nama dokumen:", file.nama_dokumen);
     if (!name || !name.trim()) return;
     try {
       const res = await api.put(endpoints.update(file.id), { name: name.trim() });
@@ -85,8 +84,9 @@ export default function LhpPage() {
     }
   };
 
+  // ✅ Fixed: file.nama_dokumen (was file.name)
   const handleDelete = async (file) => {
-    if (!confirm(`Hapus dokumen "${file.name}"?`)) return;
+    if (!confirm(`Hapus dokumen "${file.nama_dokumen}"?`)) return;
     try {
       const res = await api.delete(endpoints.remove(file.id));
       if (res.data?.success) {
@@ -109,17 +109,24 @@ export default function LhpPage() {
     e.preventDefault();
     if (!uploadingFile) { alert("Pilih file dulu"); return; }
     if (!uploadingName.trim()) { alert("Masukkan nama dokumen"); return; }
+    if (!uploadingTahun) { alert("Masukkan tahun dokumen"); return; }
+
     const fd = new FormData();
     fd.append("file", uploadingFile);
     fd.append("title", uploadingName.trim());
+    fd.append("tahun", uploadingTahun); // ✅ tahun now sent to backend
+
     try {
       setIsUploading(true);
-      const res = await api.post(endpoints.upload, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      const res = await api.post(endpoints.upload, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       if (res.data?.success) {
         setFiles((p) => [res.data.data, ...p]);
         setFilteredFiles((p) => [res.data.data, ...p]);
         setUploadingFile(null);
         setUploadingName("");
+        setUploadingTahun(new Date().getFullYear().toString()); // ✅ reset tahun
         const fileInput = document.getElementById("lhp-upload");
         if (fileInput) fileInput.value = "";
         alert("File berhasil diupload");
@@ -153,7 +160,9 @@ export default function LhpPage() {
                       Dokumen LHP
                     </h1>
                   </div>
-                  <p className="text-gray-600 text-sm pl-1">Laporan Hasil Pemeriksaan — Kelola dokumen dengan mudah</p>
+                  <p className="text-gray-600 text-sm pl-1">
+                    Laporan Hasil Pemeriksaan — Kelola dokumen dengan mudah
+                  </p>
                 </div>
 
                 <button
@@ -175,8 +184,13 @@ export default function LhpPage() {
               <div className="shrink-0 p-2 rounded-lg bg-red-200/50">
                 <AlertCircle size={20} className="text-red-600" />
               </div>
-              <div className="flex-1"><p className="text-red-700">{error}</p></div>
-              <button onClick={() => fetchList()} className="shrink-0 px-3 py-1 rounded-lg bg-red-200/70 hover:bg-red-300 text-red-700 font-medium text-xs transition-all duration-200">
+              <div className="flex-1">
+                <p className="text-red-700">{error}</p>
+              </div>
+              <button
+                onClick={() => fetchList()}
+                className="shrink-0 px-3 py-1 rounded-lg bg-red-200/70 hover:bg-red-300 text-red-700 font-medium text-xs transition-all duration-200"
+              >
                 Coba Lagi
               </button>
             </div>
@@ -190,8 +204,10 @@ export default function LhpPage() {
             <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-10 blur-3xl bg-linear-to-br from-blue-400 to-cyan-300" />
             <div className="relative p-6 sm:p-8">
               <h2 className="text-lg font-bold text-gray-800 mb-6">📤 Upload Dokumen</h2>
+              {/* ✅ Fixed grid: file + nama (span 2) + tahun + button = 5 cols on md */}
               <form onSubmit={handleUpload} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {/* File picker */}
                   <div className="md:col-span-1">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Pilih File</label>
                     <input
@@ -200,8 +216,12 @@ export default function LhpPage() {
                       onChange={handleFileChange}
                       className="block w-full px-4 py-2 rounded-lg bg-white/60 border border-blue-300 text-gray-700 text-sm cursor-pointer hover:bg-white/80 transition-all duration-200"
                     />
-                    {uploadingFile && <p className="text-xs text-blue-600 mt-2">✓ {uploadingFile.name}</p>}
+                    {uploadingFile && (
+                      <p className="text-xs text-blue-600 mt-2">✓ {uploadingFile.name}</p>
+                    )}
                   </div>
+
+                  {/* Nama Dokumen */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Nama Dokumen</label>
                     <input
@@ -212,6 +232,20 @@ export default function LhpPage() {
                       className="w-full px-4 py-2 rounded-lg bg-white/60 border border-blue-300 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     />
                   </div>
+
+                  {/* Tahun */}
+                  <div className="md:col-span-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Tahun</label>
+                    <input
+                      type="number"
+                      placeholder="2025"
+                      value={uploadingTahun}
+                      onChange={(e) => setUploadingTahun(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-white/60 border border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
+                    />
+                  </div>
+
+                  {/* Submit */}
                   <div className="md:col-span-1 flex items-end">
                     <button
                       type="submit"
@@ -261,35 +295,74 @@ export default function LhpPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-linear-to-r from-blue-50 to-cyan-50 border-b border-blue-200/70">
-                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wide">Nama Dokumen</th>
-                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide">Tanggal Upload</th>
-                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide">Aksi</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wide">
+                      Nama Dokumen
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide">
+                      Tahun
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide">
+                      Tanggal Upload
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredFiles.map((file) => (
-                    <tr key={file.id} className="border-b border-blue-100/70 hover:bg-blue-50/50 transition-all duration-200 group bg-white/50">
+                    <tr
+                      key={file.id}
+                      className="border-b border-blue-100/70 hover:bg-blue-50/50 transition-all duration-200 group bg-white/50"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition-colors">
                             <FileText size={18} className="text-blue-600" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-700 transition-colors">{file.name}</p>
+                            <p className="text-sm font-medium text-gray-800 truncate group-hover:text-blue-700 transition-colors">
+                              {file.nama_dokumen}
+                            </p>
                             <p className="text-xs text-gray-500">ID: {file.id}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-medium text-gray-700">{file.tahun ?? "-"}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <span className="text-sm text-gray-700">
-                          {new Date(file.created_at).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" })}
+                          {new Date(file.created_at).toLocaleDateString("id-ID", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
-                          <button onClick={() => handlePreview(file)} className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800" title="Lihat"><Eye size={16} /></button>
-                          <button onClick={() => handleEdit(file)} className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 transition-all duration-200 text-amber-600 hover:text-amber-800" title="Edit"><PencilLine size={16} /></button>
-                          <button onClick={() => handleDelete(file)} className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-600 hover:text-red-800" title="Hapus"><Trash2 size={16} /></button>
+                          <button
+                            onClick={() => handlePreview(file)}
+                            className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800"
+                            title="Lihat"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(file)}
+                            className="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 transition-all duration-200 text-amber-600 hover:text-amber-800"
+                            title="Edit"
+                          >
+                            <PencilLine size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(file)}
+                            className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-600 hover:text-red-800"
+                            title="Hapus"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -305,10 +378,6 @@ export default function LhpPage() {
             </div>
           )}
         </main>
-
-        <Footer>
-          <span>Total Dokumen: {files.length}</span>
-        </Footer>
       </div>
 
       <FilePreviewModal open={previewOpen} onClose={() => setPreviewOpen(false)} file={previewFile} />
