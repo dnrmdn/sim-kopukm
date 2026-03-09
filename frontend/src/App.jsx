@@ -48,8 +48,7 @@ import EditPegawai from "./folder/PEGAWAI/components/editPegawai";
 import TambahPegawai from "./folder/PEGAWAI/components/tambahPegawai";
 import EditJabatan from "./folder/JABATAN/components/editJabatan";
 import RegisterPage from "./folder/REGISTER/registerPage";
-
-
+import ProfilePage from "./LAYOUTS/NAVBAR/profileUser";
 
 function App() {
   return (
@@ -58,6 +57,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* routes with footer */}
         <Route element={<MainLayout />}>
@@ -103,7 +103,6 @@ function App() {
           <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
           <Route path="/dokumen/PKEselonIV" element={<PKEselonIV />} />
           <Route path="/dokumen/rencana-aksi" element={<RencanaAksiPage />} />
-
         </Route>
       </Routes>
     </BrowserRouter>
