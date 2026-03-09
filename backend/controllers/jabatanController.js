@@ -5,7 +5,7 @@ import pool from "../config/db.js";
  */
 export const getAllJabatan = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM jabatan ORDER BY nama_jabatan ASC");
+    const [rows] = await pool.query("SELECT * FROM jabatan ORDER BY level ASC, nama_jabatan ASC");
     res.json({ 
       success: true, 
       count: rows.length, 
@@ -41,27 +41,34 @@ export const getJabatanById = async (req, res) => {
  */
 export const createJabatan = async (req, res) => {
   try {
-    const { nama_jabatan } = req.body;
+    const { nama_jabatan, level } = req.body;
 
     if (!nama_jabatan) {
       return res.status(400).json({ success: false, message: "Nama jabatan wajib diisi" });
     }
 
+    if (!level) {
+      return res.status(400).json({ success: false, message: "Level jabatan wajib dipilih" });
+    }
+
     // Cek apakah nama jabatan sudah ada (opsional, untuk menghindari duplikat)
-    const [existing] = await pool.query("SELECT * FROM jabatan WHERE nama_jabatan = ?", [nama_jabatan]);
+    const [existing] = await pool.query(
+      "SELECT * FROM jabatan WHERE nama_jabatan = ? AND level = ?", 
+      [nama_jabatan, level]
+    );
     if (existing.length > 0) {
-      return res.status(400).json({ success: false, message: "Nama jabatan sudah terdaftar" });
+      return res.status(400).json({ success: false, message: "Nama jabatan dengan level tersebut sudah terdaftar" });
     }
 
     const [result] = await pool.query(
-      "INSERT INTO jabatan (nama_jabatan) VALUES (?)",
-      [nama_jabatan]
+      "INSERT INTO jabatan (nama_jabatan, level) VALUES (?, ?)",
+      [nama_jabatan, level]
     );
 
     res.status(201).json({
       success: true,
       message: "Jabatan berhasil ditambahkan",
-      data: { id: result.insertId, nama_jabatan }
+      data: { id: result.insertId, nama_jabatan, level }
     });
   } catch (error) {
     console.error("Create Jabatan Error:", error);
@@ -75,15 +82,19 @@ export const createJabatan = async (req, res) => {
 export const updateJabatan = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nama_jabatan } = req.body;
+    const { nama_jabatan, level } = req.body;
 
     if (!nama_jabatan) {
       return res.status(400).json({ success: false, message: "Nama jabatan wajib diisi" });
     }
 
+    if (!level) {
+      return res.status(400).json({ success: false, message: "Level jabatan wajib dipilih" });
+    }
+
     const [result] = await pool.query(
-      "UPDATE jabatan SET nama_jabatan = ? WHERE id_jabatan = ?",
-      [nama_jabatan, id]
+      "UPDATE jabatan SET nama_jabatan = ?, level = ? WHERE id_jabatan = ?",
+      [nama_jabatan, level, id]
     );
 
     if (result.affectedRows === 0) {

@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import {
-  ArrowLeft, UserPlus, PencilLine, Trash2, GitGraph,
-  ChevronRight, ChevronDown, ShieldCheck, Search,
-  Users, AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, UserPlus, PencilLine, Trash2, GitGraph, ChevronRight, ChevronDown, ShieldCheck, Users, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { deletePegawai, getPegawai } from "../../../services/pegawaiService";
 
@@ -11,7 +7,6 @@ export default function DaftarPegawai() {
   const [pegawai, setPegawai] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -28,8 +23,11 @@ export default function DaftarPegawai() {
     }
   };
 
-  useEffect(() => { fetchPegawai(); }, []);
+  useEffect(() => {
+    fetchPegawai();
+  }, []);
 
+  // Build childrenMap dari pegawai (tanpa filter search)
   const childrenMap = useMemo(() => {
     const map = {};
     pegawai.forEach((p) => {
@@ -41,21 +39,7 @@ export default function DaftarPegawai() {
     return map;
   }, [pegawai]);
 
-  const filteredPegawai = useMemo(() => {
-    if (!searchQuery.trim()) return pegawai;
-    const query = searchQuery.toLowerCase();
-    return pegawai.filter(
-      (p) =>
-        p.nama_lengkap.toLowerCase().includes(query) ||
-        p.nip.toLowerCase().includes(query) ||
-        p.nama_jabatan.toLowerCase().includes(query)
-    );
-  }, [pegawai, searchQuery]);
-
-  const pegawaiTanpaAtasan = useMemo(
-    () => pegawai.filter((p) => (!p.id_atasan || p.id_atasan === "0") && parseInt(p.level) > 1),
-    [pegawai]
-  );
+  const pegawaiTanpaAtasan = useMemo(() => pegawai.filter((p) => (!p.id_atasan || p.id_atasan === "0") && parseInt(p.level) > 1), [pegawai]);
 
   const toggleExpand = useCallback((id) => {
     setExpandedIds((prev) => {
@@ -78,20 +62,16 @@ export default function DaftarPegawai() {
 
   // Soft avatar accent colors (light-friendly)
   const getAvatarColor = (index) => {
-    const colors = [
-      "from-blue-400 to-cyan-300",
-      "from-violet-400 to-purple-300",
-      "from-amber-400 to-orange-300",
-      "from-emerald-400 to-teal-300",
-      "from-rose-400 to-pink-300",
-    ];
+    const colors = ["from-blue-400 to-cyan-300", "from-violet-400 to-purple-300", "from-amber-400 to-orange-300", "from-emerald-400 to-teal-300", "from-rose-400 to-pink-300"];
     return colors[index % colors.length];
   };
 
   const renderPegawaiItem = (item, depth = 0, index = 0) => {
+    if (!item) return null;
+
     const children = childrenMap[item.id_pegawai] || [];
     const isExpanded = expandedIds.has(item.id_pegawai);
-    const initials = item.nama_lengkap
+    const initials = (item.nama_lengkap || "")
       .split(" ")
       .filter((n) => n.length > 0)
       .slice(0, 2)
@@ -121,10 +101,7 @@ export default function DaftarPegawai() {
                 {/* Left */}
                 <div className="flex items-center gap-3 min-w-0">
                   {children.length > 0 ? (
-                    <button
-                      onClick={() => toggleExpand(item.id_pegawai)}
-                      className="shrink-0 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600"
-                    >
+                    <button onClick={() => toggleExpand(item.id_pegawai)} className="shrink-0 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600">
                       {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     </button>
                   ) : (
@@ -132,21 +109,17 @@ export default function DaftarPegawai() {
                   )}
 
                   {/* Avatar */}
-                  <div className={`shrink-0 w-10 h-10 rounded-xl bg-linear-to-br ${getAvatarColor(index)} flex items-center justify-center font-bold text-white text-sm shadow-md`}>
-                    {initials}
-                  </div>
+                  <div className={`shrink-0 w-10 h-10 rounded-xl bg-linear-to-br ${getAvatarColor(index)} flex items-center justify-center font-bold text-white text-sm shadow-md`}>{initials}</div>
 
                   {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-gray-800 truncate uppercase tracking-wide group-hover:text-blue-700 transition-colors">
-                      {item.nama_lengkap}
-                    </p>
+                    <p className="text-sm font-bold text-gray-800 truncate uppercase tracking-wide group-hover:text-blue-700 transition-colors">{item.nama_lengkap || "Nama Tidak Tersedia"}</p>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
-                      <span className="font-mono">{item.nip}</span>
+                      <span className="font-mono">{item.nip || "-"}</span>
                       <span className="hidden sm:inline text-gray-300">•</span>
                       <span className="sm:inline flex items-center gap-1">
                         <ShieldCheck size={11} className="text-blue-400" />
-                        {item.nama_jabatan}
+                        {item.nama_jabatan || "Tanpa Jabatan"}
                       </span>
                     </div>
                   </div>
@@ -154,21 +127,11 @@ export default function DaftarPegawai() {
 
                 {/* Right */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
-                    LV {item.level}
-                  </span>
-                  <button
-                    onClick={() => navigate(`/dokumen/pegawai/edit/${item.id_pegawai}`)}
-                    className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800"
-                    title="Edit"
-                  >
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">LV {item.level}</span>
+                  <button onClick={() => navigate(`/dokumen/pegawai/edit/${item.id_pegawai}`)} className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800" title="Edit">
                     <PencilLine size={15} />
                   </button>
-                  <button
-                    onClick={() => handleDelete(item.id_pegawai)}
-                    className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-500 hover:text-red-700"
-                    title="Hapus"
-                  >
+                  <button onClick={() => handleDelete(item.id_pegawai)} className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-500 hover:text-red-700" title="Hapus">
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -178,11 +141,7 @@ export default function DaftarPegawai() {
         </div>
 
         {/* Nested children */}
-        {isExpanded && children.length > 0 && (
-          <div className="ml-3 sm:ml-8 pl-4 sm:pl-6 border-l-2 border-blue-200 flex flex-col gap-1 mt-1 mb-3">
-            {children.map((child, idx) => renderPegawaiItem(child, depth + 1, idx))}
-          </div>
-        )}
+        {isExpanded && children.length > 0 && <div className="ml-3 sm:ml-8 pl-4 sm:pl-6 border-l-2 border-blue-200 flex flex-col gap-1 mt-1 mb-3">{children.map((child, idx) => renderPegawaiItem(child, depth + 1, idx))}</div>}
       </div>
     );
   };
@@ -206,18 +165,13 @@ export default function DaftarPegawai() {
                     <div className="p-2.5 rounded-xl bg-linear-to-br from-blue-500 to-cyan-400 shadow-md shadow-blue-500/30">
                       <GitGraph size={20} className="text-white" />
                     </div>
-                    <h1 className="text-4xl font-bold bg-linear-to-r from-blue-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                      Struktur Tim
-                    </h1>
+                    <h1 className="text-4xl font-bold bg-linear-to-r from-blue-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">Struktur Tim</h1>
                   </div>
                   <p className="text-gray-600 text-sm pl-1">Kelola hierarki organisasi dan data pegawai dengan mudah</p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="px-4 py-2.5 rounded-lg bg-white/60 hover:bg-white/80 border border-blue-200 text-gray-700 font-medium text-sm transition-all duration-200 flex items-center gap-2"
-                  >
+                  <button onClick={() => navigate(-1)} className="px-4 py-2.5 rounded-lg bg-white/60 hover:bg-white/80 border border-blue-200 text-gray-700 font-medium text-sm transition-all duration-200 flex items-center gap-2">
                     <ArrowLeft size={16} />
                     <span className="hidden sm:inline">Kembali</span>
                   </button>
@@ -231,17 +185,7 @@ export default function DaftarPegawai() {
                 </div>
               </div>
 
-              {/* Search bar */}
-              <div className="relative">
-                <Search size={18} className="absolute left-4 top-3.5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Cari nama, NIP, atau jabatan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 border border-blue-200 text-gray-700 placeholder-gray-400 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              {/* Search bar dihapus */}
             </div>
           </div>
         </header>
@@ -260,13 +204,10 @@ export default function DaftarPegawai() {
                     {pegawaiTanpaAtasan.map((p) => (
                       <li key={p.id_pegawai} className="text-sm text-amber-800 flex items-center justify-between gap-4">
                         <span>
-                          <span className="font-semibold">{p.nama_lengkap}</span>
+                          <span className="font-semibold">{p.nama_lengkap || "Nama Tidak Tersedia"}</span>
                           <span className="text-amber-600"> ({p.nama_jabatan || "Tanpa Jabatan"})</span>
                         </span>
-                        <button
-                          onClick={() => navigate(`/dokumen/pegawai/edit/${p.id_pegawai}`)}
-                          className="shrink-0 px-3 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-300 text-amber-800 font-medium text-xs transition-all duration-200"
-                        >
+                        <button onClick={() => navigate(`/dokumen/pegawai/edit/${p.id_pegawai}`)} className="shrink-0 px-3 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-300 text-amber-800 font-medium text-xs transition-all duration-200">
                           Set Atasan
                         </button>
                       </li>
@@ -289,10 +230,7 @@ export default function DaftarPegawai() {
                 <div className="flex-1">
                   <p className="text-red-700">{error}</p>
                 </div>
-                <button
-                  onClick={fetchPegawai}
-                  className="shrink-0 px-3 py-1 rounded-lg bg-red-200/70 hover:bg-red-300 text-red-700 font-medium text-xs transition-all duration-200"
-                >
+                <button onClick={fetchPegawai} className="shrink-0 px-3 py-1 rounded-lg bg-red-200/70 hover:bg-red-300 text-red-700 font-medium text-xs transition-all duration-200">
                   Coba Lagi
                 </button>
               </div>
@@ -310,30 +248,11 @@ export default function DaftarPegawai() {
               </div>
               <p className="text-gray-600 font-medium">Mengolah data hierarki...</p>
             </div>
-          ) : filteredPegawai.length === 0 && searchQuery ? (
-            <div className="flex flex-col items-center justify-center py-24 px-4">
-              <div className="p-4 rounded-2xl bg-blue-100 border border-blue-200 mb-4">
-                <Search size={48} className="text-blue-400" />
-              </div>
-              <p className="text-xl font-bold text-gray-800 mb-2">Tidak ada hasil</p>
-              <p className="text-gray-600 text-sm mb-6 text-center max-w-sm">Coba ubah pencarian atau tambahkan pegawai baru</p>
-              <button
-                onClick={() => navigate("/dokumen/pegawai/tambah-pegawai")}
-                className="px-6 py-3 rounded-lg bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 text-white"
-              >
-                Tambah Pegawai
-              </button>
-            </div>
           ) : (
             <div className="space-y-2">
               {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-                {[
-                  { label: "Total Pegawai", value: pegawai.length, icon: Users },
-                  { label: "Level Tertinggi", value: pegawai.length > 0 ? Math.max(...pegawai.map((p) => parseInt(p.level))) : 0, icon: GitGraph },
-                  { label: "Hasil Pencarian", value: filteredPegawai.length, icon: Search },
-                  { label: "Manager", value: pegawai.filter((p) => parseInt(p.level) <= 2).length, icon: ShieldCheck },
-                ].map((stat, idx) => {
+              <div className="grid mb-8">
+                {[{ label: "Total Pegawai", value: pegawai.length, icon: Users }].map((stat, idx) => {
                   const Icon = stat.icon;
                   return (
                     <div key={idx} className="p-4 rounded-xl border border-blue-200/70 bg-linear-to-br from-white/80 to-blue-50/80 backdrop-blur-sm hover:border-blue-300 transition-all duration-200">
@@ -356,9 +275,7 @@ export default function DaftarPegawai() {
                     <Users size={48} className="text-blue-400" />
                   </div>
                   <p className="text-xl font-bold text-gray-800 mb-2">Data Pegawai Kosong</p>
-                  <p className="text-gray-600 text-sm mb-6 text-center max-w-sm">
-                    Silahkan tambahkan pegawai dengan level tertinggi (tanpa atasan) terlebih dahulu.
-                  </p>
+                  <p className="text-gray-600 text-sm mb-6 text-center max-w-sm">Silahkan tambahkan pegawai dengan level tertinggi (tanpa atasan) terlebih dahulu.</p>
                   <button
                     onClick={() => navigate("/dokumen/pegawai/tambah-pegawai")}
                     className="px-6 py-3 rounded-lg bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 font-bold text-sm transition-all duration-200 shadow-lg shadow-blue-500/30 text-white"
@@ -372,19 +289,6 @@ export default function DaftarPegawai() {
             </div>
           )}
         </main>
-
-        {/* Footer */}
-        <footer className="backdrop-blur-xl bg-white/40 border-t border-blue-200/50 mt-20 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
-              <p>© 2026 Management System v2.0</p>
-              <div className="flex gap-6 mt-4 sm:mt-0">
-                <span>Total Pegawai: {pegawai.length}</span>
-                <span>Struktur Hirarki Aktif</span>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </div>
   );

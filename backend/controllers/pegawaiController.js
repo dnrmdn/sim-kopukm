@@ -62,36 +62,57 @@ export const getPegawai = async (req, res, next) => {
 };
 
 /**
- * ➕ Create new pegawai
+ * ➕ Create new pegawai (dengan id_jabatan dan id_atasan)
  */
 export const createPegawai = async (req, res, next) => {
-  const { nama_lengkap, nip, jabatan_definitif, level } = req.body;
+  const { nama_lengkap, nip, level, id_jabatan, id_atasan } = req.body;
+
+  const connection = await pool.getConnection();
 
   try {
-    const [result] = await pool.query(
+    await connection.beginTransaction();
+
+    // 1️⃣ Insert ke tabel pegawai
+    const [result] = await connection.query(
       `INSERT INTO pegawai 
        (nama_lengkap, nip, jabatan_definitif, level) 
        VALUES (?, ?, ?, ?)`,
-      [nama_lengkap, nip, jabatan_definitif || null, level || 0]
+      [nama_lengkap, nip, id_jabatan || null, level || 0]
     );
+
+    const pegawaiId = result.insertId;
+
+    // 2️⃣ Insert ke tabel pegawai_hirarki jika ada id_atasan
+    if (id_atasan && id_atasan !== "0") {
+      await connection.query(
+        `INSERT INTO pegawai_hirarki (id_pegawai, id_atasan) 
+         VALUES (?, ?)`,
+        [pegawaiId, id_atasan]
+      );
+    }
+
+    await connection.commit();
 
     return res.status(201).json({
       success: true,
       message: "Pegawai berhasil ditambahkan",
-      id: result.insertId,
+      id: pegawaiId,
     });
   } catch (err) {
+    await connection.rollback();
     console.error("pegawai:create", err);
     return next(err);
+  } finally {
+    connection.release();
   }
 };
 
 /**
- * ✏️ Update pegawai
+ * ✏️ Update pegawai (dengan id_jabatan dan id_atasan)
  */
 export const updatePegawai = async (req, res, next) => {
   const { id } = req.params;
-  const { nama_lengkap, nip, jabatan_definitif, level, id_atasan } = req.body;
+  const { nama_lengkap, nip, level, id_jabatan, id_atasan } = req.body;
 
   const connection = await pool.getConnection();
 
@@ -103,7 +124,7 @@ export const updatePegawai = async (req, res, next) => {
       `UPDATE pegawai 
        SET nama_lengkap = ?, nip = ?, jabatan_definitif = ?, level = ?
        WHERE id_pegawai = ?`,
-      [nama_lengkap, nip, jabatan_definitif || null, level || 0, id]
+      [nama_lengkap, nip, id_jabatan || null, level || 0, id]
     );
 
     if (result.affectedRows === 0) {
@@ -114,7 +135,7 @@ export const updatePegawai = async (req, res, next) => {
       });
     }
 
-    // 2️⃣ Update tabel hirarki
+    // 2️⃣ Update tabel pegawai_hirarki
     if (id_atasan && id_atasan !== "0") {
       // cek apakah sudah ada relasi
       const [existing] = await connection.query(
@@ -162,25 +183,42 @@ export const updatePegawai = async (req, res, next) => {
 export const deletePegawai = async (req, res, next) => {
   const { id } = req.params;
 
+  const connection = await pool.getConnection();
+
   try {
-    const [result] = await pool.query(
+    await connection.beginTransaction();
+
+    // 1️⃣ Delete dari pegawai_hirarki (cascade)
+    await connection.query(
+      "DELETE FROM pegawai_hirarki WHERE id_pegawai = ?",
+      [id]
+    );
+
+    // 2️⃣ Delete dari pegawai
+    const [result] = await connection.query(
       "DELETE FROM pegawai WHERE id_pegawai = ?",
       [id]
     );
 
     if (result.affectedRows === 0) {
+      await connection.rollback();
       return res.status(404).json({
         success: false,
         message: "Pegawai tidak ditemukan",
       });
     }
 
+    await connection.commit();
+
     return res.json({
       success: true,
       message: "Pegawai berhasil dihapus",
     });
   } catch (err) {
+    await connection.rollback();
     console.error("pegawai:delete", err);
     return next(err);
+  } finally {
+    connection.release();
   }
 };

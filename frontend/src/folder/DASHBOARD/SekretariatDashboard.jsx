@@ -22,17 +22,11 @@ import {
   Star,
   Users,
   Briefcase,
-  File
+  File,
 } from "lucide-react";
 
 /* ================= DOC BUTTON ================= */
-const DocButton = ({
-  label,
-  icon: Icon,
-  to,
-  colorBg = "bg-slate-100",
-  colorText = "text-slate-700",
-}) => {
+const DocButton = ({ label, icon: Icon, to, colorBg = "bg-slate-100", colorText = "text-slate-700" }) => {
   return (
     <Link
       to={to || "#"}
@@ -45,16 +39,13 @@ const DocButton = ({
       <div className="p-2 rounded-xl bg-white/70 group-hover:bg-white transition">
         <Icon className={`w-5 h-5 ${colorText}`} />
       </div>
-      <span className={`font-bold text-sm ${colorText} truncate`}>
-        {label}
-      </span>
+      <span className={`font-bold text-sm ${colorText} truncate`}>{label}</span>
     </Link>
   );
 };
 
 /* ================= ROUTE HELPER ================= */
-const makeRoute = (label) =>
-  `/dokumen/${label.toLowerCase().replace(/\s+/g, "-")}`;
+const makeRoute = (label) => `/dokumen/${label.toLowerCase().replace(/\s+/g, "-")}`;
 
 export default function DokumenKesekretariatan() {
   /* ===== DATA ASLI — TIDAK DIUBAH ===== */
@@ -90,7 +81,6 @@ export default function DokumenKesekretariatan() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 lg:p-8 font-sans text-slate-900">
       <div className="max-w-[1400px] mx-auto space-y-8">
-
         {/* ===== HEADER ===== */}
         <header className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex items-center gap-4">
           <div className="bg-emerald-600 p-3 rounded-2xl">
@@ -98,19 +88,12 @@ export default function DokumenKesekretariatan() {
           </div>
 
           <div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-              Dokumen Kesekretariatan
-            </h1>
-            <p className="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">
-              Dinas Koperasi dan UKM
-            </p>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Dokumen Kesekretariatan</h1>
+            <p className="text-sm text-slate-500 mt-1 uppercase tracking-wider font-semibold">Dinas Koperasi dan UKM</p>
           </div>
 
           <div className="ml-auto">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 hover:bg-slate-100"
-            >
+            <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 hover:bg-slate-100">
               Refresh
             </button>
           </div>
@@ -122,21 +105,12 @@ export default function DokumenKesekretariatan() {
             <div className="bg-blue-100 p-2 rounded-xl">
               <Layers className="w-5 h-5 text-blue-600" />
             </div>
-            <h2 className="text-xl font-black text-slate-800">
-              Program, Perencanaan, Anggaran, Keuangan & Pelaporan
-            </h2>
+            <h2 className="text-xl font-black text-slate-800">Program, Perencanaan, Anggaran, Keuangan & Pelaporan</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {sekperBtnList.map(({ label, icon, colorBg, colorText }) => (
-              <DocButton
-                key={label}
-                label={label}
-                icon={icon}
-                to={makeRoute(label)}
-                colorBg={colorBg}
-                colorText={colorText}
-              />
+              <DocButton key={label} label={label} icon={icon} to={makeRoute(label)} colorBg={colorBg} colorText={colorText} />
             ))}
           </div>
         </section>
@@ -147,21 +121,12 @@ export default function DokumenKesekretariatan() {
             <div className="bg-amber-100 p-2 rounded-xl">
               <Users className="w-5 h-5 text-amber-600" />
             </div>
-            <h2 className="text-xl font-black text-slate-800">
-              Umum & Kepegawaian
-            </h2>
+            <h2 className="text-xl font-black text-slate-800">Umum & Kepegawaian</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {umumBtnList.map(({ label, icon, colorBg, colorText }) => (
-              <DocButton
-                key={label}
-                label={label}
-                icon={icon}
-                to={makeRoute(label)}
-                colorBg={colorBg}
-                colorText={colorText}
-              />
+              <DocButton key={label} label={label} icon={icon} to={makeRoute(label)} colorBg={colorBg} colorText={colorText} />
             ))}
           </div>
         </section>
@@ -173,7 +138,6 @@ export default function DokumenKesekretariatan() {
             Semua Dokumen
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -3,13 +3,24 @@ import { PlusCircle, CheckCircle, ArrowLeft, AlertCircle, PencilLine, RotateCcw 
 import { useNavigate, useParams } from "react-router-dom";
 import { createJabatan, getJabatanById, updateJabatan } from "@/services/jabatanService";
 
+const LEVEL_OPTIONS = [
+  { value: 1, label: "Level 1 - Eselon II" },
+  { value: 2, label: "Level 2 - Eselon III" },
+  { value: 3, label: "Level 3 - Eselon IV" },
+  { value: 4, label: "Level 4 - Staff / Analis / Fungsional" },
+  { value: 5, label: "Level 5 - Driver / Security" },
+  { value: 0, label: "Level 0 - Lainnya" },
+];
+
 export default function FormJabatan({ isEdit = false }) {
   const [namaJabatan, setNamaJabatan] = useState("");
+  const [level, setLevel] = useState("");
   const [isLoading, setIsLoading] = useState(isEdit ? true : false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [originalNama, setOriginalNama] = useState("");
+  const [originalLevel, setOriginalLevel] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -22,7 +33,9 @@ export default function FormJabatan({ isEdit = false }) {
           const response = await getJabatanById(id);
           const jabatan = response.data.data;
           setNamaJabatan(jabatan.nama_jabatan);
+          setLevel(jabatan.level ? String(jabatan.level) : "");
           setOriginalNama(jabatan.nama_jabatan);
+          setOriginalLevel(jabatan.level ? String(jabatan.level) : "");
         } catch (error) {
           setError(error.response?.data?.message || "Gagal memuat data jabatan");
         } finally {
@@ -41,21 +54,30 @@ export default function FormJabatan({ isEdit = false }) {
       setError("Nama jabatan harus diisi");
       return;
     }
-    if (isEdit && namaJabatan === originalNama) {
+
+    if (!level && level !== "0") {
+      setError("Level jabatan harus dipilih");
+      return;
+    }
+
+    if (isEdit && namaJabatan === originalNama && level === originalLevel) {
       setError("Tidak ada perubahan data");
       return;
     }
 
     try {
       setIsSaving(true);
-      const response = isEdit
-        ? await updateJabatan(id, namaJabatan)
-        : await createJabatan(namaJabatan);
+      const response = isEdit ? await updateJabatan(id, { nama_jabatan: namaJabatan, level: parseInt(level) }) : await createJabatan({ nama_jabatan: namaJabatan, level: parseInt(level) });
 
       if (response.data.success) {
         setSuccess(true);
-        if (!isEdit) setNamaJabatan("");
-        else setOriginalNama(namaJabatan);
+        if (!isEdit) {
+          setNamaJabatan("");
+          setLevel("");
+        } else {
+          setOriginalNama(namaJabatan);
+          setOriginalLevel(level);
+        }
         setTimeout(() => navigate(-1), 1500);
       }
     } catch (error) {
@@ -71,19 +93,20 @@ export default function FormJabatan({ isEdit = false }) {
 
   const handleReset = () => {
     setNamaJabatan(isEdit ? originalNama : "");
+    setLevel(isEdit ? originalLevel : "");
     setError("");
     setSuccess(false);
   };
 
-  const isChanged = isEdit
-    ? namaJabatan !== originalNama && namaJabatan.trim() !== ""
-    : namaJabatan.trim() !== "";
+  const isChanged = isEdit ? (namaJabatan !== originalNama || level !== originalLevel) && namaJabatan.trim() !== "" && (level !== "" || level === "0") : namaJabatan.trim() !== "" && (level !== "" || level === "0");
 
   const pageTitle = isEdit ? "Edit Jabatan" : "Tambah Jabatan";
-  const pageDesc = isEdit
-    ? "Perbarui informasi jabatan dalam organisasi Anda"
-    : "Tambahkan jabatan baru untuk struktur organisasi Anda";
+  const pageDesc = isEdit ? "Perbarui informasi jabatan dalam organisasi Anda" : "Tambahkan jabatan baru untuk struktur organisasi Anda";
   const buttonText = isEdit ? "Simpan Perubahan" : "Simpan Jabatan";
+
+  const getLevelLabel = (levelValue) => {
+    return LEVEL_OPTIONS.find((opt) => opt.value === parseInt(levelValue))?.label || "";
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-blue-100 text-gray-900 overflow-x-hidden">
@@ -101,19 +124,8 @@ export default function FormJabatan({ isEdit = false }) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl shadow-md ${
-                    isEdit
-                      ? "bg-linear-to-br from-blue-500 to-cyan-400 shadow-blue-500/30"
-                      : "bg-linear-to-br from-blue-500 to-cyan-400 shadow-blue-500/30"
-                  }`}>
-                    {isEdit
-                      ? <PencilLine size={20} className="text-white" />
-                      : <PlusCircle size={20} className="text-white" />
-                    }
-                  </div>
-                  <h1 className="text-4xl font-bold bg-linear-to-r from-blue-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                    {pageTitle}
-                  </h1>
+                  <div className="p-2.5 rounded-xl shadow-md bg-linear-to-br from-blue-500 to-cyan-400 shadow-blue-500/30">{isEdit ? <PencilLine size={20} className="text-white" /> : <PlusCircle size={20} className="text-white" />}</div>
+                  <h1 className="text-4xl font-bold bg-linear-to-r from-blue-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">{pageTitle}</h1>
                 </div>
                 <p className="text-gray-600 text-sm pl-1">{pageDesc}</p>
               </div>
@@ -131,7 +143,6 @@ export default function FormJabatan({ isEdit = false }) {
 
         {/* Main content */}
         <main className="max-w-2xl mx-auto px-4 sm:px-8 py-10">
-
           {/* Loading State */}
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-24">
@@ -143,7 +154,6 @@ export default function FormJabatan({ isEdit = false }) {
             </div>
           ) : (
             <div className="space-y-4">
-
               {/* Success Message */}
               {success && (
                 <div className="rounded-2xl border border-emerald-300 bg-linear-to-br from-emerald-50 to-emerald-100/50 backdrop-blur-sm p-4 sm:p-5 shadow-lg">
@@ -152,9 +162,7 @@ export default function FormJabatan({ isEdit = false }) {
                       <CheckCircle size={20} className="text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-emerald-800 font-semibold text-sm">
-                        Data berhasil {isEdit ? "diperbarui" : "disimpan"}!
-                      </p>
+                      <p className="text-emerald-800 font-semibold text-sm">Data berhasil {isEdit ? "diperbarui" : "disimpan"}!</p>
                       <p className="text-emerald-700 text-xs mt-0.5">Mengalihkan ke halaman sebelumnya...</p>
                     </div>
                   </div>
@@ -182,60 +190,88 @@ export default function FormJabatan({ isEdit = false }) {
                 <div className="h-1 w-full bg-linear-to-r from-blue-500 to-cyan-400" />
 
                 <div className="p-6 sm:p-8 space-y-6">
-
                   {/* Original Value Info (Edit Mode Only) */}
                   {isEdit && originalNama && (
-                    <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200/70 flex items-start gap-3">
-                      <div className="p-1.5 rounded-lg bg-blue-100 shrink-0 mt-0.5">
-                        <PencilLine size={13} className="text-blue-500" />
+                    <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200/70 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="p-1.5 rounded-lg bg-blue-100 shrink-0 mt-0.5">
+                          <PencilLine size={13} className="text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-0.5">Nama Jabatan Saat Ini</p>
+                          <p className="text-sm text-gray-800 font-medium">{originalNama}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-0.5">Nilai Saat Ini</p>
-                        <p className="text-sm text-gray-800 font-medium">{originalNama}</p>
+                      <div className="border-t border-blue-200/50" />
+                      <div className="flex items-start gap-3">
+                        <div className="p-1.5 rounded-lg bg-blue-100 shrink-0 mt-0.5">
+                          <PencilLine size={13} className="text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-0.5">Level Saat Ini</p>
+                          <p className="text-sm text-gray-800 font-medium">{getLevelLabel(originalLevel)}</p>
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Input Field */}
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                      {isEdit
-                        ? <PencilLine size={14} className="text-blue-500" />
-                        : <PlusCircle size={14} className="text-blue-500" />
-                      }
-                      Nama Jabatan
-                      <span className="text-red-400 ml-0.5">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Manager IT, Senior Developer, HR Specialist..."
-                      value={namaJabatan}
-                      onChange={(e) => {
-                        setNamaJabatan(e.target.value);
-                        if (error) setError("");
-                      }}
-                      onKeyPress={handleKeyPress}
-                      disabled={isSaving}
-                      className={`w-full px-4 py-3 rounded-xl bg-white/70 border text-gray-800 placeholder-gray-400 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 disabled:opacity-60 ${
-                        error
-                          ? "border-red-300 focus:ring-red-400"
-                          : "border-blue-200 focus:ring-blue-400"
-                      }`}
-                    />
+                  {/* Input Fields */}
+                  <div className="space-y-5">
+                    {/* Nama Jabatan */}
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                        {isEdit ? <PencilLine size={14} className="text-blue-500" /> : <PlusCircle size={14} className="text-blue-500" />}
+                        Nama Jabatan
+                        <span className="text-red-400 ml-0.5">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Contoh: Manager IT, Senior Developer, HR Specialist..."
+                        value={namaJabatan}
+                        onChange={(e) => {
+                          setNamaJabatan(e.target.value);
+                          if (error) setError("");
+                        }}
+                        onKeyPress={handleKeyPress}
+                        disabled={isSaving}
+                        className={`w-full px-4 py-3 rounded-xl bg-white/70 border text-gray-800 placeholder-gray-400 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 disabled:opacity-60 ${
+                          error ? "border-red-300 focus:ring-red-400" : "border-blue-200 focus:ring-blue-400"
+                        }`}
+                      />
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-xs text-gray-400">{namaJabatan.length} karakter</span>
+                      </div>
+                    </div>
 
-                    {/* Input meta row */}
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{namaJabatan.length} karakter</span>
-                      {isEdit && isChanged && (
-                        <span className="text-xs font-semibold text-blue-500 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
-                          Ada perubahan
-                        </span>
-                      )}
+                    {/* Level Jabatan */}
+                    <div>
+                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                        <PlusCircle size={14} className="text-blue-500" />
+                        Level Jabatan (0-5)
+                        <span className="text-red-400 ml-0.5">*</span>
+                      </label>
+                      <select
+                        value={level}
+                        onChange={(e) => {
+                          setLevel(e.target.value);
+                          if (error) setError("");
+                        }}
+                        disabled={isSaving}
+                        className={`w-full px-4 py-3 rounded-xl bg-white/70 border text-gray-800 backdrop-blur-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 disabled:opacity-60 cursor-pointer ${
+                          error ? "border-red-300 focus:ring-red-400" : "border-blue-200 focus:ring-blue-400"
+                        }`}
+                      >
+                        <option value="">-- Pilih Level (0-5) --</option>
+                        {LEVEL_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-2 text-xs text-gray-500">{level || level === "0" ? `Level yang dipilih: ${getLevelLabel(level)}` : "Belum ada level yang dipilih"}</p>
                     </div>
                   </div>
 
-                  {/* Divider */}
                   <div className="border-t border-blue-100" />
 
                   {/* Buttons */}
@@ -271,7 +307,6 @@ export default function FormJabatan({ isEdit = false }) {
                       {isSaving ? "Menyimpan..." : buttonText}
                     </button>
                   </div>
-
                 </div>
               </div>
 
@@ -283,13 +318,11 @@ export default function FormJabatan({ isEdit = false }) {
                 <div>
                   <p className="text-xs font-semibold text-gray-700 mb-0.5">Tips</p>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    Gunakan nama jabatan yang jelas dan deskriptif agar memudahkan identifikasi posisi dalam organisasi.{" "}
+                    Gunakan nama jabatan yang jelas dan deskriptif agar memudahkan identifikasi posisi dalam organisasi. Pilih level yang sesuai dengan hierarki jabatan (0=Lainnya, 1-5=Eselon).{" "}
                     {isEdit && "Anda dapat melihat nilai sebelumnya di atas. "}
-                    Contoh: Manager IT, Senior Developer, Staff Admin.
                   </p>
                 </div>
               </div>
-
             </div>
           )}
         </main>

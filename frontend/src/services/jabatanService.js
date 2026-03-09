@@ -23,6 +23,27 @@ export const getAllJabatan = async () => {
 };
 
 /**
+ * 📋 Get all jabatan records sorted by level
+ */
+export const getJabatanSortedByLevel = async () => {
+  try {
+    const response = await axios.get(API_URL, getAuthHeader());
+    if (response?.data?.data) {
+      const sorted = response.data.data.slice().sort((a, b) => {
+        const levelA = a.level || 999;
+        const levelB = b.level || 999;
+        return levelA - levelB;
+      });
+      return { ...response, data: { ...response.data, data: sorted } };
+    }
+    return response;
+  } catch (error) {
+    console.error("Error fetching jabatan sorted by level:", error);
+    throw error;
+  }
+};
+
+/**
  * 🔍 Get a single jabatan by ID
  */
 export const getJabatanById = async (id) => {
@@ -32,15 +53,15 @@ export const getJabatanById = async (id) => {
 /**
  * ➕ Create a new jabatan
  */
-export const createJabatan = async (nama_jabatan) => {
-  return axios.post(API_URL, { nama_jabatan }, getAuthHeader());
+export const createJabatan = async (jabatanData) => {
+  return axios.post(API_URL, jabatanData, getAuthHeader());
 };
 
 /**
  * ✏️ Update an existing jabatan
  */
-export const updateJabatan = async (id, nama_jabatan) => {
-  return axios.put(`${API_URL}/${id}`, { nama_jabatan }, getAuthHeader());
+export const updateJabatan = async (id, data) => {
+  return axios.put(`${API_URL}/${id}`, data, getAuthHeader());
 };
 
 /**
@@ -48,4 +69,21 @@ export const updateJabatan = async (id, nama_jabatan) => {
  */
 export const deleteJabatan = async (id) => {
   return axios.delete(`${API_URL}/${id}`, getAuthHeader());
+};
+
+/**
+ * 🔍 Get jabatan by level
+ */
+export const getJabatanByLevel = async (level) => {
+  try {
+    const response = await axios.get(API_URL, getAuthHeader());
+    if (response?.data?.data) {
+      const filtered = response.data.data.filter(j => j.level === level);
+      return { ...response, data: { ...response.data, data: filtered } };
+    }
+    return response;
+  } catch (error) {
+    console.error(`Error fetching jabatan with level ${level}:`, error);
+    throw error;
+  }
 };

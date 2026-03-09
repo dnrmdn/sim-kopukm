@@ -3,6 +3,45 @@ import { PlusCircle, ArrowLeft, PencilLine, Trash2, Search, AlertCircle } from "
 import { useNavigate } from "react-router-dom";
 import { deleteJabatan, getAllJabatan } from "@/services/jabatanService";
 
+const LEVEL_COLORS = {
+  1: "bg-blue-100 text-blue-700 border-blue-200",      // Entry Level - Blue
+  2: "bg-green-100 text-green-700 border-green-200",   // Intermediate - Green
+  3: "bg-amber-100 text-amber-700 border-amber-200",   // Senior - Amber
+  4: "bg-purple-100 text-purple-700 border-purple-200", // Lead - Purple
+  5: "bg-red-100 text-red-700 border-red-200",         // Manager - Red
+  0: "bg-gray-100 text-gray-700 border-gray-200",      // Uncategorized - Gray
+};
+
+const LEVEL_LABELS = {
+  1: "Level 1 - Eselon II",
+  2: "Level 2 - Eselon III",
+  3: "Level 3 - Eselon IV",
+  4: "Level 4 - Staff / Analis / Fungsional",
+  5: "Level 5 - Driver / Security",
+  0: "Level 0 - Lainnya",
+};
+
+// Helper function to get statistics per level
+const getLevelStats = (data) => {
+  const stats = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    0: 0,
+  };
+  data.forEach((item) => {
+    const level = item.level || 0;
+    if (Object.hasOwn(stats, level)) {
+      stats[level]++;
+    } else {
+      stats[0]++;
+    }
+  });
+  return stats;
+};
+
 export default function DaftarJabatan() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,8 +70,13 @@ export default function DaftarJabatan() {
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) return data;
     const query = searchQuery.toLowerCase();
-    return data.filter((item) => item.nama_jabatan.toLowerCase().includes(query));
+    return data.filter((item) =>
+      item.nama_jabatan.toLowerCase().includes(query) ||
+      (LEVEL_LABELS[item.level] && LEVEL_LABELS[item.level].toLowerCase().includes(query))
+    );
   }, [data, searchQuery]);
+
+  const levelStats = useMemo(() => getLevelStats(data), [data]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus jabatan ini?")) return;
@@ -44,6 +88,28 @@ export default function DaftarJabatan() {
       alert(errMsg);
     }
   };
+
+  const getLevelBadgeClass = (level) => {
+    return LEVEL_COLORS[level] || "bg-gray-100 text-gray-700 border-gray-200";
+  };
+
+  const getLevelLabel = (level) => {
+    return LEVEL_LABELS[level] || `Level ${level}`;
+  };
+
+  // Sort data: 1-5 first, then 0 at bottom
+  const sortedFilteredData = useMemo(() => {
+    return [...filteredData].sort((a, b) => {
+      const levelA = a.level || 0;
+      const levelB = b.level || 0;
+      // If either is 0, move it to the bottom
+      if (levelA === 0 && levelB === 0) return 0;
+      if (levelA === 0) return 1;
+      if (levelB === 0) return -1;
+      // Otherwise sort numerically
+      return levelA - levelB;
+    });
+  }, [filteredData]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-blue-100 text-gray-900 overflow-x-hidden">
@@ -86,12 +152,31 @@ export default function DaftarJabatan() {
                 </div>
               </div>
 
+              {/* Level Statistics Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                {[1, 2, 3, 4, 5, 0].map((level) => (
+                  <div
+                    key={level}
+                    className={`p-3 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${getLevelBadgeClass(level)}`}
+                  >
+                    <div className="flex flex-col items-start gap-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide opacity-75">
+                        {LEVEL_LABELS[level]}
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {levelStats[level]}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               {/* Search bar */}
               <div className="relative">
                 <Search size={18} className="absolute left-4 top-3.5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Cari nama jabatan..."
+                  placeholder="Cari nama jabatan atau level..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/70 border border-blue-200 text-gray-700 placeholder-gray-400 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
@@ -167,7 +252,7 @@ export default function DaftarJabatan() {
             </div>
           ) : (
             <div className="space-y-2">
-              {/* Stats */}
+              {/* Stats Card */}
               <div className="mb-8">
                 <div className="p-4 rounded-xl border border-blue-200/70 bg-linear-to-br from-white/80 to-blue-50/80 backdrop-blur-sm hover:border-blue-300 transition-all duration-200">
                   <div className="flex items-center gap-3">
@@ -190,54 +275,65 @@ export default function DaftarJabatan() {
                     <tr className="bg-linear-to-r from-blue-50 to-cyan-50 border-b border-blue-200/70">
                       <th className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wide w-12">No</th>
                       <th className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wide">Nama Jabatan</th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wide w-40">Level</th>
                       <th className="px-6 py-4 text-center text-sm font-bold text-gray-800 uppercase tracking-wide w-32">Aksi</th>
                     </tr>
                   </thead>
 
                   {/* Table Body */}
                   <tbody>
-                    {filteredData.map((item, index) => (
-                      <tr
-                        key={item.id_jabatan}
-                        className="border-b border-blue-100/70 hover:bg-blue-50/50 transition-all duration-200 group bg-white/50"
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-600 font-mono">{index + 1}</td>
-                        <td className="px-6 py-4 text-sm text-gray-800 font-medium group-hover:text-blue-700 transition-colors">
-                          {item.nama_jabatan}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => navigate(`/dokumen/jabatan/edit/${item.id_jabatan}`)}
-                              className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800"
-                              title="Edit"
-                            >
-                              <PencilLine size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id_jabatan)}
-                              className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-600 hover:text-red-800"
-                              title="Hapus"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {sortedFilteredData.map((item, index) => {
+                      const isLevel0 = (item.level || 0) === 0;
+                      return (
+                        <tr
+                          key={item.id_jabatan}
+                          className={`border-b transition-all duration-200 group hover:bg-blue-50/50 ${
+                            isLevel0 ? "border-gray-300 bg-gray-50/30" : "border-blue-100/70 bg-white/50"
+                          }`}
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-600 font-mono">{index + 1}</td>
+                          <td className="px-6 py-4 text-sm text-gray-800 font-medium group-hover:text-blue-700 transition-colors">
+                            {item.nama_jabatan}
+                          </td>
+                          <td className="px-6 py-4 text-sm">
+                            <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-semibold border ${getLevelBadgeClass(item.level)}`}>
+                              {getLevelLabel(item.level)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex justify-center gap-2">
+                              <button
+                                onClick={() => navigate(`/dokumen/jabatan/edit/${item.id_jabatan}`)}
+                                className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-all duration-200 text-blue-600 hover:text-blue-800"
+                                title="Edit"
+                              >
+                                <PencilLine size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id_jabatan)}
+                                className="p-2 rounded-lg bg-red-100 hover:bg-red-200 transition-all duration-200 text-red-600 hover:text-red-800"
+                                title="Hapus"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {/* Table info */}
               <div className="text-xs text-gray-600 text-center mt-4">
-                Menampilkan {filteredData.length} dari {data.length} jabatan
+                Menampilkan {sortedFilteredData.length} dari {data.length} jabatan
               </div>
             </div>
           )}
         </main>
 
-        {/* Footer */}
+        {/* Footer
         <footer className="backdrop-blur-xl bg-white/40 border-t border-blue-200/50 mt-20 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
             <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-gray-600">
@@ -247,7 +343,7 @@ export default function DaftarJabatan() {
               </div>
             </div>
           </div>
-        </footer>
+        </footer> */}
       </div>
     </div>
   );
