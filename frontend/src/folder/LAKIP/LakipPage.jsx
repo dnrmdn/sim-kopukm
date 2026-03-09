@@ -171,10 +171,10 @@ export default function LakipPage() {
   const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("id-ID", { year: "numeric", month: "short", day: "numeric" }) : "-");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-cyan-50/40 text-gray-900 overflow-x-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50/30 to-cyan-50/40 text-gray-900 overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-[0.07] bg-gradient-to-br from-blue-400 to-cyan-300 blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full opacity-[0.07] bg-gradient-to-tl from-blue-500 to-indigo-300 blur-3xl" />
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-[0.07] bg-linear-to-br from-blue-400 to-cyan-300 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full opacity-[0.07] bg-linear-to-tl from-blue-500 to-indigo-300 blur-3xl" />
       </div>
 
       <div className="relative z-10">
@@ -183,7 +183,7 @@ export default function LakipPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-5">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-400/30">
+                <div className="p-2.5 rounded-xl bg-linear-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-400/30">
                   <FileText size={20} className="text-white" />
                 </div>
                 <div>
@@ -215,11 +215,11 @@ export default function LakipPage() {
 
           {/* ── Rekapitulasi ── */}
           <div className="rounded-2xl border border-blue-100 bg-white/80 backdrop-blur-sm shadow-lg overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
+            <div className="h-1 w-full bg-linear-to-r from-blue-500 via-cyan-400 to-emerald-400" />
             <div className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400">
+                  <div className="p-1.5 rounded-lg bg-linear-to-br from-blue-500 to-cyan-400">
                     <BarChart2 size={14} className="text-white" />
                   </div>
                   <div>
@@ -246,7 +246,7 @@ export default function LakipPage() {
               <div className="overflow-x-auto rounded-xl border border-blue-100">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gradient-to-r from-blue-50 to-cyan-50/60 border-b border-blue-100">
+                    <tr className="bg-linear-to-r from-blue-50 to-cyan-50/60 border-b border-blue-100">
                       <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tahun</th>
                       <th className="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">TW I</th>
                       <th className="px-5 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">TW II</th>
@@ -280,7 +280,7 @@ export default function LakipPage() {
                             <div className="flex items-center gap-2">
                               <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : isPast ? "bg-gradient-to-r from-red-300 to-red-400" : pct >= 60 ? "bg-gradient-to-r from-blue-400 to-cyan-400" : "bg-gradient-to-r from-blue-300 to-blue-400"}`}
+                                  className={`h-full rounded-full transition-all duration-700 ${pct === 100 ? "bg-linear-to-r from-emerald-400 to-emerald-500" : isPast ? "bg-linear-to-r from-red-300 to-red-400" : pct >= 60 ? "bg-linear-to-r from-blue-400 to-cyan-400" : "bg-linear-to-r from-blue-300 to-blue-400"}`}
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
@@ -298,10 +298,10 @@ export default function LakipPage() {
 
           {/* ── Upload Section ── */}
           <div className="rounded-2xl border border-blue-100 bg-white/80 backdrop-blur-sm shadow-lg overflow-hidden">
-            <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-400" />
+            <div className="h-1 w-full bg-linear-to-r from-blue-500 via-cyan-400 to-blue-400" />
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400">
+                <div className="p-1.5 rounded-lg bg-linear-to-br from-blue-500 to-cyan-400">
                   <UploadCloud size={14} className="text-white" />
                 </div>
                 <h2 className="font-bold text-gray-800 text-sm">Upload Dokumen LAKIP</h2>
@@ -342,12 +342,12 @@ export default function LakipPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <div className="md:col-span-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50/60 border border-blue-200 text-sm flex items-center gap-2">
+                  <div className="md:col-span-3 px-4 py-2.5 rounded-xl bg-linear-to-r from-blue-50 to-cyan-50/60 border border-blue-200 text-sm flex items-center gap-2">
                     <span className="text-blue-400 font-bold text-[10px] uppercase tracking-widest shrink-0">Preview</span>
                     <span className="font-semibold text-blue-700 truncate">{generatedName}</span>
                   </div>
                   <button type="submit" disabled={isUploading}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 disabled:opacity-50 font-bold text-sm text-white shadow-lg shadow-blue-400/25 flex items-center justify-center gap-2 transition-all disabled:cursor-not-allowed">
+                    className="px-4 py-2.5 rounded-xl bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 disabled:opacity-50 font-bold text-sm text-white shadow-lg shadow-blue-400/25 flex items-center justify-center gap-2 transition-all disabled:cursor-not-allowed">
                     <Plus size={15} />
                     {isUploading ? "Uploading..." : "Upload"}
                   </button>
@@ -401,7 +401,7 @@ export default function LakipPage() {
                 <div className="overflow-x-auto rounded-2xl border border-blue-100 shadow-lg">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gradient-to-r from-blue-50 to-cyan-50/60 border-b border-blue-100">
+                      <tr className="bg-linear-to-r from-blue-50 to-cyan-50/60 border-b border-blue-100">
                         <th className="px-5 py-3.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest w-12">No</th>
                         <th className="px-5 py-3.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest">Nama Dokumen</th>
                         <th className="px-5 py-3.5 text-center text-[10px] font-semibold text-gray-400 uppercase tracking-widest w-28">Triwulan</th>
