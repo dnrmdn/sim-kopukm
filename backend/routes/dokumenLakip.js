@@ -4,7 +4,6 @@ import pool from "../config/db.js";
 
 const router = express.Router();
 
-// simpan file ke memory (langsung masuk DB)
 const upload = multer({
   limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
 });
@@ -15,7 +14,7 @@ const upload = multer({
 router.get("/", async (req, res) => {
   try {
     const [rows] = await pool.query(
-      "SELECT id, name, mime, created_at FROM dokumen_lakip ORDER BY id DESC"
+      "SELECT id, name, mime, triwulan, tahun, created_at FROM dokumen_lakip ORDER BY id DESC"
     );
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -30,18 +29,21 @@ router.get("/", async (req, res) => {
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ success: false, message: "File wajib diisi" });
+      return res.status(400).json({ success: false, message: "File wajib diisi" });
     }
 
-    const name = req.body.title || req.file.originalname;
+    const { title, triwulan, tahun } = req.body;
+
+    if (!triwulan) return res.status(400).json({ success: false, message: "Triwulan wajib dipilih" });
+    if (!tahun)    return res.status(400).json({ success: false, message: "Tahun wajib diisi" });
+
+    const name = title || req.file.originalname;
     const mime = req.file.mimetype;
     const data = req.file.buffer;
 
     const [result] = await pool.query(
-      "INSERT INTO dokumen_lakip (name, mime, data) VALUES (?, ?, ?)",
-      [name, mime, data]
+      "INSERT INTO dokumen_lakip (name, mime, data, triwulan, tahun) VALUES (?, ?, ?, ?, ?)",
+      [name, mime, data, triwulan, tahun]
     );
 
     res.json({
@@ -50,6 +52,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
         id: result.insertId,
         name,
         mime,
+        triwulan,
+        tahun,
         created_at: new Date(),
       },
     });
@@ -66,10 +70,14 @@ router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
 
-  await pool.query("UPDATE dokumen_lakip SET name=? WHERE id=?", [name, id]);
+  if (!name?.trim()) {
+    return res.status(400).json({ success: false, message: "Nama tidak boleh kosong" });
+  }
+
+  await pool.query("UPDATE dokumen_lakip SET name = ? WHERE id = ?", [name.trim(), id]);
 
   const [[row]] = await pool.query(
-    "SELECT id, name, mime, created_at FROM dokumen_lakip WHERE id=?",
+    "SELECT id, name, mime, triwulan, tahun, created_at FROM dokumen_lakip WHERE id = ?",
     [id]
   );
 
@@ -80,7 +88,7 @@ router.put("/:id", async (req, res) => {
  * DELETE DOKUMEN
  */
 router.delete("/:id", async (req, res) => {
-  await pool.query("DELETE FROM dokumen_lakip WHERE id=?", [req.params.id]);
+  await pool.query("DELETE FROM dokumen_lakip WHERE id = ?", [req.params.id]);
   res.json({ success: true });
 });
 
@@ -89,13 +97,16 @@ router.delete("/:id", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   const [[file]] = await pool.query(
-    "SELECT * FROM dokumen_lakip WHERE id=?",
+    "SELECT * FROM dokumen_lakip WHERE id = ?",
     [req.params.id]
   );
 
   if (!file) return res.sendStatus(404);
 
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Content-Type", file.mime);
+  res.setHeader("Content-Disposition", `inline; filename="${file.name}"`);
   res.send(file.data);
 });
 
