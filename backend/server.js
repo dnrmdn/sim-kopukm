@@ -51,6 +51,7 @@ import SubKegiatanRoutes from "./routes/Renstra/SubKegiatanRoutes.js";
 import SubKegiatanAnggaranRoutes from "./routes/Renstra/SubKegiatanAnggaranRoutes.js";
 import DokumenRenstraRoutes from "./routes/Renstra/DokumenRoutes.js";
 import DashboardRenstraRoutes from "./routes/Renstra/DashboardRoutes.js";
+import KibBRoutes from "./routes/kibBRoutes.js";
 
 dotenv.config();
 
@@ -231,6 +232,7 @@ app.use("/api/renstra/sub-kegiatan-anggaran", SubKegiatanAnggaranRoutes);
 app.use("/api/renstra/tahun", TahunRoutes);
 app.use("/api/renstra/dokumen", DokumenRenstraRoutes);
 app.use("/api/renstra/dashboard", DashboardRenstraRoutes);
+app.use("/api/kib-b", KibBRoutes);
 
 // ================================
 // 🔹 Handler 404 (after routes)
