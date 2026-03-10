@@ -38,6 +38,8 @@ import dokumenLkeRoutes from "./routes/dokumenLke.js";
 import dokumenDpaRoutes from "./routes/dokumenDpa.js";
 import dokumenKakRoutes from "./routes/dokumenKak.js";
 import masterRoutes from "./routes/masterRoutes.js";
+import userProfileRoutes from "./routes/userProfile.js";
+import { verifyToken } from "./middleware/authMiddleware.js";
 
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
@@ -217,6 +219,7 @@ app.use("/api/dokumen/lke", dokumenLkeRoutes);
 app.use("/api/dokumen/dpa", dokumenDpaRoutes);
 app.use("/api/dokumen/kak", dokumenKakRoutes);
 app.use("/api/master", masterRoutes);
+app.use("/api/user", verifyToken, userProfileRoutes);
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
