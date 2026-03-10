@@ -19,6 +19,9 @@ import RkaPage from "./folder/RKA/RkaPage";
 import BelanjaSectionPage from "./folder/RKA/components/BelanjaSection";
 import RenstraPage from "./folder/RENSTRA/RenstraPage";
 import KibBPage from "./folder/INVENTARIS/KibBPage";
+import VerificationPage from "./folder/INVENTARIS/VerificationPage";
+import PrintQrKibBPage from "./folder/INVENTARIS/PrintQrKibBPage";
+import PrintKibBTablePage from "./folder/INVENTARIS/PrintKibBTablePage";
 
 import RenjaPage from "./folder/RENJA/RenjaPage";
 import SopPage from "./folder/SOP/SopPage";
@@ -58,6 +61,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/verifikasi-aset/:id" element={<VerificationPage />} />
+        <Route path="/print-qr-kib-b" element={<PrintQrKibBPage />} />
+        <Route path="/print-table-kib-b" element={<PrintKibBTablePage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 

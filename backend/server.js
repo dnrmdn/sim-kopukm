@@ -97,6 +97,8 @@ const allowedOrigins = [
   "http://localhost:3001",
   "http://127.0.0.1:3001",
   "http://127.0.0.1:4849",
+  "http://192.168.1.9:3002",
+  "http://192.168.1.9:4849",
 ];
 
 // ================================
@@ -291,7 +293,7 @@ io.on("connection", (socket) => {
 // ================================
 // 🔹 Jalankan server
 // ================================
-const HOST = NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
+const HOST = "0.0.0.0";
 
 server.listen(PORT, HOST, () => {
   console.log(`🚀 Server running on http://${HOST}:${PORT}`);

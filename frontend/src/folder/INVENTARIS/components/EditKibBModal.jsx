@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Save, Loader2, Package, RefreshCw } from "lucide-react";
+import { X, Save, Loader2, Package } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import Swal from "sweetalert2";
 
-export default function AddKibBModal({ open, onClose, onSuccess }) {
+export default function EditKibBModal({ open, onClose, onSuccess, data }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     kode_barang: "",
@@ -33,6 +33,37 @@ export default function AddKibBModal({ open, onClose, onSuccess }) {
     keterangan: ""
   });
 
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        kode_barang: data.kode_barang || "",
+        id_barang: data.id_barang || "",
+        id_awal: data.id_awal || "",
+        registrasi: data.registrasi || "",
+        nama_barang: data.nama_barang || "",
+        merk_type: data.merk_type || "",
+        bahan: data.bahan || "",
+        ukuran_cc: data.ukuran_cc || "",
+        pabrik: data.pabrik || "",
+        no_rangka: data.no_rangka || "",
+        no_mesin: data.no_mesin || "",
+        no_polisi: data.no_polisi || "",
+        no_bpkb: data.no_bpkb || "",
+        tahun_perolehan: data.tahun_perolehan || new Date().getFullYear(),
+        cara_perolehan: data.cara_perolehan || "",
+        sumber_dana: data.sumber_dana || "",
+        harga: data.harga || "",
+        jumlah: data.jumlah || "",
+        kondisi: data.kondisi || "Baik",
+        tgl_buku: data.tgl_buku ? data.tgl_buku.split('T')[0] : "",
+        no_bast: data.no_bast || "",
+        tgl_bast: data.tgl_bast ? data.tgl_bast.split('T')[0] : "",
+        status_aset: data.status_aset || "",
+        keterangan: data.keterangan || ""
+      });
+    }
+  }, [data, open]);
+
   if (!open) return null;
 
   const handleChange = (e) => {
@@ -40,46 +71,16 @@ export default function AddKibBModal({ open, onClose, onSuccess }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleReset = () => {
-    setFormData({
-      kode_barang: "",
-      id_barang: "",
-      id_awal: "",
-      registrasi: "",
-      nama_barang: "",
-      merk_type: "",
-      bahan: "",
-      ukuran_cc: "",
-      pabrik: "",
-      no_rangka: "",
-      no_mesin: "",
-      no_polisi: "",
-      no_bpkb: "",
-      tahun_perolehan: new Date().getFullYear(),
-      cara_perolehan: "",
-      sumber_dana: "",
-      harga: "",
-      jumlah: "",
-      kondisi: "Baik",
-      tgl_buku: "",
-      no_bast: "",
-      tgl_bast: "",
-      status_aset: "",
-      keterangan: ""
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axiosInstance.post("/kib-b", formData);
-      Swal.fire("Berhasil!", "Data KIB B berhasil disimpan.", "success");
-      onSuccess(); // Panggil langsung karena function sudah dicek keberadaannya di parent atau bisa default empty function
-      handleReset();
+      await axiosInstance.put(`/kib-b/${data.id}`, formData);
+      Swal.fire("Berhasil!", "Data KIB B berhasil diperbarui.", "success");
+      onSuccess();
       onClose();
     } catch (err) {
-      Swal.fire("Gagal!", err.response?.data?.message || "Terjadi kesalahan saat menyimpan data.", "error");
+      Swal.fire("Gagal!", err.response?.data?.message || "Terjadi kesalahan saat memperbarui data.", "error");
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export default function AddKibBModal({ open, onClose, onSuccess }) {
           <div className="flex items-center gap-3">
             <Package className="text-slate-700" size={24} />
             <div>
-              <h3 className="text-xl font-bold text-slate-800">Tambah Data KIB B</h3>
+              <h3 className="text-xl font-bold text-slate-800">Edit Data KIB B</h3>
               <p className="text-slate-500 text-xs">Peralatan dan Mesin</p>
             </div>
           </div>
@@ -258,11 +259,7 @@ export default function AddKibBModal({ open, onClose, onSuccess }) {
         <div className="p-6 border-t border-slate-100 bg-white sticky bottom-0 z-10 flex gap-3">
           <button onClick={handleSubmit} disabled={loading} className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 flex items-center gap-2">
             {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-            Simpan Data
-          </button>
-          <button onClick={handleReset} className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all flex items-center gap-2">
-            <RefreshCw size={18} />
-            Reset
+            Simpan Perubahan
           </button>
         </div>
 

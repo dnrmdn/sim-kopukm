@@ -18,10 +18,11 @@ export default defineConfig({
 
   server: {
     host: "0.0.0.0",
-    port: 3001,
+    port: 3002,
     open: false,
     allowedHosts: [
       "72.61.208.1",
+      "192.168.1.9",
     ],
   },
 });
