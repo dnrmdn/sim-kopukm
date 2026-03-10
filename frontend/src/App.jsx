@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "./folder/LOGIN/LoginPage";
-import MainLayout from "./layouts/MainLayout";
 import OverviewDashboard from "./folder/DASHBOARD/OverviewDashboard";
 import DashboardPage from "./folder/DASHBOARD/UMKMDashboard";
 import UmkmPage from "./folder/UMKM/UMKMPage";
@@ -50,6 +49,8 @@ import TambahPegawai from "./folder/PEGAWAI/components/tambahPegawai";
 import EditJabatan from "./folder/JABATAN/components/editJabatan";
 import RegisterPage from "./folder/REGISTER/registerPage";
 import ProfilePage from "./LAYOUTS/NAVBAR/profileUser";
+import DaftarUser from "./folder/User/daftarUser";
+import MainLayout from "./LAYOUTS/MainLayout";
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
           <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
           <Route path="/dokumen/PKEselonIV" element={<PKEselonIV />} />
           <Route path="/dokumen/rencana-aksi" element={<RencanaAksiPage />} />
+          <Route path="/pengguna" element={<DaftarUser />} />
         </Route>
       </Routes>
     </BrowserRouter>

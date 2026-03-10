@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../../services/userService";
 import { Avatar } from "@heroui/react";
 import axios from "axios";
-import Footer from "@/components/Footer";
 import Cropper from "react-easy-crop";
-import { ArrowLeft, Camera, CheckCircle, AlertCircle, User, Hash, AtSign, Save, Loader2, Shield, X, ZoomIn, ZoomOut, RotateCcw, Crop } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle, AlertCircle, User, Hash, AtSign, Save, Loader2, Shield, X, ZoomIn, ZoomOut, RotateCcw, Crop, Phone } from "lucide-react";
 
 const api = axios.create({ baseURL: "http://localhost:4849" });
 
@@ -155,16 +154,15 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [nip, setNip] = useState("");
   const [username, setUsername] = useState("");
+  const [phone, setPhone] = useState(""); // ← baru
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
 
-  // Cropper state
   const [cropSrc, setCropSrc] = useState(null);
   const [showCropper, setShowCropper] = useState(false);
 
-  // Username availability
   const [checkingUsername, setCheckingUsername] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState(null); // null | true | false
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
 
   // ── Load ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -176,6 +174,7 @@ export default function ProfilePage() {
         setName(u.name || "");
         setNip(u.nip || "");
         setUsername(u.username || "");
+        setPhone(u.phone || ""); // ← baru
         setAvatarPreview(u.avatar || null);
       } catch {
         setGlobalError("Gagal memuat data profil. Coba muat ulang halaman.");
@@ -219,10 +218,19 @@ export default function ProfilePage() {
     } else if (usernameAvailable === false) {
       e.username = "Username sudah digunakan, pilih username lain";
     }
+    // Validasi nomor HP (opsional)
+    if (phone.trim()) {
+      const cleaned = phone.replace(/\D/g, "");
+      if (cleaned.length < 9 || cleaned.length > 15) {
+        e.phone = "Nomor HP tidak valid (9–15 digit)";
+      } else if (!/^(0|62|8)/.test(cleaned)) {
+        e.phone = "Format nomor HP tidak valid (awali dengan 0, 8, atau 62)";
+      }
+    }
     return e;
   };
 
-  // ── Avatar picker → buka cropper ────────────────────────────────────────
+  // ── Avatar picker ────────────────────────────────────────────────────────
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -290,6 +298,7 @@ export default function ProfilePage() {
       fd.append("name", name.trim());
       fd.append("nip", nip.trim());
       fd.append("username", username.trim());
+      fd.append("phone", phone.trim()); // ← baru
       if (avatarFile) fd.append("avatar", avatarFile);
 
       const res = await api.put("/api/user/profile", fd, {
@@ -301,6 +310,7 @@ export default function ProfilePage() {
         setUser(updated);
         setAvatarFile(null);
         setAvatarPreview(updated.avatar || null);
+        setPhone(updated.phone || ""); // ← baru
         setSuccess("Profil berhasil diperbarui!");
         setTimeout(() => {
           setSuccess("");
@@ -311,19 +321,25 @@ export default function ProfilePage() {
       const msg = err.response?.data?.message;
       if (msg?.toLowerCase().includes("username")) setErrors({ username: msg });
       else if (msg?.toLowerCase().includes("nip")) setErrors({ nip: msg });
+      else if (msg?.toLowerCase().includes("phone") || msg?.toLowerCase().includes("hp")) setErrors({ phone: msg });
       else setGlobalError(msg || "Terjadi kesalahan. Coba beberapa saat lagi.");
     } finally {
       setSaving(false);
     }
   };
 
-  // ── Field helper ────────────────────────────────────────────────────────
   const fieldClass = (field) =>
     `w-full px-4 py-2.5 rounded-xl bg-white border text-gray-800 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
       errors[field] ? "border-red-300 focus:ring-red-300 bg-red-50/30" : "border-slate-200 focus:ring-sky-400 focus:border-transparent"
     }`;
 
-  // ── Loading ─────────────────────────────────────────────────────────────
+  const clearError = (field) =>
+    setErrors((p) => {
+      const n = { ...p };
+      delete n[field];
+      return n;
+    });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-50 via-sky-50/20 to-blue-50/30 flex items-center justify-center">
@@ -405,6 +421,18 @@ export default function ProfilePage() {
                     <p className="text-sky-500 text-sm font-medium flex items-center gap-1.5 mt-0.5">
                       <Shield size={12} /> {user?.role || "User"}
                     </p>
+                    {/* Tampilkan no HP di avatar card jika sudah diisi */}
+                    {user?.phone && (
+                      <a
+                        href={`https://wa.me/${user.phone.replace(/\D/g, "").replace(/^0/, "62")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-1 text-[11px] text-green-600 hover:text-green-700 transition-colors"
+                      >
+                        <Phone size={11} />
+                        {user.phone}
+                      </a>
+                    )}
                     {avatarFile && (
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-[11px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg">⚠ Foto belum disimpan</span>
@@ -456,11 +484,7 @@ export default function ProfilePage() {
                       value={name}
                       onChange={(e) => {
                         setName(e.target.value);
-                        setErrors((p) => {
-                          const n = { ...p };
-                          delete n.name;
-                          return n;
-                        });
+                        clearError("name");
                       }}
                       placeholder="Masukkan nama lengkap"
                       className={fieldClass("name")}
@@ -482,11 +506,7 @@ export default function ProfilePage() {
                       value={nip}
                       onChange={(e) => {
                         setNip(e.target.value.replace(/\D/g, ""));
-                        setErrors((p) => {
-                          const n = { ...p };
-                          delete n.nip;
-                          return n;
-                        });
+                        clearError("nip");
                       }}
                       placeholder="18 digit Nomor Induk Pegawai"
                       maxLength={18}
@@ -522,11 +542,7 @@ export default function ProfilePage() {
                           const val = e.target.value.replace(/\s/g, "").toLowerCase();
                           setUsername(val);
                           setUsernameAvailable(null);
-                          setErrors((p) => {
-                            const n = { ...p };
-                            delete n.username;
-                            return n;
-                          });
+                          clearError("username");
                           clearTimeout(usernameTimer.current);
                           if (val.trim() && val.trim() !== user?.username) {
                             usernameTimer.current = setTimeout(() => checkUsernameAvailability(val, user?.username), 600);
@@ -556,6 +572,54 @@ export default function ProfilePage() {
                     ) : null}
                   </div>
 
+                  {/* No HP ← baru */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <Phone size={11} /> Nomor HP
+                      <span className="text-[10px] font-normal text-gray-400 normal-case tracking-normal">(opsional)</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                        <Phone size={14} />
+                      </span>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => {
+                          // Hanya angka, +, spasi, tanda kurung, strip
+                          const val = e.target.value.replace(/[^\d+\s\-()]/g, "");
+                          setPhone(val);
+                          clearError("phone");
+                        }}
+                        placeholder="Contoh: 08123456789"
+                        className={`${fieldClass("phone")} pl-10`}
+                        maxLength={20}
+                      />
+                      {/* Preview link WhatsApp */}
+                      {phone.trim() && !errors.phone && (
+                        <a
+                          href={`https://wa.me/${phone.replace(/\D/g, "").replace(/^0/, "62")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 transition-colors"
+                          title="Test buka WhatsApp"
+                        >
+                          <svg viewBox="0 0 24 24" className="w-3 h-3 fill-green-600">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                          </svg>
+                          WA
+                        </a>
+                      )}
+                    </div>
+                    {errors.phone ? (
+                      <p className="text-[11px] text-red-500 flex items-center gap-1">
+                        <AlertCircle size={11} /> {errors.phone}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-gray-400">Nomor ini akan ditampilkan di halaman daftar pengguna sebagai link WhatsApp</p>
+                    )}
+                  </div>
+
                   <div className="border-t border-slate-100 pt-1" />
 
                   <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -580,8 +644,6 @@ export default function ProfilePage() {
               </div>
             </div>
           </main>
-
-          <Footer />
         </div>
       </div>
     </>

@@ -31,29 +31,40 @@ const upload = multer({
 
 // ── PUT /profile ──────────────────────────────────────────────────────────────
 router.put("/profile", upload.single("avatar"), async (req, res) => {
-  console.log("=== DEBUG PROFILE ===");
-  console.log("req.user:", req.user);
-  console.log("req.body:", req.body);
-  console.log("userId:", req.user?.id);
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: "Tidak terautentikasi" });
 
-    const { name, nip, username } = req.body;
+    // ← tambah phone di destructuring
+    const { name, nip, username, phone } = req.body;
+
+    // Tambahkan setelah destructuring
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: "Nama tidak boleh kosong" });
+    }
+    if (!username?.trim()) {
+      return res.status(400).json({ success: false, message: "Username tidak boleh kosong" });
+    }
+    // Validasi NIP
     if (nip?.trim()) {
       if (!/^\d+$/.test(nip.trim())) return res.status(400).json({ success: false, message: "NIP hanya boleh berisi angka" });
       if (nip.trim().length !== 18) return res.status(400).json({ success: false, message: `NIP harus tepat 18 digit (sekarang ${nip.trim().length} digit)` });
     }
 
-    // cek username unik
+    // Validasi nomor HP (opsional)
+    if (phone?.trim()) {
+      const cleaned = phone.replace(/\D/g, "");
+      if (cleaned.length < 9 || cleaned.length > 15) return res.status(400).json({ success: false, message: "Nomor HP tidak valid (9–15 digit)" });
+    }
+
+    // Cek username unik
     const [existing] = await pool.query("SELECT id FROM users WHERE username = ? AND id != ?", [username.trim(), userId]);
     if (existing.length > 0) return res.status(400).json({ success: false, message: "Username sudah digunakan" });
 
-    // avatar baru
+    // Avatar baru
     let avatarUrl = null;
     if (req.file) {
       avatarUrl = `uploads/avatars/${req.file.filename}`;
-      // hapus avatar lama dari disk
       const [rows] = await pool.query("SELECT avatar FROM users WHERE id = ?", [userId]);
       const old = rows[0]?.avatar;
       if (old?.startsWith("uploads/")) {
@@ -62,9 +73,15 @@ router.put("/profile", upload.single("avatar"), async (req, res) => {
       }
     }
 
-    // UPDATE
-    const fields = ["name = ?", "nip = ?", "username = ?", "updated_at = NOW()"];
-    const values = [name.trim(), nip?.trim() || null, username.trim()];
+    // ← tambah phone = ? di fields
+    const fields = ["name = ?", "nip = ?", "username = ?", "phone = ?", "updated_at = NOW()"];
+    const values = [
+      name.trim(),
+      nip?.trim() || null,
+      username.trim(),
+      phone?.trim() || null, // ← value phone
+    ];
+
     if (avatarUrl) {
       fields.push("avatar = ?");
       values.push(avatarUrl);
@@ -73,8 +90,8 @@ router.put("/profile", upload.single("avatar"), async (req, res) => {
 
     await pool.query(`UPDATE users SET ${fields.join(", ")} WHERE id = ?`, values);
 
-    // kembalikan data terbaru
-    const [rows] = await pool.query("SELECT id, name, nip, username, avatar, created_at, updated_at FROM users WHERE id = ?", [userId]);
+    // ← tambah phone di SELECT kembalikan data terbaru
+    const [rows] = await pool.query("SELECT id, name, nip, username, phone, avatar, created_at, updated_at FROM users WHERE id = ?", [userId]);
     const user = rows[0];
     if (user.avatar?.startsWith("uploads/")) user.avatar = `${req.protocol}://${req.get("host")}/${user.avatar}`;
 
