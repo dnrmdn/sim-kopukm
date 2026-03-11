@@ -40,6 +40,7 @@ import dokumenKakRoutes from "./routes/dokumenKak.js";
 import masterRoutes from "./routes/masterRoutes.js";
 import userProfileRoutes from "./routes/userProfile.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
+import statusPegawaiRoute from "./routes/statusPegawaiRoute.js";
 // tambahkan import ini
 import userRoutes from "./routes/userRoutes.js";
 
@@ -99,6 +100,9 @@ const allowedOrigins = [
   "http://127.0.0.1:4849",
   "http://192.168.1.9:3002",
   "http://192.168.1.9:4849",
+  // ✅ Tambahkan ini:
+  "http://192.168.1.5:3001",
+  "http://192.168.1.5:3002",
 ];
 
 // ================================
@@ -226,6 +230,7 @@ app.use("/api/dokumen/kak", dokumenKakRoutes);
 app.use("/api/master", masterRoutes);
 app.use("/api/user", verifyToken, userProfileRoutes); // PUT /profile
 app.use("/api/user", verifyToken, userRoutes);        // GET /, GET /:id, POST /, PUT /:id, DELETE /:id
+app.use("/api/status-pegawai", statusPegawaiRoute);
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
