@@ -13,7 +13,7 @@ export default function RkaPage() {
 
   const [showInputModal, setShowInputModal] = useState(false);
   const [showBelanjaStep, setShowBelanjaStep] = useState(false);
-  
+
   const [currentRkaDetail, setCurrentRkaDetail] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -26,7 +26,11 @@ export default function RkaPage() {
     pelaksana_id: "",
     tanggal_mulai: "",
     tanggal_selesai: "",
-    target_sub: "", 
+    tw_mulai: "",
+    mg_mulai: "",
+    tw_selesai: "",
+    mg_selesai: "",
+    target_sub: "",
     jenis_pagu: "1", // Default ke Pagu Murni
     satuan_id: ""
   });
@@ -40,23 +44,49 @@ export default function RkaPage() {
     satuan: [],
   });
 
-  useEffect(() => { 
+  useEffect(() => {
     loadInitialMaster();
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchList();
   }, [selectedYear]);
+  useEffect(() => {
+    if (rkaForm.tanggal_mulai && rkaForm.tanggal_selesai) {
+      const startDate = new Date(rkaForm.tanggal_mulai);
+      const endDate = new Date(rkaForm.tanggal_selesai);
 
+      const startMonth = startDate.getMonth(); 
+      const endMonth = endDate.getMonth();
+
+      // Hitung Triwulan (1, 2, 3, 4)
+      const startQ = Math.floor(startMonth / 3) + 1;
+      const endQ = Math.floor(endMonth / 3) + 1;
+
+      // Hitung Minggu Ke- (1 - 5) dalam bulan tersebut
+      const startW = Math.ceil(startDate.getDate() / 7);
+      const endW = Math.ceil(endDate.getDate() / 7);
+
+      setRkaForm(prev => ({ 
+        ...prev, 
+        tw_mulai: startQ,
+        mg_mulai: startW,
+        tw_selesai: endQ,
+        mg_selesai: endW
+      }));
+    }
+  }, [rkaForm.tanggal_mulai, rkaForm.tanggal_selesai]);
+
+  
   async function fetchList() {
     setLoading(true);
     try {
       const res = await axiosInstance.get(`/rka?tahun=${selectedYear}`);
       setList(res.data || []);
-    } catch (err) { 
-      console.error("Gagal fetch list RKA:", err); 
-    } finally { 
-      setLoading(false); 
+    } catch (err) {
+      console.error("Gagal fetch list RKA:", err);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -68,10 +98,10 @@ export default function RkaPage() {
         axiosInstance.get("/master/pagu"),
         axiosInstance.get("/master/satuan")
       ]);
-      setOptions(prev => ({ 
-        ...prev, 
-        programs: p.data, 
-        pegawai: pg.data, 
+      setOptions(prev => ({
+        ...prev,
+        programs: p.data,
+        pegawai: pg.data,
         pagu: pa.data,
         satuan: sa.data
       }));
@@ -113,9 +143,9 @@ export default function RkaPage() {
       // 2. Set mode: Jika sudah ada id-nya -> Edit. Jika belum (diklik dari nol) -> Buat Baru
       if (specificId) {
         setIsEditMode(true);
-        setEditingId(specificId); 
+        setEditingId(specificId);
       } else {
-        setIsEditMode(false);     
+        setIsEditMode(false);
         setEditingId(null);
       }
 
@@ -132,8 +162,11 @@ export default function RkaPage() {
         subkegiatan_id: row.subkegiatan_id,
         penanggungjawab_id: row.penanggungjawab_id || row.id_pj,
         pelaksana_id: row.pelaksana_id || row.id_pelaksana,
-        tanggal_mulai: row.tanggal_mulai ? row.tanggal_mulai.split('T')[0] : "",
         tanggal_selesai: row.tanggal_selesai ? row.tanggal_selesai.split('T')[0] : "",
+        tw_mulai: row.tw_mulai || "",
+        mg_mulai: row.mg_mulai || "",
+        tw_selesai: row.tw_selesai || "",
+        mg_selesai: row.mg_selesai || "",
         target_sub: row.target_angka,
         jenis_pagu: String(paguId), // Kunci pagu aktif
         satuan_id: row.target_satuan || row.satuan_id
@@ -144,7 +177,7 @@ export default function RkaPage() {
         kegiatan_name: row.kegiatan_name,
         subkegiatan_name: row.subkegiatan_name,
         pj_nama: row.pj_nama || row.penanggungjawab_nama,
-        pelaksana_nama: row.pelaksana_nama || row.nama_pelaksana, 
+        pelaksana_nama: row.pelaksana_nama || row.nama_pelaksana,
         pj_jabatan: row.pj_jabatan,
         pelaksana_jabatan: row.pelaksana_jabatan
       });
@@ -161,7 +194,7 @@ export default function RkaPage() {
   const handleSaveBelanja = async (belanjaRows) => {
     try {
       let rkaId = editingId;
-      
+
       // PAYLOAD DIPERKUAT: Mengakomodasi penamaan lama dan nama kolom DB dari visual FK constraint
       const headerPayload = {
         // Penamaan default
@@ -169,7 +202,7 @@ export default function RkaPage() {
         penanggungjawab_id: rkaForm.penanggungjawab_id,
         pelaksana_id: rkaForm.pelaksana_id,
         jenis_pagu: rkaForm.jenis_pagu,
-        
+
         // Mapping langsung ke nama kolom database agar aman dari FK Error
         id_sub_kegiatan: rkaForm.subkegiatan_id,
         id_pj: rkaForm.penanggungjawab_id,
@@ -178,6 +211,10 @@ export default function RkaPage() {
 
         tanggal_mulai: rkaForm.tanggal_mulai,
         tanggal_selesai: rkaForm.tanggal_selesai,
+        tw_mulai: rkaForm.tw_mulai,
+        mg_mulai: rkaForm.mg_mulai,
+        tw_selesai: rkaForm.tw_selesai,
+        mg_selesai: rkaForm.mg_selesai,
         target_sub: rkaForm.target_sub,
         satuan: rkaForm.satuan_id,
         tahun: selectedYear,
@@ -190,15 +227,15 @@ export default function RkaPage() {
         rkaId = res.data.id_rka || res.data.id;
       }
 
-      await axiosInstance.post(`/rka/${rkaId}/belanja`, { 
+      await axiosInstance.post(`/rka/${rkaId}/belanja`, {
         items: belanjaRows,
-        jenis_pagu: rkaForm.jenis_pagu 
+        jenis_pagu: rkaForm.jenis_pagu
       });
 
       alert("Data Berhasil Disimpan!");
       handleCloseAll();
       fetchList();
-      
+
     } catch (err) {
       console.error("Save Error:", err.response?.data || err.message);
       alert("Gagal menyimpan: " + (err.response?.data?.message || err.message));
@@ -210,11 +247,11 @@ export default function RkaPage() {
     setShowBelanjaStep(false);
     setIsEditMode(false);
     setEditingId(null);
-    setRkaForm({ 
-      program_id: "", kegiatan_id: "", subkegiatan_id: "", 
-      penanggungjawab_id: "", pelaksana_id: "", 
-      tanggal_mulai: "", tanggal_selesai: "", 
-      target_sub: "", jenis_pagu: "1", satuan_id: "" 
+    setRkaForm({
+      program_id: "", kegiatan_id: "", subkegiatan_id: "",
+      penanggungjawab_id: "", pelaksana_id: "",
+      tanggal_mulai: "", tanggal_selesai: "",
+      target_sub: "", jenis_pagu: "1", satuan_id: ""
     });
   };
 
@@ -256,9 +293,9 @@ export default function RkaPage() {
                   ))}
                 </select>
               </div>
-
-              <button 
-                onClick={() => setShowInputModal(true)} 
+ 
+              <button
+                onClick={() => setShowInputModal(true)}
                 className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
               >
                 <span className="text-xl">+</span>
@@ -274,10 +311,10 @@ export default function RkaPage() {
           </div>
         </>
       ) : (
-        <BelanjaSection 
-          currentRkaDetail={currentRkaDetail} 
+        <BelanjaSection
+          currentRkaDetail={currentRkaDetail}
           rkaForm={{ ...rkaForm, tahun: selectedYear }}
-          onSave={handleSaveBelanja} 
+          onSave={handleSaveBelanja}
           onCancel={handleCloseAll}
           isEditMode={isEditMode}
           editingId={editingId}
@@ -287,7 +324,7 @@ export default function RkaPage() {
       {showInputModal && (
         <InputRKA
           setShowInputModal={setShowInputModal}
-          rkaForm={{ ...rkaForm, tahun: selectedYear }} 
+          rkaForm={{ ...rkaForm, tahun: selectedYear }}
           onChangeForm={(key, value) => {
             setRkaForm((prev) => ({ ...prev, [key]: value }));
 
@@ -310,12 +347,12 @@ export default function RkaPage() {
             const prog = options.programs.find((p) => p.id == rkaForm.program_id);
             const keg = options.kegiatan.find((k) => k.id == rkaForm.kegiatan_id);
             const sub = options.subkegiatan.find((s) => s.id == rkaForm.subkegiatan_id);
-            
+
             // CARI DATA PEGAWAI BERDASARKAN ID
             // Menyesuaikan apakah ID pegawai di DB bernama 'id' atau 'id_pegawai'
             const pj = options.pegawai.find((p) => p.id == rkaForm.penanggungjawab_id || p.id_pegawai == rkaForm.penanggungjawab_id);
             const pelaksana = options.pegawai.find((p) => p.id == rkaForm.pelaksana_id || p.id_pegawai == rkaForm.pelaksana_id);
-            
+
             // MAPPING DETAIL UNTUK BELANJA SECTION SAAT TAMBAH BARU
             setCurrentRkaDetail({
               program_name: prog?.nama_program || prog?.name || "N/A",

@@ -8,6 +8,17 @@ function fmtIdr(v) {
     maximumFractionDigits: 0,
   }).format(Number(v || 0));
 }
+function formatTW(twM, mgM, twS, mgS) {
+  if (!twM || !twS || !mgM || !mgS) return "Belum Diatur";
+  
+  // Jika mulai dan selesai di Triwulan dan Minggu yang persis sama
+  if (twM === twS && mgM === mgS) {
+    return `TW ${twM} (Mg ${mgM})`;
+  }
+  
+  // Jika lintas Minggu atau lintas Triwulan
+  return `TW ${twM} (Mg ${mgM}) - TW ${twS} (Mg ${mgS})`;
+}
 
 export default function RkaTable({ data = [], onEdit = () => {}, onDeleteSuccess = () => {} }) {
   const hierarchicalData = useMemo(() => {
@@ -176,10 +187,10 @@ export default function RkaTable({ data = [], onEdit = () => {}, onDeleteSuccess
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[9px] font-bold border border-blue-100">
                               <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
                               {sub.pj_nama || "N/A"}
-                            </span>
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold border border-amber-100">
+                            </span> 
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold border border-amber-100 shadow-sm">
                               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                              TW {sub.triwulan || "-"}
+                              {formatTW(sub.tw_mulai, sub.mg_mulai, sub.tw_selesai, sub.mg_selesai)}
                             </span>
                             <span className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-[9px] font-black border border-emerald-200 shadow-sm transition-all hover:bg-emerald-100">
                               <svg className="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

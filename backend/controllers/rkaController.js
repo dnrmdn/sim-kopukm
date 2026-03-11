@@ -21,6 +21,11 @@ export async function getAllRka(req, res, next) {
           MAX(p.nama_lengkap) AS pj_nama,
           MAX(rh.target_kinerja) AS target_angka,
           MAX(rh.satuan) AS target_satuan,
+          /* TAMBAHKAN 4 BARIS INI UNTUK MENARIK DATA TRIWULAN */
+          MAX(rh.tw_mulai) AS tw_mulai,
+          MAX(rh.mg_mulai) AS mg_mulai,
+          MAX(rh.tw_selesai) AS tw_selesai,
+          MAX(rh.mg_selesai) AS mg_selesai,
           rh.id_tahun AS tahun,
           
           rk.program_id AS program_id,
@@ -63,7 +68,7 @@ export async function getAllRka(req, res, next) {
 }
 
 // ===========================================================================
-// 1. CREATE RKA (DENGAN LOGIKA PENCEGAHAN DUPLIKAT / UPSERT)
+// 1. CREATE RKA (DENGAN 4 FIELD PERIODE PELAKSANAAN)
 // ===========================================================================
 export async function createRka(req, res, next) {
   try {
@@ -73,6 +78,10 @@ export async function createRka(req, res, next) {
       pelaksana_id,
       tanggal_mulai,
       tanggal_selesai,
+      tw_mulai,
+      mg_mulai,
+      tw_selesai,
+      mg_selesai,
       target_sub,
       satuan,
       jenis_pagu,
@@ -81,20 +90,18 @@ export async function createRka(req, res, next) {
 
     const id_tahun = tahun || new Date().getFullYear().toString();
 
-    // CEK DULU: Apakah Sub Kegiatan ini di Pagu & Tahun yang sama SUDAH PUNYA Header?
     const checkQuery = `SELECT id_rka FROM rka_header WHERE id_sub_kegiatan = ? AND pagu_id = ? AND id_tahun = ?`;
     const [existing] = await pool.query(checkQuery, [subkegiatan_id, jenis_pagu, id_tahun]);
 
     if (existing.length > 0) {
-        // JIKA SUDAH ADA: Jangan bikin row baru! Cukup Update data pelaksana & targetnya saja
         const existingId = existing[0].id_rka;
         const updateQuery = `
           UPDATE rka_header 
-          SET id_pj = ?, id_pelaksana = ?, tgl_mulai = ?, tgl_selesai = ?, target_kinerja = ?, satuan = ?
+          SET id_pj = ?, id_pelaksana = ?, tgl_mulai = ?, tgl_selesai = ?, tw_mulai = ?, mg_mulai = ?, tw_selesai = ?, mg_selesai = ?, target_kinerja = ?, satuan = ?
           WHERE id_rka = ?
         `;
         await pool.query(updateQuery, [
-          penanggungjawab_id || null, pelaksana_id || null, tanggal_mulai || null, tanggal_selesai || null, target_sub || null, satuan || null, existingId
+          penanggungjawab_id || null, pelaksana_id || null, tanggal_mulai || null, tanggal_selesai || null, tw_mulai || null, mg_mulai || null, tw_selesai || null, mg_selesai || null, target_sub || null, satuan || null, existingId
         ]);
         
         return res.status(200).json({
@@ -103,14 +110,27 @@ export async function createRka(req, res, next) {
         });
     }
 
-    // JIKA BELUM ADA: Baru bikin Header Baru
+    // 13 Kolom = 13 Tanda Tanya
     const insertQuery = `
         INSERT INTO rka_header 
-        (id_sub_kegiatan, id_tahun, pagu_id, id_pj, id_pelaksana, tgl_mulai, tgl_selesai, target_kinerja, satuan) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id_sub_kegiatan, id_tahun, pagu_id, id_pj, id_pelaksana, tgl_mulai, tgl_selesai, tw_mulai, mg_mulai, tw_selesai, mg_selesai, target_kinerja, satuan) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
+    
     const values = [
-      subkegiatan_id || null, id_tahun, jenis_pagu || null, penanggungjawab_id || null, pelaksana_id || null, tanggal_mulai || null, tanggal_selesai || null, target_sub || null, satuan || null
+      subkegiatan_id || null, 
+      id_tahun, 
+      jenis_pagu || null, 
+      penanggungjawab_id || null, 
+      pelaksana_id || null, 
+      tanggal_mulai || null, 
+      tanggal_selesai || null, 
+      tw_mulai || null, 
+      mg_mulai || null, 
+      tw_selesai || null, 
+      mg_selesai || null, 
+      target_sub || null, 
+      satuan || null
     ];
 
     const [result] = await pool.query(insertQuery, values);
@@ -125,7 +145,9 @@ export async function createRka(req, res, next) {
   }
 }
 
-// UPDATE RKA
+// ===========================================================================
+// 2. UPDATE RKA (DENGAN 4 FIELD PERIODE PELAKSANAAN)
+// ===========================================================================
 export async function updateRka(req, res, next) {
   try {
     const { id } = req.params;
@@ -135,10 +157,14 @@ export async function updateRka(req, res, next) {
       pelaksana_id,
       tanggal_mulai,
       tanggal_selesai,
+      tw_mulai,
+      mg_mulai,
+      tw_selesai,
+      mg_selesai,
       target_sub,
       satuan,
       jenis_pagu,
-      tahun 
+      tahun
     } = req.body;
 
     const query = `
@@ -150,6 +176,10 @@ export async function updateRka(req, res, next) {
         id_pelaksana = ?, 
         tgl_mulai = ?, 
         tgl_selesai = ?, 
+        tw_mulai = ?, 
+        mg_mulai = ?, 
+        tw_selesai = ?, 
+        mg_selesai = ?,
         target_kinerja = ?,
         satuan = ?,
         id_tahun = ?
@@ -163,10 +193,14 @@ export async function updateRka(req, res, next) {
       pelaksana_id || null,
       tanggal_mulai || null,
       tanggal_selesai || null,
+      tw_mulai || null,
+      mg_mulai || null,
+      tw_selesai || null,
+      mg_selesai || null,
       target_sub || null,
       satuan || null,
-      tahun || null,
-      id
+      tahun || null, 
+      id             
     ];
 
     const [result] = await pool.query(query, values);

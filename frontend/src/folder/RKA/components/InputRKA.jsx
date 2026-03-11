@@ -216,6 +216,19 @@ export default function InputRKA({
                     className={inputStyle}
                   />
                 </div>
+                {/* PERIODE PELAKSANAAN OTOMATIS */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Periode Pelaksanaan
+                  </label>
+                  <input
+                    type="text"
+                    value={(rkaForm.tw_mulai && rkaForm.tw_selesai) ? `TW ${rkaForm.tw_mulai} (Mg ${rkaForm.mg_mulai}) — TW ${rkaForm.tw_selesai} (Mg ${rkaForm.mg_selesai})` : ""}
+                    readOnly
+                    className="w-full bg-slate-100 border border-slate-200 text-slate-500 font-bold rounded-xl px-4 py-3 text-sm cursor-not-allowed outline-none"
+                    placeholder="Otomatis Terisi..."
+                  />
+                </div>
               </div>
             </section>
           </div>

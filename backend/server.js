@@ -42,6 +42,8 @@ import userProfileRoutes from "./routes/userProfile.js";
 import { verifyToken } from "./middleware/authMiddleware.js";
 // tambahkan import ini
 import userRoutes from "./routes/userRoutes.js";
+import rencanaAksiRoutes from "./routes/rencanaaksiRoutes.js";
+import pohonKinerjaRoutes from "./routes/pohonKinerjaRoutes.js";
 
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
@@ -98,7 +100,14 @@ const allowedOrigins = [
   "http://127.0.0.1:3001",
   "http://127.0.0.1:4849",
   "http://192.168.1.9:3002",
+  "http://72.61.208.1:3002",
   "http://192.168.1.9:4849",
+  "http://192.168.1.6:3002",
+  "http://192.168.1.6:4849",
+  "http://localhost:3002",
+  "http://localhost:3002",
+
+
 ];
 
 // ================================
@@ -226,6 +235,8 @@ app.use("/api/dokumen/kak", dokumenKakRoutes);
 app.use("/api/master", masterRoutes);
 app.use("/api/user", verifyToken, userProfileRoutes); // PUT /profile
 app.use("/api/user", verifyToken, userRoutes);        // GET /, GET /:id, POST /, PUT /:id, DELETE /:id
+app.use("/api/rencana-aksi", rencanaAksiRoutes);
+app.use("/api/pohon-kinerja", pohonKinerjaRoutes);
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
