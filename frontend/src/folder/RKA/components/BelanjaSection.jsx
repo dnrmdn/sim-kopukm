@@ -171,7 +171,7 @@ export default function BelanjaSection({ currentRkaDetail, rkaForm, onSave, onCa
           </div>
           <div className="flex-1 flex gap-3 items-center">
             <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold border border-blue-100">8.01.01.2.01.0001</span>
-            <span className="text-slate-800 text-sm font-bold">{currentRkaDetail?.subkegiatan_name || currentRkaDetail?.subkegiatan?.name || "-"}</span>
+            <span className="text-slate-800 text-sm font-bold uppercase">{currentRkaDetail?.subkegiatan_name || currentRkaDetail?.subkegiatan?.name || "-"}</span>
           </div>
         </div>
       </div>

@@ -89,7 +89,7 @@ export default function TabelSub({ kegiatanId, YEARS = [], refreshKey }) {
                 <span className="text-xs bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm uppercase font-bold tracking-wider mb-1 inline-block">
                   Sub Kegiatan
                 </span>
-                <div className="leading-tight text-slate-700 font-medium lowercase first-letter:uppercase tracking-wide">
+                <div className="leading-tight text-slate-800 font-bold uppercase tracking-wide">
                   <span className="font-bold mr-1 text-emerald-700">{s.kodering}</span> {s.nama_sub}
                 </div>
               </div>

@@ -18,9 +18,12 @@ import SOTKPage from "./folder/SOTK/SOTKPage";
 import RkaPage from "./folder/RKA/RkaPage";
 import BelanjaSectionPage from "./folder/RKA/components/BelanjaSection";
 import RenstraPage from "./folder/RENSTRA/RenstraPage";
+import InventarisPage from "./folder/INVENTARIS/InventarisPage";
 import KibBPage from "./folder/INVENTARIS/KibBPage";
+import KibEPage from "./folder/INVENTARIS/KibEPage";
 import VerificationPage from "./folder/INVENTARIS/VerificationPage";
 import PrintQrKibBPage from "./folder/INVENTARIS/PrintQrKibBPage";
+import PrintQrKibEPage from "./folder/INVENTARIS/PrintQrKibEPage";
 import PrintKibBTablePage from "./folder/INVENTARIS/PrintKibBTablePage";
 
 import RenjaPage from "./folder/RENJA/RenjaPage";
@@ -47,6 +50,8 @@ import PKEselonII from "./folder/PK/components/PKEselonII";
 import PKEselonIII from "./folder/PK/components/PKEselonIII";
 import PKEselonIV from "./folder/PK/components/PKEselonIV";
 import RencanaAksiPage from "./folder/RENCANAAKSI/RencanaAksiPage";
+import BukuTamuPage from "./folder/BUKUTAMU/BukuTamuPage";
+import BukuTamuCheckIn from "./folder/BUKUTAMU/BukuTamuCheckIn";
 import EditPegawai from "./folder/PEGAWAI/components/editPegawai";
 import TambahPegawai from "./folder/PEGAWAI/components/tambahPegawai";
 import EditJabatan from "./folder/JABATAN/components/editJabatan";
@@ -62,8 +67,11 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/verifikasi-aset/:id" element={<VerificationPage />} />
+        <Route path="/verifikasi-aset-e/:id" element={<VerificationPage />} />
         <Route path="/print-qr-kib-b" element={<PrintQrKibBPage />} />
+        <Route path="/print-qr-kib-e" element={<PrintQrKibEPage />} />
         <Route path="/print-table-kib-b" element={<PrintKibBTablePage />} />
+        <Route path="/buku-tamu/check-in" element={<BukuTamuCheckIn />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
@@ -84,8 +92,10 @@ function App() {
           <Route path="/dokumen/rka" element={<RkaPage />} />
           <Route path="/dokumen/rka/edit-belanja/:id" element={<BelanjaSectionPage />} />
           <Route path="/dokumen/renstra" element={<RenstraPage />} />
-        <Route path="/dokumen/kib-b" element={<KibBPage />} />
-        <Route path="/renja" element={<RenjaPage />} />
+          <Route path="/dokumen/inventaris" element={<InventarisPage />} />
+          <Route path="/dokumen/kib-b" element={<KibBPage />} />
+          <Route path="/dokumen/kib-e" element={<KibEPage />} />
+          <Route path="/renja" element={<RenjaPage />} />
           <Route path="/dokumen/sop" element={<SopPage />} />
           <Route path="/dokumen/lkpj" element={<LkpjPage />} />
           <Route path="/dokumen/dpa" element={<DpaPage />} />
@@ -112,6 +122,7 @@ function App() {
           <Route path="/dokumen/PKEselonIII" element={<PKEselonIII />} />
           <Route path="/dokumen/PKEselonIV" element={<PKEselonIV />} />
           <Route path="/dokumen/rencana-aksi" element={<RencanaAksiPage />} />
+          <Route path="/dokumen/buku-tamu" element={<BukuTamuPage />} />
           <Route path="/pengguna" element={<DaftarUser />} />
         </Route>
       </Routes>

@@ -1,17 +1,17 @@
 import React, { useMemo } from "react";
-import { TrendingUp, AlertTriangle, CheckCircle2, DollarSign, Calendar, FileText, QrCode, ScanLine, Plus } from "lucide-react";
+import { TrendingUp, AlertTriangle, CheckCircle2, DollarSign, Calendar, FileText, Plus, Package, QrCode } from "lucide-react";
 import formatIdr from "@/utils/formatIdr";
 
-export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
+export default function KibEDashboard({ data, onAdd, onExportPDF }) {
   const handlePrintAllQR = () => {
-    // Membuka halaman khusus print QR di tab baru
-    window.open('/print-qr-kib-b', '_blank');
+    // Membuka halaman khusus print QR KIB E di tab baru
+    window.open('/print-qr-kib-e', '_blank');
   };
 
   // Statistics Calculation
   const stats = useMemo(() => {
-    const totalAset = data.reduce((acc, item) => acc + (Number(item.harga) * (Number(item.jumlah) || 1)), 0);
-    const totalUnit = data.reduce((acc, item) => acc + (Number(item.jumlah) || 1), 0);
+    const totalAset = data.reduce((acc, item) => acc + Number(item.harga), 0);
+    const totalUnit = data.length;
     
     const kondisiBaik = data.filter(item => item.kondisi === "Baik").length;
     const kondisiLain = data.filter(item => item.kondisi !== "Baik").length;
@@ -20,7 +20,7 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
     // Trend Perolehan (Top 3 Recent Years)
     const trendMap = data.reduce((acc, item) => {
       const year = item.tahun_perolehan || "Unknown";
-      acc[year] = (acc[year] || 0) + (Number(item.jumlah) || 1);
+      acc[year] = (acc[year] || 0) + 1;
       return acc;
     }, {});
     
@@ -38,11 +38,11 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
     // Maintenance Estimation
     const totalNilaiBaik = data
       .filter(item => item.kondisi === "Baik")
-      .reduce((acc, item) => acc + (Number(item.harga) * (Number(item.jumlah) || 1)), 0);
+      .reduce((acc, item) => acc + Number(item.harga), 0);
       
     const totalNilaiKurang = data
       .filter(item => item.kondisi !== "Baik")
-      .reduce((acc, item) => acc + (Number(item.harga) * (Number(item.jumlah) || 1)), 0);
+      .reduce((acc, item) => acc + Number(item.harga), 0);
 
     const preventiveCost = totalNilaiBaik * 0.02;
     const correctiveCost = totalNilaiKurang * 0.15;
@@ -71,8 +71,8 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
       {/* HEADER & ACTIONS */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-100 gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Data Inventaris KIB B</h1>
-          <p className="text-slate-500 font-medium text-sm mt-1">Peralatan dan Mesin</p>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Data Inventaris KIB E</h1>
+          <p className="text-slate-500 font-medium text-sm mt-1">Aset Tetap Lainnya (Buku, Perpustakaan, Kesenian, Kebudayaan)</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <button onClick={onExportPDF} className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 rounded-xl font-bold text-sm hover:bg-rose-100 transition-colors border border-rose-100">
@@ -97,7 +97,7 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
             <p className="text-2xl font-black text-blue-600 tracking-tight">{formatIdr(stats.totalAset)}</p>
           </div>
           <div className="flex items-center gap-2 text-slate-500 text-sm font-medium mt-4 bg-slate-50 p-2 rounded-xl w-fit">
-            <PackageIcon /> Total {stats.totalUnit} unit barang
+            <Package size={14} /> Total {stats.totalUnit} unit barang
           </div>
         </div>
 
@@ -105,15 +105,15 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
         <div className="bg-white p-6 rounded-3xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-between h-full">
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">KONDISI ASET</h3>
-            <span className="text-emerald-600 font-black text-sm bg-emerald-50 px-2 py-1 rounded-lg">{stats.persenBaik}% Layak</span>
+            <span className="text-emerald-600 font-black text-sm bg-emerald-50 px-2 py-1 rounded-lg">{stats.persenBaik}% Baik</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-3 mb-4 overflow-hidden">
             <div className="bg-emerald-500 h-3 rounded-full transition-all duration-1000" style={{ width: `${stats.persenBaik}%` }}></div>
           </div>
           <div className="flex justify-between text-xs font-bold text-slate-500">
             <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Baik: {stats.kondisiBaik}</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500"></div> Lain: {stats.kondisiLain}</div>
-            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-rose-500"></div> Rusak: 0</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500"></div> Rusak: {stats.kondisiLain}</div>
+            <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-rose-500"></div> Berat: 0</div>
           </div>
         </div>
 
@@ -269,10 +269,4 @@ export default function KibBDashboard({ data, onAdd, onScan, onExportPDF }) {
       </div>
     </div>
   );
-}
-
-function PackageIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-10"/></svg>
-  )
 }

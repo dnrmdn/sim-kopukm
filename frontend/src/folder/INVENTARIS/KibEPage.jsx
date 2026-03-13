@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Filter, RefreshCw, Trash2, Edit3, Eye, Printer, Loader2, X } from "lucide-react";
+import { Plus, Search, Filter, RefreshCw, Trash2, Edit3, Printer, Loader2, X, ArrowLeft, Eye } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import axiosInstance from "@/utils/axiosInstance";
 import Swal from "sweetalert2";
 import formatIdr from "@/utils/formatIdr";
-import AddKibBModal from "./components/AddKibBModal";
-import EditKibBModal from "./components/EditKibBModal";
-import KibBDashboard from "./components/KibBDashboard";
+import AddKibEModal from "./components/AddKibEModal";
+import EditKibEModal from "./components/EditKibEModal";
+import KibEDashboard from "./components/KibEDashboard";
 
-export default function KibBPage() {
+export default function KibEPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -25,7 +25,7 @@ export default function KibBPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get("/kib-b");
+      const res = await axiosInstance.get("/kib-e");
       setData(res.data || []);
     } catch (err) {
       console.error(err);
@@ -49,7 +49,7 @@ export default function KibBPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axiosInstance.delete(`/kib-b/${id}`);
+          await axiosInstance.delete(`/kib-e/${id}`);
           Swal.fire("Terhapus!", "Data telah dihapus.", "success");
           fetchData();
         } catch (err) {
@@ -78,21 +78,28 @@ export default function KibBPage() {
   };
 
   const handleExportPDF = () => {
-    // Simpan data yang difilter ke localStorage agar bisa diambil di halaman print
-    localStorage.setItem("printData", JSON.stringify(filteredData));
-    
-    // Buka halaman print tabel di tab baru
-    window.open('/print-table-kib-b', '_blank');
+    // Implement Export logic if needed
+    Swal.fire("Info", "Fitur Cetak Laporan KIB E sedang disiapkan.", "info");
   };
 
   return (
     <div className="flex flex-col h-full bg-slate-50 p-6 space-y-6">
       
+      {/* BACK BUTTON */}
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={() => window.location.href = '/dokumen/inventaris'}
+          className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-slate-600 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Kembali ke Inventaris</h2>
+      </div>
+
       {/* DASHBOARD */}
-      <KibBDashboard 
+      <KibEDashboard 
         data={data} 
         onAdd={() => setShowAddModal(true)} 
-        onScan={() => {/* Implement Scan Logic if needed */}} 
         onExportPDF={handleExportPDF}
       />
 
@@ -173,44 +180,44 @@ export default function KibBPage() {
       {/* TABLE */}
       <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
         <div className="overflow-x-auto flex-1 custom-scrollbar">
-          <table className="w-full min-w-[1500px]">
+          <table className="w-full">
             <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider w-16">No</th>
-                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider w-40">Kode Barang</th>
+                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider w-40">Kode</th>
                 <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Nama Barang</th>
-                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Merk / Type</th>
                 <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider">Tahun</th>
-                <th className="px-6 py-4 text-right text-xs font-black text-slate-500 uppercase tracking-wider">Harga (Rp)</th>
                 <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider">Kondisi</th>
-                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Keterangan</th>
+                <th className="px-6 py-4 text-right text-xs font-black text-slate-500 uppercase tracking-wider">Harga (Rp)</th>
+                <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider">QR Code</th>
-                <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider sticky right-0 bg-slate-50 shadow-l">Aksi</th>
+                <th className="px-6 py-4 text-center text-xs font-black text-slate-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="10" className="p-12 text-center text-slate-400 font-medium">
+                  <td colSpan="9" className="p-12 text-center text-slate-400 font-medium">
                     <Loader2 className="animate-spin mx-auto mb-2" />
                     Memuat data...
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="p-12 text-center text-slate-400 font-medium">
+                  <td colSpan="9" className="p-12 text-center text-slate-400 font-medium">
                     Tidak ada data ditemukan.
                   </td>
                 </tr>
               ) : (
                 filteredData.map((item, index) => (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-6 py-4 text-sm font-bold text-slate-500">{index + 1}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-slate-400">{index + 1}</td>
                     <td className="px-6 py-4 text-sm font-bold text-indigo-600 bg-indigo-50/30 rounded-r-xl">{item.kode_barang}</td>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-700">{item.nama_barang}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-600">{item.merk_type}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-slate-700">
+                      <div>{item.nama_barang}</div>
+                      <div className="text-[10px] text-slate-400 font-medium">Reg: {item.nomor_register}</div>
+                    </td>
                     <td className="px-6 py-4 text-center text-sm font-bold text-slate-500 bg-slate-50/50 rounded-lg">{item.tahun_perolehan}</td>
-                    <td className="px-6 py-4 text-right text-sm font-bold text-emerald-600">{Number(item.harga).toLocaleString("id-ID")}</td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide ${
                         item.kondisi === 'Baik' ? 'bg-emerald-100 text-emerald-600' :
@@ -220,23 +227,24 @@ export default function KibBPage() {
                         {item.kondisi}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500 italic truncate max-w-xs">{item.keterangan || "-"}</td>
+                    <td className="px-6 py-4 text-right text-sm font-bold text-emerald-600">{formatIdr(item.harga)}</td>
+                    <td className="px-6 py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.status}</td>
                     <td className="px-6 py-4 text-center">
                       <div 
                         className="bg-white p-2 rounded-lg border border-slate-100 shadow-sm inline-block cursor-pointer hover:scale-110 transition-transform"
                         onClick={() => setSelectedQr(item)}
                       >
                         <QRCodeCanvas
-                          value={`${window.location.origin}/verifikasi-aset/${item.id}`}
-                          size={64}
+                          value={`${window.location.origin}/verifikasi-aset-e/${item.id}`}
+                          size={48}
                           level={"H"}
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4 sticky right-0 bg-white shadow-l">
+                    <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         <button 
-                          onClick={() => window.location.href = `/verifikasi-aset/${item.id}`}
+                          onClick={() => window.location.href = `/verifikasi-aset-e/${item.id}`}
                           className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" 
                           title="Detail Verifikasi"
                         >
@@ -265,9 +273,9 @@ export default function KibBPage() {
         </div>
       </div>
 
-      <AddKibBModal open={showAddModal} onClose={() => setShowAddModal(false)} onSuccess={fetchData} />
+      <AddKibEModal open={showAddModal} onClose={() => setShowAddModal(false)} onSuccess={fetchData} />
       
-      <EditKibBModal 
+      <EditKibEModal 
         open={showEditModal} 
         onClose={() => setShowEditModal(false)} 
         onSuccess={fetchData} 
@@ -291,24 +299,24 @@ export default function KibBPage() {
               <X size={20} />
             </button>
 
-            <h3 className="text-xl font-black text-slate-800 mb-2">Kode QR Barang</h3>
-            <p className="text-sm text-slate-500 font-medium mb-6">{selectedQr.nama_barang}</p>
+            <h3 className="text-xl font-black text-slate-800 mb-2 uppercase">Kode QR KIB E</h3>
+            <p className="text-sm text-slate-500 font-bold mb-6">{selectedQr.nama_barang}</p>
 
             <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-inner inline-block mb-6">
               <QRCodeCanvas
-                value={`${window.location.origin}/verifikasi-aset/${selectedQr.id}`}
+                value={`${window.location.origin}/verifikasi-aset-e/${selectedQr.id}`}
                 size={250}
                 level={"H"}
                 includeMargin={true}
               />
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">KODE BARANG</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">KODE BARANG</p>
               <p className="text-lg font-black text-indigo-600 bg-indigo-50 py-2 rounded-xl">{selectedQr.kode_barang}</p>
             </div>
 
-            <p className="text-xs text-slate-400 mt-6">
-              Scan QR Code ini untuk melihat detail verifikasi aset.
+            <p className="text-[10px] font-bold text-slate-400 mt-6 uppercase tracking-widest leading-relaxed">
+              Scan QR Code ini untuk melihat detail verifikasi aset tetap lainnya.
             </p>
           </div>
         </div>

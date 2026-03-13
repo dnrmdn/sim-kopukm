@@ -76,7 +76,8 @@ export default function DokumenKesekretariatan() {
   const umumBtnList = [
     { label: "Pegawai", icon: Users, colorBg: "bg-gray-50", colorText: "text-gray-800" },
     { label: "Jabatan", icon: Briefcase, colorBg: "bg-yellow-50", colorText: "text-yellow-800" },
-    { label: "KIB B", icon: Package, colorBg: "bg-orange-50", colorText: "text-orange-800" },
+    { label: "INVENTARIS", icon: Package, colorBg: "bg-orange-50", colorText: "text-orange-800" },
+    { label: "BUKU TAMU", icon: Clipboard, colorBg: "bg-emerald-50", colorText: "text-emerald-700" },
   ];
 
   /* ================= RENDER ================= */

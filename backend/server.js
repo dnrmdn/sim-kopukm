@@ -45,6 +45,7 @@ import statusPegawaiRoute from "./routes/statusPegawaiRoute.js";
 import userRoutes from "./routes/userRoutes.js";
 import rencanaAksiRoutes from "./routes/rencanaaksiRoutes.js";
 import pohonKinerjaRoutes from "./routes/pohonKinerjaRoutes.js";
+import bukuTamuRoutes from "./routes/bukuTamuRoutes.js";
 
 //RENSTRA
 import ProgramRoutes from "./routes/Renstra/ProgramRoutes.js";
@@ -57,6 +58,7 @@ import SubKegiatanAnggaranRoutes from "./routes/Renstra/SubKegiatanAnggaranRoute
 import DokumenRenstraRoutes from "./routes/Renstra/DokumenRoutes.js";
 import DashboardRenstraRoutes from "./routes/Renstra/DashboardRoutes.js";
 import KibBRoutes from "./routes/kibBRoutes.js";
+import kibERoutes from "./routes/kibERoutes.js";
 
 dotenv.config();
 
@@ -112,6 +114,8 @@ const allowedOrigins = [
   // ✅ Tambahkan ini:
   "http://192.168.1.5:3001",
   "http://192.168.1.5:3002",
+  "http://192.168.1.8:3001",
+  "http://192.168.1.8:4849",
 ];
 
 // ================================
@@ -242,6 +246,7 @@ app.use("/api/user", verifyToken, userRoutes);        // GET /, GET /:id, POST /
 app.use("/api/rencana-aksi", rencanaAksiRoutes);
 app.use("/api/pohon-kinerja", pohonKinerjaRoutes);
 app.use("/api/status-pegawai", statusPegawaiRoute);
+app.use("/api/buku-tamu", bukuTamuRoutes);
 
 //RENSTRA
 app.use("/api/renstra/program", ProgramRoutes);
@@ -254,6 +259,7 @@ app.use("/api/renstra/tahun", TahunRoutes);
 app.use("/api/renstra/dokumen", DokumenRenstraRoutes);
 app.use("/api/renstra/dashboard", DashboardRenstraRoutes);
 app.use("/api/kib-b", KibBRoutes);
+app.use("/api/kib-e", kibERoutes);
 
 // ================================
 // 🔹 Handler 404 (after routes)

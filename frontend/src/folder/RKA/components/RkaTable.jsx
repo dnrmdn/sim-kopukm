@@ -176,7 +176,7 @@ export default function RkaTable({ data = [], onEdit = () => {}, onDeleteSuccess
                         <td className="border-b border-slate-100"></td>
                         <td className="p-2 pl-8 border-b border-slate-100">
                           <div className="text-[9px] text-purple-600 font-mono font-bold">{sub.subkegiatan_code}</div>
-                          <div className="text-slate-600 font-medium leading-tight">{sub.subkegiatan_name}</div>
+                          <div className="text-slate-800 font-bold leading-tight uppercase">{sub.subkegiatan_name}</div>
                         </td>
 
                         <td className="p-2 border-b border-slate-100">
