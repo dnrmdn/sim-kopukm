@@ -2,14 +2,8 @@ import pool from "../config/db.js";
 
 export async function getPohonKinerja(req, res, next) {
   try {
-    // let { tahun } = req.query; // Bisa digunakan nanti untuk filter tahun
-
     let query = `
       SELECT 
-        /* Level Hirarki (Bupati & Kepala Dinas) */
-        h_sasaran.uraian AS sasaran_daerah,
-        h_indikator.uraian AS indikator_daerah,
-
         /* Level Program (Bidang) */
         rp.id AS id_program,
         rp.nama_program,
@@ -31,8 +25,11 @@ export async function getPohonKinerja(req, res, next) {
       FROM renstra_program rp
       LEFT JOIN renstra_kegiatan rk ON rp.id = rk.program_id
       LEFT JOIN renstra_sub_kegiatan rsk ON rk.id = rsk.kegiatan_id
-      LEFT JOIN hirarki h_indikator ON 1=1 
-      LEFT JOIN hirarki h_sasaran ON h_indikator.parent_id = h_sasaran.id
+      
+      /* KITA HAPUS SEMENTARA JOIN KE TABEL HIRARKI DI SINI 
+         UNTUK MENCEGAH PENGGANDAAN POHON (CARTESIAN PRODUCT).
+         Nantinya baru disambung jika tabel renstra_program sudah punya relasi 'id_hirarki'
+      */
       
       ORDER BY rp.kodering, rk.kodering, rsk.kodering ASC
     `;
