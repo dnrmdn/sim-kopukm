@@ -95,7 +95,7 @@ function App() {
           <Route path="/dokumen/inventaris" element={<InventarisPage />} />
           <Route path="/dokumen/kib-b" element={<KibBPage />} />
           <Route path="/dokumen/kib-e" element={<KibEPage />} />
-          <Route path="/renja" element={<RenjaPage />} />
+          <Route path="/dokumen/renja" element={<RenjaPage />} />
           <Route path="/dokumen/sop" element={<SopPage />} />
           <Route path="/dokumen/lkpj" element={<LkpjPage />} />
           <Route path="/dokumen/dpa" element={<DpaPage />} />
