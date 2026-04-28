@@ -59,7 +59,7 @@ export default function CardDokumen({ data, onSuccess }) {
               </div>
 
               <a 
-                href={`${import.meta.env.VITE_API_URL || 'http://localhost:4849'}/${doc.file_path.replace(/\\/g, '/')}`}
+                href={`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL}/${doc.file_path.replace(/\\/g, '/')}`}
                 target="_blank" 
                 rel="noreferrer"
                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"

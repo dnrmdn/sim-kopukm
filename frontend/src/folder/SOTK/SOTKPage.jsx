@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/utils/axiosInstance";
 import FilePreviewModal from "@/LAYOUTS/FilePreviewModal";
 
-const api = axiosInstance || axios.create({ baseURL: "http://localhost:4849" });
+const api = axiosInstance || axios.create({ baseURL: import.meta.env.VITE_API_URL });
 
 export default function SotkPage() {
   const navigate = useNavigate();

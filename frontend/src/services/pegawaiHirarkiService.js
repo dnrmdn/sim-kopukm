@@ -3,7 +3,7 @@ import axios from "axios";
 /**
  * 🌐 Backend API URL for Pegawai Hirarki
  */
-const API_URL = "http://127.0.0.1:4849/api/pegawai-hirarki";
+const API_URL = `${import.meta.env.VITE_API_URL}/api/pegawai-hirarki`;
 
 /**
  * 🔑 Helper to attach JWT token
