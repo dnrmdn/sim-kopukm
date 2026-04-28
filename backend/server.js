@@ -176,17 +176,8 @@ app.use(
 );
 
 // ================================
-// 🔹 Tes koneksi database
+// 🔹 Tes koneksi database dipindahkan ke bawah (startServer)
 // ================================
-(async () => {
-  try {
-    const conn = await pool.getConnection();
-    console.log("✅ MySQL Connected!");
-    conn.release();
-  } catch (err) {
-    console.error("❌ Database Error:", err.message);
-  }
-})();
 
 // ================================
 // 🔹 Static: serve uploads (accessible at /uploads/*)
@@ -317,6 +308,29 @@ io.on("connection", (socket) => {
 // ================================
 const HOST = "0.0.0.0";
 
-server.listen(PORT, HOST, () => {
-  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+const startServer = async () => {
+  try {
+    console.log("🔍 Checking database connection...");
+    const conn = await pool.getConnection();
+    console.log("✅ MySQL Connected via DATABASE_URL!");
+    conn.release();
+
+    server.listen(PORT, HOST, () => {
+      console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Database Connection Failed on Startup:");
+    console.error(`Message: ${err.message}`);
+    console.error(`Code: ${err.code}`);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+// Graceful shutdown on unhandled rejections
+process.on("unhandledRejection", (err) => {
+  console.error("❌ Unhandled Rejection:", err);
+  setTimeout(() => process.exit(1), 3000).unref();
+  server.close(() => process.exit(1));
 });
