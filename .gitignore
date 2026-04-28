@@ -65,3 +65,4 @@ docker-compose.override.yml
 Dockerfile.local
 *.log
 *.log
+.agent/
