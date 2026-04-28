@@ -88,34 +88,10 @@ if (!fs.existsSync(uploadsSotkDir)) fs.mkdirSync(uploadsSotkDir, { recursive: tr
 // 🔹 Allowed Origins (FIXED)
 // ================================
 const allowedOrigins = [
-  "https://himavera.my.id",
-  "http://himavera.my.id",
-  "https://api.himavera.my.id",
-  "https://www.himavera.my.id",
-  "http://www.himavera.my.id",
-  "http://72.61.208.1",
-  "http://72.61.208.1:4849",
-  "http://72.61.208.1:3000",
-  "http://72.61.208.1:3001",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3001",
-  "http://127.0.0.1:4849",
-  "http://192.168.1.9:3002",
-  "http://72.61.208.1:3002",
-  "http://192.168.1.9:4849",
-  "http://192.168.1.6:3002",
-  "http://192.168.1.6:4849",
-  "http://localhost:3002",
-  "http://localhost:3002",
-
-
-  // ✅ Tambahkan ini:
-  "http://192.168.1.5:3001",
-  "http://192.168.1.5:3002",
-  "http://192.168.1.8:3001",
-  "http://192.168.1.8:4849",
+  "https://clever-malasada-53b92b.netlify.app",
+  "http://localhost:5173", // For Vite local dev
+  "http://localhost:3000", // For legacy local dev
+  "http://127.0.0.1:5173"
 ];
 
 // ================================
@@ -124,18 +100,23 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Postman, curl, mobile apps, server-to-server
+      // Allow requests with no origin (like mobile apps, postman, curl)
+      if (!origin) return callback(null, true);
+      
+      // Allow if origin is in the allowed list
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
+      
       console.warn("❌ Blocked CORS Origin:", origin);
       return callback(new Error("Not allowed by CORS"));
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
     credentials: true,
-  }),
+  })
 );
+app.options("*", cors()); // Explicitly handle preflight requests
 
 // ================================
 // 🔹 Middleware umum
